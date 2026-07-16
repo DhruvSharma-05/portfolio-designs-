@@ -58,8 +58,8 @@ function Field({ accent, reduced, pointer }) {
           />
         </bufferGeometry>
         <pointsMaterial
-          color={accent}
-          size={0.035}
+          color="#278837"
+          size={0.045}
           sizeAttenuation
           transparent
           opacity={0.85}

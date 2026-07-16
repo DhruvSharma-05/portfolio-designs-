@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Google Drive photo sync — secrets, cache, and generated images
+.env
+.drive-cache.json
+public/photos/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

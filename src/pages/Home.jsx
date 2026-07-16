@@ -16,8 +16,9 @@ const page = {
   animate: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-/* seeds for the sweeping horizontal gallery — swap for real frames */
-const GALLERY = [...SHEET, "pf-01", "pf-04", "pf-02"];
+/* seeds for the sweeping horizontal gallery: the contact sheet plus a
+   few featured work frames, de-duplicated. */
+const GALLERY = [...new Set([...SHEET, ...FRAMES.map((f) => f.seed)])].slice(0, 12);
 
 export default function Home() {
   const { theme } = useApp();
@@ -98,6 +99,7 @@ export default function Home() {
             ))}
           </h1>
           <div className="drawline" />
+          <div className="mono" style={{ marginTop: 16 }}>Photography by {P.photographer}</div>
           <div className="role">
             <span className="mono">Available light. Clean grids. Shipped end to end.</span>
             <span className="mono">Scroll —</span>
