@@ -128,10 +128,10 @@ All content lives in `src/data.js`:
 | Where | What to replace |
 | ----- | --------------- |
 | `P` | name, role, email, city |
-| `FRAMES` | the work cards + detail pages (title, location, EXIF, note, year, role) |
-| `ABOUT` | About-page bio, approach, timeline, portrait |
+| `FRAMES` | work-card copy — normally comes from Drive (see **Photos from Google Drive**); the array here is the placeholder fallback |
+| `ABOUT` | About-page bio, approach, timeline (portrait image comes from Drive) |
 | `METRICS`, `QUOTES`, `SHOTLIST`, `TICKER` | numbers, testimonials, services |
-| `img()` helper + `seed` values | currently `picsum.photos` — point at real image URLs / local assets |
+| Photos | pulled from Google Drive at build time — see **Photos from Google Drive**. Without credentials the site falls back to `picsum.photos` placeholders |
 | `THEMES` | the accent palette offered by the switcher |
 | `index.html` | `<title>`, description, and OG/Twitter tags (marked `TODO(client)`) |
 | `public/favicon.svg`, `public/og.svg` | the lens mark + social card (export `og.svg` to a 1200×630 PNG for Facebook/Twitter) |
