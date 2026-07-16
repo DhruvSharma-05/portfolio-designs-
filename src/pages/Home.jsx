@@ -99,6 +99,7 @@ export default function Home() {
             ))}
           </h1>
           <div className="drawline" />
+          <div className="mono" style={{ marginTop: 16 }}>Photography by {P.photographer}</div>
           <div className="role">
             <span className="mono">Available light. Clean grids. Shipped end to end.</span>
             <span className="mono">Scroll —</span>

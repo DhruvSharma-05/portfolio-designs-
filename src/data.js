@@ -14,7 +14,8 @@ export const prefersReduced = () =>
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export const P = {
-  name: "Your Name",
+  name: "Crafted & Captured",
+  photographer: "Viraj",
   role: "Photographer & Web Designer",
   email: "hello@yourstudio.com",
   city: "Your City",

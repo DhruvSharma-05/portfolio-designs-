@@ -7,8 +7,9 @@
   <circle cx="1050" cy="90" r="18" fill="none" stroke="#E4E4E7" stroke-width="3"/>
   <circle cx="1050" cy="90" r="7" fill="#E4E4E7"/>
   <text x="80" y="96" fill="#71717A" font-family="monospace" font-size="22" letter-spacing="4">PHOTOGRAPHER &amp; WEB DESIGNER — BOOKING 2026</text>
-  <text x="76" y="330" fill="#ECECEC" font-family="Georgia, 'Times New Roman', serif" font-size="150" font-weight="300" letter-spacing="-4">Your Name</text>
-  <rect x="80" y="380" width="120" height="3" fill="#E4E4E7"/>
-  <text x="80" y="470" fill="#71717A" font-family="Arial, sans-serif" font-size="34" font-weight="300">Available light. Clean grids. Shipped end to end.</text>
+  <text x="76" y="300" fill="#ECECEC" font-family="Georgia, 'Times New Roman', serif" font-size="92" font-weight="300" letter-spacing="-3">Crafted &amp; Captured</text>
+  <rect x="80" y="345" width="120" height="3" fill="#E4E4E7"/>
+  <text x="80" y="408" fill="#ECECEC" font-family="Arial, sans-serif" font-size="32" font-weight="300">Photography by Viraj</text>
+  <text x="80" y="468" fill="#71717A" font-family="Arial, sans-serif" font-size="30" font-weight="300">Available light. Clean grids. Shipped end to end.</text>
   <text x="80" y="575" fill="#71717A" font-family="monospace" font-size="22" letter-spacing="3">HELLO@YOURSTUDIO.COM</text>
 </svg>

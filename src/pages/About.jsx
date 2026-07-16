@@ -32,7 +32,7 @@ export default function About() {
       <div className="about-hero">
         <div>
           <div className="mono" style={{ marginBottom: 22 }}>About — {P.city}</div>
-          <h1>{P.name}</h1>
+          <h1>{P.photographer}</h1>
           <p className="about-lead">
             {ABOUT.lead.split(" ").map((w, i) =>
               i === 0 ? <i key={i}>{w} </i> : w + " "
@@ -40,7 +40,7 @@ export default function About() {
           </p>
         </div>
         <figure className="about-portrait">
-          <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} alt={`${P.name}, portrait`} />
+          <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} alt={`${P.photographer}, portrait`} />
         </figure>
       </div>
 
