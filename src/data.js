@@ -5,6 +5,8 @@
    PLACEHOLDER CONTENT: swap these for the client's real details.
    ================================================================== */
 
+import manifest from "./photos.manifest.json";
+
 /* Read the motion preference live so an OS change is respected on the
    next mount. Single source of truth, shared by every animated piece. */
 export const prefersReduced = () =>
@@ -18,7 +20,24 @@ export const P = {
   city: "Your City",
 };
 
-export const img = (s, w, h) => `https://picsum.photos/seed/${s}/${w}/${h}`;
+/* --- real photos (from Google Drive sync) ---------------------------
+   scripts/sync-drive.mjs writes photos.manifest.json at build time.
+   Every synced photo is keyed by seed → { sm, lg } local WebP URLs.
+   When the manifest is empty (no credentials / fresh clone) we fall
+   back to seeded picsum placeholders so the site still renders. */
+const PHOTOS = new Map();
+for (const p of manifest.work || []) PHOTOS.set(p.seed, p);
+for (const p of manifest.gallery || []) PHOTOS.set(p.seed, p);
+if (manifest.portrait) PHOTOS.set(manifest.portrait.seed, manifest.portrait);
+
+/* img(seed, w, h): resolves a seed to a local optimized image. Picks the
+   small variant for thumbnail widths, the large one otherwise. Unknown
+   seeds fall through to a picsum placeholder of the requested size. */
+export const img = (s, w = 1200, h = 800) => {
+  const p = PHOTOS.get(s);
+  if (p) return w <= 640 ? p.sm : p.lg;
+  return `https://picsum.photos/seed/${s}/${w}/${h}`;
+};
 
 /* Shared near-black base. Themes differ ONLY by accent — the room stays
    dark, one light changes. */
@@ -40,7 +59,7 @@ export const THEMES = [
   { id: "lime", name: "Lime", accent: "#A3E635" },
 ].map((t) => ({ ...BASE, ...t }));
 
-export const FRAMES = [
+const FRAMES_FALLBACK = [
   { seed: "pf-01", t: "Selected Work 01", loc: "Location, XX", exif: "35mm · f/8 · 1/500", kind: "Photography",
     note: "Short description of the project. Replace with your own — what it was, why it mattered, what shipped.",
     year: "2025", role: "Photography · Grade" },
@@ -58,7 +77,15 @@ export const FRAMES = [
     year: "2023", role: "Editorial · React" },
 ];
 
-export const SHEET = ["pf-c1", "pf-c2", "pf-c3", "pf-c4", "pf-c5", "pf-c6"];
+const SHEET_FALLBACK = ["pf-c1", "pf-c2", "pf-c3", "pf-c4", "pf-c5", "pf-c6"];
+
+/* Prefer real synced photos; fall back to placeholders when the
+   manifest is empty. FRAMES drives the work cards + /work/:seed pages;
+   SHEET drives the contact strip + horizontal gallery. */
+export const FRAMES = manifest.work?.length ? manifest.work : FRAMES_FALLBACK;
+export const SHEET = manifest.gallery?.length
+  ? manifest.gallery.map((p) => p.seed)
+  : SHEET_FALLBACK;
 export const TICKER = ["Editorial", "Events", "Portraits", "Art direction", "Colour grading", "Design & build", "Booking 2026"];
 
 export const METRICS = [
@@ -85,7 +112,7 @@ export const SHOTLIST = [
 
 /* PLACEHOLDER — replace with the client's real bio, approach and history. */
 export const ABOUT = {
-  portrait: "pf-about",
+  portrait: manifest.portrait?.seed ?? "pf-about",
   lead: "I make pictures for a living and build the places they live online. Same eye, two crafts.",
   body: [
     "This is where the biography goes. Two or three short paragraphs — how you started, what you care about, the kind of work you say yes to. Keep it plain and specific; let the pictures carry the rest.",
