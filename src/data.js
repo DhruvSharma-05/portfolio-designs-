@@ -461,16 +461,33 @@ export const CSS = `
   font-size: clamp(36px, 4.4vw, 60px); line-height: 1; font-variant-numeric: tabular-nums; }
 .metric span { display: block; margin-top: 12px; }
 
-/* --- services / shot list --- */
-.sl-row { display: grid; grid-template-columns: 42px 1fr 1.1fr; gap: 20px; align-items: baseline;
-  padding: 22px 0; border-bottom: 1px solid var(--rule);
+/* --- services / shot list ---
+   Hover sweeps the current accent across the whole row and flips the
+   text to the page background — so the row reads as a solid block in
+   whichever colour the visitor picked in the bar. The fill wipes in
+   from the left and out to the right (transform-origin swaps on
+   hover), and bleeds 18px past the text so nothing sits flush to the
+   edge. Children are lifted above it with z-index. */
+.sl-row { position: relative; display: grid; grid-template-columns: 42px 1fr 1.1fr;
+  gap: 20px; align-items: baseline; padding: 22px 0;
+  border-bottom: 1px solid var(--rule);
   transition: padding-left .35s cubic-bezier(.2,.8,.2,1); }
+.sl-row::before { content: ""; position: absolute; inset: 0 -18px; z-index: 0;
+  background: var(--accent); border-radius: 3px; transform: scaleX(0);
+  transform-origin: right; transition: transform .55s cubic-bezier(.76,0,.24,1); }
+.sl-row:hover::before { transform: scaleX(1); transform-origin: left; }
+.sl-row > * { position: relative; z-index: 1; }
 .sl-row:first-child { border-top: 1px solid var(--rule); }
 .sl-row:hover { padding-left: 10px; }
 .sl-row h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(18px, 2.1vw, 25px);
-  transition: color .3s; }
-.sl-row:hover h3 { color: var(--accent); }
-.sl-row p { color: var(--dim); font-size: 14.5px; line-height: 1.58; }
+  transition: color .35s ease .06s; }
+.sl-row p { color: var(--dim); font-size: 14.5px; line-height: 1.58;
+  transition: color .35s ease .06s; }
+.sl-row .mono { transition: color .35s ease .06s; }
+/* on the filled row every layer switches to the background colour —
+   the body copy at reduced opacity so the hierarchy survives */
+.sl-row:hover h3, .sl-row:hover .mono { color: var(--bg); }
+.sl-row:hover p { color: color-mix(in srgb, var(--bg) 72%, transparent); }
 @media (max-width: 700px) { .sl-row { grid-template-columns: 30px 1fr; } .sl-row p { grid-column: 2; } }
 
 /* --- quotes slideshow --- */
