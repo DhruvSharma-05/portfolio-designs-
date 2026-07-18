@@ -92,17 +92,25 @@ photos; when empty (fresh clone, no credentials) it falls back to seeded
 
 **One-time setup (free — no billing, no card)**
 
+Because portfolio photos are public anyway, the simplest auth is an **API key**
+against **link-shared folders** (this also avoids the `disableServiceAccount-
+KeyCreation` org policy that blocks service-account keys on newer accounts):
+
 1. [Google Cloud Console](https://console.cloud.google.com/) → new project →
    enable the **Google Drive API**.
-2. Create a **service account** and download its **JSON key**.
+2. **APIs & Services → Credentials → Create Credentials → API key.** Then
+   **Restrict key → API restrictions → Google Drive API**. Copy the key.
 3. In the client's Drive, create three subfolders — **Work**, **Gallery**,
-   **Portrait** — and share each one (Viewer) with the service-account email
-   (`…@…iam.gserviceaccount.com`).
-4. `cp .env.example .env` and fill in the four values (the key JSON + the three
-   folder IDs — the folder ID is the string after `/folders/` in the Drive URL).
-5. On Vercel, add those same four variables under **Settings → Environment
+   **Portrait** — and share each one **"Anyone with the link → Viewer"**.
+4. `cp .env.example .env` and set `GOOGLE_API_KEY` + the three folder IDs (the
+   string after `/folders/` in each folder's URL).
+5. On Vercel, add those same variables under **Settings → Environment
    Variables**, then create a **Deploy Hook** URL. The client bookmarks that URL:
    opening it triggers a rebuild that re-pulls Drive and publishes the changes.
+
+> Prefer to keep the folders **private**? Set `GOOGLE_SERVICE_ACCOUNT_JSON`
+> instead of `GOOGLE_API_KEY` (a service-account key JSON, raw or base64) and
+> share the folders with the service-account email — the script supports both.
 
 **Naming photos (this is how captions are set)**
 

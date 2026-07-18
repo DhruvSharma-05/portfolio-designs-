@@ -267,19 +267,25 @@ export const CSS = `
 .cap .meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   padding-top: 16px; border-top: 1px solid var(--rule); }
 
-/* --- pinned horizontal gallery --- */
-.gallery { overflow: hidden; border-top: 1px solid var(--rule); background: var(--bg); }
-.gallery.scrollable { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.gallery-track { display: flex; gap: 24px; align-items: center; width: max-content;
-  padding: 10vh 28px; }
-.gallery-head { flex: 0 0 auto; width: min(40vw, 460px); padding-right: 48px; }
+/* --- auto-playing horizontal gallery (marquee) --- */
+.gallery { overflow: hidden; border-top: 1px solid var(--rule); background: var(--bg);
+  padding: 12vh 0; }
+.gallery-head { padding-bottom: 6vh; }
 .gallery-head h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
   font-size: clamp(30px, 4.4vw, 60px); text-wrap: balance; }
 .gallery-head p { color: var(--dim); font-size: 15px; line-height: 1.7; margin-top: 20px; max-width: 34ch; }
+.gallery-view { overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); }
+.gallery.reduced .gallery-view { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* duplicated track (items rendered twice) drifts -50% for a seamless loop.
+   margin-right (not gap) keeps a trailing gap so the wrap point is exact. */
+.gallery-track { display: flex; align-items: center; width: max-content;
+  animation: roll 80s linear infinite; }
+.gallery:hover .gallery-track { animation-play-state: paused; }
 .gal-fr { flex: 0 0 auto; width: min(40vw, 420px); aspect-ratio: 3/4; overflow: hidden;
-  border-radius: 4px; border: 1px solid var(--rule); }
-.gal-fr .mono { display: block; padding: 12px 2px 0; }
-@media (max-width: 700px) { .gallery-head { width: 78vw; } .gal-fr { width: 70vw; } }
+  border-radius: 4px; border: 1px solid var(--rule); margin-right: 24px; }
+@media (max-width: 700px) { .gal-fr { width: 70vw; } }
 
 /* --- section shell with sticky label --- */
 .sec { padding: 13vh 0; border-top: 1px solid var(--rule); }

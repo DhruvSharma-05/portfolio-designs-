@@ -27,8 +27,6 @@ export default function Home() {
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
   const heroRef = useRef(null);
-  const galRef = useRef(null);
-  const trackRef = useRef(null);
 
   /* image parallax + hover zoom, owned by GSAP and scoped to this page
      so the ScrollTriggers are torn down when we navigate away. */
@@ -45,22 +43,6 @@ export default function Home() {
       shot.addEventListener("pointerenter", () => zoom(1.19));
       shot.addEventListener("pointerleave", () => zoom(1.14));
     });
-
-    /* pinned horizontal gallery: pin the section and translate the track
-       by its overflow width as the user scrolls vertically. */
-    const track = trackRef.current;
-    if (track) {
-      gsap.to(track, {
-        x: () => -(track.scrollWidth - innerWidth),
-        ease: "none",
-        scrollTrigger: {
-          trigger: galRef.current,
-          start: "top top",
-          end: () => "+=" + (track.scrollWidth - innerWidth),
-          pin: true, scrub: 1, invalidateOnRefresh: true,
-        },
-      });
-    }
 
     ScrollTrigger.refresh();
   }, { scope: root, dependencies: [reduced] });
@@ -175,19 +157,21 @@ export default function Home() {
         ))}
       </section>
 
-      {/* pinned horizontal gallery */}
-      <section className={`gallery${reduced ? " scrollable" : ""}`} ref={galRef} aria-label="Selected frames">
-        <div className="gallery-track" ref={trackRef}>
-          <div className="gallery-head">
-            <div className="mono" style={{ marginBottom: 18 }}>Selected frames</div>
-            <h2>A scroll through the archive.</h2>
-            <p>Drag or keep scrolling — a rolling edit of recent frames, not tied to any one project.</p>
+      {/* auto-playing horizontal gallery (marquee) */}
+      <section className={`gallery${reduced ? " reduced" : ""}`} aria-label="Selected frames">
+        <div className="wrap gallery-head">
+          <div className="mono" style={{ marginBottom: 18 }}>Selected frames</div>
+          <h2>A scroll through the archive.</h2>
+          <p>A rolling edit of recent frames — it drifts on its own; hover to pause.</p>
+        </div>
+        <div className="gallery-view">
+          <div className="gallery-track">
+            {[...GALLERY, ...GALLERY].map((s, i) => (
+              <figure className="gal-fr" key={s + i} aria-hidden={i >= GALLERY.length}>
+                <img src={img(s, 640, 853)} alt="" loading="lazy" />
+              </figure>
+            ))}
           </div>
-          {GALLERY.map((s, i) => (
-            <figure className="gal-fr" key={s + i}>
-              <img src={img(s, 900, 1200)} alt="" />
-            </figure>
-          ))}
         </div>
       </section>
 

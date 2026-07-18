@@ -101,7 +101,17 @@ async function formatExif(buffer) {
 
 /* -------------------------------------------------------------- drive */
 
+/* Returns an `auth` value ready to hand to google.drive(). Either a plain
+   API-key string, or a service-account JWT client — both are accepted by
+   googleapis. Prefers the API key. */
 function getAuth() {
+  // Preferred: a plain API key. Reads "anyone with the link" folders and
+  // isn't blocked by the disableServiceAccountKeyCreation org policy.
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (apiKey) return apiKey.trim();
+
+  // Fallback: a service-account key (for private folders shared with the
+  // service-account email), when the org allows key creation.
   const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (!raw) return null;
   let json;
@@ -138,7 +148,27 @@ async function listImages(drive, folderId) {
   return files;
 }
 
-async function downloadBytes(drive, fileId) {
+async function downloadBytes(drive, fileId, publicDownload) {
+  // With an anonymous API key, Drive lists public files but forbids the
+  // API media download (403). Fetch the bytes from the public download
+  // endpoint instead — works for "anyone with the link" files and returns
+  // the full original (EXIF intact). Service-account auth uses the API.
+  if (publicDownload) {
+    let res = await fetch(
+      `https://drive.google.com/uc?export=download&id=${fileId}`,
+      { redirect: "follow" },
+    );
+    // Files >~100MB return a virus-scan HTML interstitial instead of bytes;
+    // retry the usercontent endpoint with a confirm token.
+    if ((res.headers.get("content-type") || "").startsWith("text/html")) {
+      res = await fetch(
+        `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`,
+        { redirect: "follow" },
+      );
+    }
+    if (!res.ok) throw new Error(`public download failed: ${res.status}`);
+    return Buffer.from(await res.arrayBuffer());
+  }
   const res = await drive.files.get(
     { fileId, alt: "media" },
     { responseType: "arraybuffer" },
@@ -180,7 +210,7 @@ async function main() {
   if (!auth || missing.length) {
     warn(
       "Skipping Drive sync — missing",
-      [!auth && "GOOGLE_SERVICE_ACCOUNT_JSON", ...missing]
+      [!auth && "GOOGLE_API_KEY (or GOOGLE_SERVICE_ACCOUNT_JSON)", ...missing]
         .filter(Boolean)
         .join(", "),
     );
@@ -189,6 +219,9 @@ async function main() {
   }
 
   const drive = google.drive({ version: "v3", auth });
+  // API-key auth (a plain string) can list public files but not download
+  // them via the API — those go through the public download endpoint.
+  const publicDownload = typeof auth === "string";
   const cache = existsSync(CACHE)
     ? JSON.parse(await readFile(CACHE, "utf8"))
     : {};
@@ -243,7 +276,7 @@ async function main() {
         log(`skip (cached) ${key}/${f.name}`);
       } else {
         log(`fetch ${key}/${f.name}`);
-        const buffer = await downloadBytes(drive, f.id);
+        const buffer = await downloadBytes(drive, f.id, publicDownload);
         exif = key === "work" ? await formatExif(buffer) : "";
         variants = await renderVariants(buffer, key, seed);
       }
