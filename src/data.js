@@ -89,6 +89,168 @@ export const SHEET = manifest.gallery?.length
   : SHEET_FALLBACK;
 export const TICKER = ["Editorial", "Events", "Portraits", "Art direction", "Colour grading", "Design & build", "Booking 2026"];
 
+/* ==================================================================
+   PHOTOGRAPHY — /photography and /photography/:slug
+
+   FEATURED drives the hero slideshow; PHOTO_PROJECTS drives the sticky
+   stack below it and every project page. Each project owns its own set
+   of frames, so a project page can show a grid + a carousel roll.
+
+   PLACEHOLDER CONTENT — swap titles, notes and seeds for the real
+   shoots. Seeds resolve through img(): a synced photo if the Drive
+   manifest has one, a seeded placeholder otherwise.
+   ================================================================== */
+
+const photoSeeds = (slug, n) => Array.from({ length: n }, (_, i) => `${slug}-${i + 1}`);
+
+const PHOTO_PROJECTS_FALLBACK = [
+  {
+    slug: "after-hours",
+    t: "After Hours",
+    kind: "Editorial",
+    loc: "Location, XX",
+    year: "2025",
+    exif: "35mm · f/1.8 · 1/125",
+    role: "Photography · Grade",
+    note: "A night series shot entirely on available light. Replace this with the real brief — who it was for and what the pictures had to carry.",
+    intro: "Two nights, one lens, no flash. The city did the lighting.",
+    photos: photoSeeds("after-hours", 9),
+  },
+  {
+    slug: "salt-and-light",
+    t: "Salt & Light",
+    kind: "Landscape",
+    loc: "Location, XX",
+    year: "2025",
+    exif: "24mm · f/11 · 1/250",
+    role: "Photography · Art direction",
+    note: "A coastal set made across one week of weather. Say what the trip was for and what came out of it.",
+    intro: "Early light, long lenses, and a lot of waiting for the sky to commit.",
+    photos: photoSeeds("salt-and-light", 8),
+  },
+  {
+    slug: "faces",
+    t: "Faces",
+    kind: "Portraits",
+    loc: "Studio, XX",
+    year: "2024",
+    exif: "85mm · f/2 · 1/200",
+    role: "Portrait · One light",
+    note: "A portrait series shot over a single afternoon. One light, one backdrop, twelve people.",
+    intro: "One light, moved twice. Everything else is the person.",
+    photos: photoSeeds("faces", 10),
+  },
+  {
+    slug: "the-long-table",
+    t: "The Long Table",
+    kind: "Events",
+    loc: "Location, XX",
+    year: "2024",
+    exif: "50mm · f/1.4 · 1/60",
+    role: "Event · Documentary",
+    note: "A full-day event covered documentary-style. Describe the day and what the client used the set for.",
+    intro: "Documentary coverage — nobody looked at the camera on purpose.",
+    photos: photoSeeds("the-long-table", 8),
+  },
+];
+
+/* When the Drive sync has real photos, deal them out across the
+   projects in order so the pages fill with actual work; otherwise the
+   placeholder seeds stand in. */
+function withSyncedPhotos(projects) {
+  const pool = [...(manifest.work || []), ...(manifest.gallery || [])].map((p) => p.seed);
+  if (!pool.length) return projects;
+  const per = Math.max(4, Math.floor(pool.length / projects.length));
+  return projects.map((p, i) => {
+    const slice = pool.slice(i * per, (i + 1) * per);
+    return slice.length ? { ...p, photos: slice } : p;
+  });
+}
+
+export const PHOTO_PROJECTS = withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
+
+/* Hero slideshow: the opening frame of each project, so the hero doubles
+   as a table of contents. */
+export const FEATURED = PHOTO_PROJECTS.map((p) => ({
+  seed: p.photos[0],
+  t: p.t,
+  slug: p.slug,
+  kind: p.kind,
+  loc: p.loc,
+  year: p.year,
+}));
+
+/* ==================================================================
+   WEB DESIGN — /design and /design/:slug
+
+   Each project carries an external link (Figma, Canva, or the live
+   site) plus a set of screens. `href: ""` renders the button disabled,
+   so a project without a public link still looks intentional.
+   ================================================================== */
+
+export const WEB_PROJECTS = [
+  {
+    slug: "atelier-studio",
+    t: "Atelier Studio",
+    tag: "Studio site",
+    year: "2025",
+    role: "Design · Build",
+    note: "A studio site where the photograph sets the grid. Replace with the real brief, the constraints, and what shipped.",
+    intro: "Editorial layout, one accent, and a gallery that behaves on a phone.",
+    tool: "Figma",
+    href: "https://figma.com",
+    live: "",
+    stack: ["Figma", "React", "Vite", "Vercel"],
+    cover: "web-atelier-1",
+    shots: photoSeeds("web-atelier", 4),
+    specs: [
+      { k: "Scope", v: "Art direction, UI design, front-end build" },
+      { k: "Timeline", v: "4 weeks, design to live" },
+      { k: "Handoff", v: "Figma file + deployed site" },
+    ],
+  },
+  {
+    slug: "north-cafe",
+    t: "North Café",
+    tag: "Brand & menu",
+    year: "2025",
+    role: "Design · Brand",
+    note: "A small hospitality brand — identity, menu system and a one-page site. Swap for the real story.",
+    intro: "A menu that reads the same printed as it does on a phone.",
+    tool: "Canva",
+    href: "https://canva.com",
+    live: "",
+    stack: ["Canva", "Illustrator", "Webflow"],
+    cover: "web-north-1",
+    shots: photoSeeds("web-north", 4),
+    specs: [
+      { k: "Scope", v: "Identity, print menu, one-page site" },
+      { k: "Timeline", v: "3 weeks" },
+      { k: "Handoff", v: "Brand kit + editable templates" },
+    ],
+  },
+  {
+    slug: "field-notes",
+    t: "Field Notes",
+    tag: "Editorial CMS",
+    year: "2024",
+    role: "Design · Build",
+    note: "An editorial publication with a CMS behind it. Describe the volume, the constraints and the result.",
+    intro: "Long-form reading, built so the writer never needs a developer.",
+    tool: "Figma",
+    href: "https://figma.com",
+    live: "",
+    stack: ["Figma", "React", "Sanity"],
+    cover: "web-field-1",
+    shots: photoSeeds("web-field", 4),
+    specs: [
+      { k: "Scope", v: "Design system, CMS modelling, build" },
+      { k: "Timeline", v: "6 weeks" },
+      { k: "Handoff", v: "Design system + editor training" },
+    ],
+  },
+];
+
 export const METRICS = [
   { v: 68, s: "", k: "Projects delivered" },
   { v: 92, s: "%", k: "Clients who returned" },
@@ -383,7 +545,13 @@ export const CSS = `
   background: var(--accent); transform: scaleX(0); transform-origin: right;
   transition: transform .35s cubic-bezier(.76,0,.24,1); }
 .nav a:hover::after, .nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
-@media (max-width: 560px) { .nav { display: none; } }
+/* Four sections don't fit a phone in one row, so the bar wraps and the
+   nav sits on its own line rather than disappearing. */
+@media (max-width: 720px) {
+  .bar-in { flex-wrap: wrap; gap: 10px 14px; padding: 12px 20px; }
+  .nav { order: 3; width: 100%; gap: 16px; justify-content: space-between; }
+  .nav a { font-size: 10.5px; letter-spacing: .1em; }
+}
 
 /* --- about page --- */
 .about { padding: 12vh 0 8vh; }
@@ -413,13 +581,202 @@ export const CSS = `
 .tl-row b { font-weight: 400; color: var(--accent); font-variant-numeric: tabular-nums; }
 .tl-row p { font-size: clamp(16px, 1.9vw, 21px); letter-spacing: -0.01em; }
 
+/* ==================================================================
+   PHOTOGRAPHY PAGE
+   ================================================================== */
+
+/* --- hero slideshow ---
+   Stacked full-bleed frames crossfading with a slow Ken Burns push.
+   The caption block and the tick rail sit above them; the whole hero
+   is a link to the project currently on screen. */
+.phero { position: relative; height: min(88vh, 900px); overflow: hidden;
+  border-bottom: 1px solid var(--rule); background: var(--panel); }
+.phero-stage { position: absolute; inset: 0; }
+.phero-fr { position: absolute; inset: 0; }
+.phero-fr img { will-change: transform; }
+.phero-fr::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--bg) 62%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 12%, transparent) 38%,
+    color-mix(in srgb, var(--bg) 88%, transparent) 100%); }
+.phero-in { position: relative; z-index: 2; height: 100%; display: flex;
+  flex-direction: column; justify-content: space-between; padding: 8vh 0 34px; }
+.phero-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.phero-cap h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
+  font-size: clamp(44px, 9vw, 120px); text-wrap: balance; }
+.phero-cap .sub { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 18px; }
+.phero-open { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px;
+  border: 1px solid var(--rule); border-radius: 100px; padding: 10px 20px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent); backdrop-filter: blur(8px);
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .16em;
+  text-transform: uppercase; transition: border-color .35s ease, color .35s ease; }
+.phero-open:hover { border-color: var(--accent); color: var(--accent); }
+.phero-open .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.phero-open:hover .arrow { transform: translateX(5px); }
+.phero-foot { display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap; }
+/* tick rail — one bar per featured project, the active one fills with
+   the autoplay timer */
+.ticks { display: flex; gap: 10px; align-items: center; }
+.tick-btn { width: 54px; height: 2px; background: var(--rule); position: relative;
+  overflow: hidden; }
+.tick-btn i { position: absolute; inset: 0; background: var(--accent);
+  transform: scaleX(0); transform-origin: left; }
+.tick-btn[aria-current="true"] i { animation: tickFill 5.4s linear forwards; }
+@keyframes tickFill { to { transform: scaleX(1); } }
+.tick-btn:hover i { transform: scaleX(1); opacity: .4; animation: none; }
+.phero-count { font-variant-numeric: tabular-nums; }
+.phero-count b { font-weight: 400; color: var(--accent); }
+@media (max-width: 640px) { .phero { height: 78vh; } .tick-btn { width: 32px; } }
+
+/* --- project intro band --- */
+.band { padding: 12vh 0 2vh; }
+.band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
+  font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
+.band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
+
+/* --- photo project detail --- */
+.pj-hero { position: relative; overflow: hidden; border-radius: 4px;
+  border: 1px solid var(--rule); aspect-ratio: 16/9; }
+.pj-hero img { will-change: transform; }
+.pj-intro { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.8vw, 34px);
+  line-height: 1.32; max-width: 26ch; }
+
+/* masonry-ish grid: CSS columns keep the frames' own aspect ratios */
+.pgrid { columns: 3; column-gap: 18px; margin-top: 18px; }
+@media (max-width: 900px) { .pgrid { columns: 2; } }
+@media (max-width: 560px) { .pgrid { columns: 1; } }
+.pgrid figure { break-inside: avoid; margin: 0 0 18px; position: relative;
+  overflow: hidden; border-radius: 3px; border: 1px solid var(--rule);
+  cursor: pointer; background: var(--panel); }
+.pgrid img { transition: transform 1.1s cubic-bezier(.2,.8,.2,1), filter .6s ease; }
+.pgrid figure:hover img { transform: scale(1.05); }
+.pgrid figure::after { content: ""; position: absolute; inset: 0;
+  background: var(--accent); opacity: 0; mix-blend-mode: overlay;
+  transition: opacity .4s ease; pointer-events: none; }
+.pgrid figure:hover::after { opacity: .14; }
+.pgrid .idx { position: absolute; left: 12px; top: 12px; z-index: 2; opacity: 0;
+  transform: translateY(-4px); transition: opacity .35s ease, transform .35s ease; }
+.pgrid figure:hover .idx { opacity: 1; transform: none; }
+
+/* --- carousel roll: snap-scrolling filmstrip with drag ------------- */
+.roll { position: relative; }
+.roll-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
+  padding-bottom: 18px; scrollbar-width: none; cursor: grab; }
+.roll-track::-webkit-scrollbar { display: none; }
+.roll-track.dragging { cursor: grabbing; scroll-snap-type: none; }
+.roll-fr { flex: 0 0 auto; width: min(62vw, 700px); aspect-ratio: 3/2; overflow: hidden;
+  border-radius: 4px; border: 1px solid var(--rule); scroll-snap-align: center;
+  position: relative; background: var(--panel); }
+.roll-fr img { pointer-events: none; }
+.roll-nav { display: flex; gap: 10px; margin-top: 4px; }
+.roll-btn { width: 42px; height: 42px; border: 1px solid var(--rule); border-radius: 50%;
+  display: grid; place-items: center; transition: border-color .3s ease, color .3s ease; }
+.roll-btn:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 700px) { .roll-fr { width: 84vw; } }
+
+/* --- lightbox slideshow --- */
+.lb { position: fixed; inset: 0; z-index: 400; background: color-mix(in srgb, var(--bg) 94%, #000);
+  display: grid; grid-template-rows: auto 1fr auto; padding: 20px 24px 28px; }
+.lb-bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.lb-stage { position: relative; display: grid; place-items: center; overflow: hidden; }
+.lb-stage img { width: auto; height: auto; max-width: 100%; max-height: 100%;
+  object-fit: contain; border-radius: 3px; }
+.lb-foot { display: flex; justify-content: center; gap: 8px; }
+.lb-x { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
+  text-transform: uppercase; transition: color .3s; }
+.lb-x:hover { color: var(--accent); }
+.lb-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
+  width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--rule); background: color-mix(in srgb, var(--bg) 60%, transparent);
+  backdrop-filter: blur(8px); transition: border-color .3s ease, color .3s ease; }
+.lb-arrow:hover { border-color: var(--accent); color: var(--accent); }
+.lb-arrow.prev { left: 8px; } .lb-arrow.next { right: 8px; }
+
+/* ==================================================================
+   WEB DESIGN PAGE
+   ================================================================== */
+
+/* --- browser-chrome card ---
+   The screenshot is taller than its frame; on hover it scrolls to its
+   own bottom, so each card previews the whole page in place. */
+.browser { border: 1px solid var(--rule); border-radius: 6px; overflow: hidden;
+  background: var(--panel); transition: border-color .4s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
+.browser:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
+.browser-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  border-bottom: 1px solid var(--rule); background: var(--bg); }
+.browser-dots { display: flex; gap: 6px; }
+.browser-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--rule); }
+.browser:hover .browser-dots i:first-child { background: var(--accent); }
+.browser-url { flex: 1; text-align: center; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.browser-view { position: relative; aspect-ratio: 16/11; overflow: hidden; }
+.browser-view img { height: auto; min-height: 100%; object-position: top;
+  transition: transform 3.2s cubic-bezier(.33,0,.2,1), filter .6s ease; }
+.browser:hover .browser-view img { transform: translateY(calc(-100% + 100cqh)); }
+.browser-view { container-type: size; }
+
+.wgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 28px; }
+@media (max-width: 760px) { .wgrid { grid-template-columns: 1fr; } }
+.wcard-cap { display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px; padding: 20px 4px 0; }
+.wcard-cap h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(20px, 2.4vw, 27px);
+  transition: color .3s; }
+.wcard:hover .wcard-cap h3 { color: var(--accent); }
+.wcard-cap p { color: var(--dim); font-size: 14.5px; line-height: 1.6; margin-top: 10px; max-width: 40ch; }
+.tool-badge { flex: 0 0 auto; border: 1px solid var(--rule); border-radius: 100px;
+  padding: 5px 12px; }
+
+/* stack pills */
+.stack-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { border: 1px solid var(--rule); border-radius: 100px; padding: 6px 14px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--dim); transition: border-color .3s ease, color .3s ease; }
+.pill:hover { border-color: var(--accent); color: var(--accent); }
+
+/* external link button */
+.extlink { display: inline-flex; align-items: center; gap: 12px; border-radius: 100px;
+  border: 1px solid var(--accent); color: var(--accent); padding: 13px 24px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
+  text-transform: uppercase; transition: background-color .35s ease, color .35s ease; }
+.extlink:hover { background: var(--accent); color: var(--bg); }
+.extlink[aria-disabled="true"] { border-color: var(--rule); color: var(--dim);
+  pointer-events: none; }
+.extlink .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.extlink:hover .arrow { transform: translate(3px, -3px); }
+
+/* --- design detail screens --- */
+.screens { display: flex; flex-direction: column; gap: 24px; margin-top: 18px; }
+.screen { overflow: hidden; border-radius: 4px; border: 1px solid var(--rule);
+  background: var(--panel); }
+.screen img { will-change: transform; }
+
+/* --- cross-page teaser (home → photography / design) --- */
+.teaser { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+@media (max-width: 760px) { .teaser { grid-template-columns: 1fr; } }
+.teaser a { background: var(--bg); padding: 44px 34px; display: flex;
+  flex-direction: column; gap: 14px; min-height: 240px; justify-content: space-between;
+  transition: background-color .4s ease; }
+.teaser a:hover { background: var(--panel); }
+.teaser h3 { font-weight: 300; letter-spacing: -0.03em; font-size: clamp(26px, 3.4vw, 42px);
+  line-height: 1.05; transition: color .3s; }
+.teaser a:hover h3 { color: var(--accent); }
+.teaser p { color: var(--dim); font-size: 14.5px; line-height: 1.65; max-width: 34ch; }
+.teaser .go { display: inline-flex; align-items: center; gap: 10px; }
+.teaser a:hover .go .arrow { transform: translateX(6px); }
+.teaser .go .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1 !important; transform: none !important; }
   .display .ch { opacity: 1 !important; transform: none !important; filter: none !important; }
   .mast .drawline, .metrics::after { transform: scaleX(1) !important; }
   .shot img, .detail-fig img, .about-portrait img { transform: none !important; }
+  .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
+  .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }
   .card { position: static; }
+  .roll-track { scroll-snap-type: none; }
   .iris-lens { display: none; }
   .cursor { display: none; }
 }

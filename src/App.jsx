@@ -11,6 +11,19 @@ import { TLink, Cursor } from "./ui.jsx";
 import Home from "./pages/Home.jsx";
 import WorkDetail from "./pages/WorkDetail.jsx";
 import About from "./pages/About.jsx";
+import Photography from "./pages/Photography.jsx";
+import PhotoProject from "./pages/PhotoProject.jsx";
+import Design from "./pages/Design.jsx";
+import DesignProject from "./pages/DesignProject.jsx";
+
+/* Primary navigation. `/` matches exactly; the others also light up on
+   their detail pages (/photography/:slug, /design/:slug). */
+const NAV = [
+  { to: "/", label: "Work" },
+  { to: "/photography", label: "Photography" },
+  { to: "/design", label: "Design" },
+  { to: "/about", label: "About" },
+];
 
 /* ==================================================================
    SHELL — persists across route changes. Owns the theme, the smooth
@@ -97,8 +110,15 @@ export default function App() {
           <div className="bar-in">
             <TLink to="/" className="mono brand">{P.name}</TLink>
             <nav className="nav mono" aria-label="Primary">
-              <TLink to="/" aria-current={location.pathname === "/" ? "page" : undefined}>Work</TLink>
-              <TLink to="/about" aria-current={location.pathname === "/about" ? "page" : undefined}>About</TLink>
+              {NAV.map((n) => (
+                <TLink key={n.to} to={n.to}
+                  aria-current={
+                    (n.to === "/" ? location.pathname === "/" : location.pathname.startsWith(n.to))
+                      ? "page" : undefined
+                  }>
+                  {n.label}
+                </TLink>
+              ))}
             </nav>
             <div className="chips" role="group" aria-label="Accent colour">
               {THEMES.map((t) => (
@@ -118,6 +138,10 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/work/:seed" element={<WorkDetail />} />
+          <Route path="/photography" element={<Photography />} />
+          <Route path="/photography/:slug" element={<PhotoProject />} />
+          <Route path="/design" element={<Design />} />
+          <Route path="/design/:slug" element={<DesignProject />} />
           <Route path="/about" element={<About />} />
         </Routes>
       </div>
