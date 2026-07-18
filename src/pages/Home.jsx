@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
-import { P, img, FRAMES, SHEET, TICKER, METRICS, QUOTES, SHOTLIST, prefersReduced } from "../data.js";
+import { P, img, FRAMES, SHEET, TICKER, METRICS, QUOTES, SHOTLIST, WEB_PROJECTS, prefersReduced } from "../data.js";
 import { Reveal, Counter, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
@@ -172,6 +172,76 @@ export default function Home() {
               </figure>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* web design — the other craft, previewed in browser frames */}
+      <section className="sec" id="design">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">Also on the web</div>
+          <div>
+            <Reveal>
+              <h2 style={{ fontWeight: 300, letterSpacing: "-0.03em", lineHeight: 1.04,
+                fontSize: "clamp(26px, 3.6vw, 46px)", marginBottom: 14 }}>
+                The pictures need somewhere to live.
+              </h2>
+              <p style={{ color: "var(--dim)", fontSize: 15, lineHeight: 1.72, maxWidth: "42ch", marginBottom: 36 }}>
+                I design and build the sites too — hover a frame to scroll the whole page.
+              </p>
+            </Reveal>
+            <div className="wgrid">
+              {WEB_PROJECTS.slice(0, 2).map((w, i) => (
+                <Reveal key={w.slug} delay={i * 0.06}>
+                  <TLink to={`/design/${w.slug}`} className="wcard" data-cursor="View"
+                    aria-label={`Open ${w.t}`}>
+                    <div className="browser">
+                      <div className="browser-bar">
+                        <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
+                        <span className="browser-url mono">{w.slug}.com</span>
+                        <span className="mono" style={{ opacity: 0.5 }}>{w.year}</span>
+                      </div>
+                      <div className="browser-view">
+                        <img src={img(w.cover, 1200, reduced ? 825 : 2100)}
+                          alt={`${w.t} — full page`} loading="lazy" />
+                      </div>
+                    </div>
+                    <div className="wcard-cap">
+                      <div>
+                        <h3>{w.t}</h3>
+                        <p>{w.intro}</p>
+                      </div>
+                      <span className="tool-badge mono">{w.tool}</span>
+                    </div>
+                  </TLink>
+                </Reveal>
+              ))}
+            </div>
+            <div style={{ marginTop: 34 }}>
+              <TLink to="/design" className="extlink">
+                All design work <span className="arrow">→</span>
+              </TLink>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* the two halves — split entry into each section */}
+      <section className="sec">
+        <div className="wrap">
+          <Reveal className="teaser">
+            <TLink to="/photography">
+              <span className="mono">Full archive</span>
+              <h3>Photography</h3>
+              <p>Editorial, portrait, landscape and event sets — each one opened as a complete edit.</p>
+              <span className="go mono">Enter the archive <span className="arrow">→</span></span>
+            </TLink>
+            <TLink to="/design">
+              <span className="mono">Design & build</span>
+              <h3>Web design</h3>
+              <p>Sites designed and shipped end to end, with the source file linked on every project.</p>
+              <span className="go mono">See the builds <span className="arrow">→</span></span>
+            </TLink>
+          </Reveal>
         </div>
       </section>
 
