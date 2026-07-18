@@ -29,6 +29,13 @@ static; nothing hits Drive at runtime.
   Google Drive" section. Work: `NN__Title__Location__Year__Role.jpg`;
   Gallery: `NN-anything.jpg`; Portrait: first image by name.
 
+## Production readiness & scaling
+
+See [PRODUCTION.md](PRODUCTION.md) for the high-traffic/scalability notes
+(responsive images, three.js bundle, removing picsum/Google-Fonts runtime deps,
+cache headers, Vercel plan) and the pre-launch gap list (content, SEO, contact
+form, 404, analytics, deploy hook).
+
 ## Not yet built
 
 A separate **private client-delivery** feature (Viraj uploads his clients'
