@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import { P, img, INTRO, FRAMES, SHEET, TICKER, METRICS, QUOTES, SHOTLIST, WEB_PROJECTS, prefersReduced } from "../data.js";
-import { Reveal, Counter, TLink } from "../ui.jsx";
+import { Reveal, Metrics, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 /* Three.js is code-split so the hero text (the LCP) paints first. */
@@ -318,14 +318,7 @@ export default function Home() {
       <section className="sec">
         <div className="wrap sec-grid">
           <div className="sec-label mono">The numbers</div>
-          <Reveal className="metrics">
-            {METRICS.map((m) => (
-              <div className="metric" key={m.k}>
-                <Counter to={m.v} suf={m.s} />
-                <span className="mono">{m.k}</span>
-              </div>
-            ))}
-          </Reveal>
+          <Metrics items={METRICS} />
         </div>
       </section>
 

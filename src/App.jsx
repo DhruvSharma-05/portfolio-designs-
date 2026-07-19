@@ -33,6 +33,7 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const progRef = useRef(null);
+  const barRef = useRef(null);
   const irisRef = useRef(null);
   const lenisRef = useRef(null);
   const busy = useRef(false);
@@ -55,6 +56,10 @@ export default function App() {
       start: 0, end: "max",
       onUpdate: (self) => {
         if (progRef.current) progRef.current.style.width = `${self.progress * 100}%`;
+        /* Bar hides while scrolling down and comes straight back on the
+           way up. Always shown near the top so it never starts hidden. */
+        const bar = barRef.current;
+        if (bar) bar.classList.toggle("hide", self.scroll() > 140 && self.direction === 1);
       },
     });
     return () => {
@@ -72,6 +77,9 @@ export default function App() {
       navigate(to);
       lenisRef.current?.scrollTo(0, { immediate: true });
       window.scrollTo(0, 0);
+      // a programmatic jump to the top may not emit a scroll update, so
+      // reveal the bar explicitly on every navigation
+      barRef.current?.classList.remove("hide");
     };
     if (reduced || !irisRef.current) { finish(); return; }
     if (busy.current) return;
@@ -104,7 +112,7 @@ export default function App() {
         </div>
 
         {/* masthead bar */}
-        <div className="bar">
+        <div className="bar" ref={barRef}>
           <div className="bar-in">
             <TLink to="/" className="mono brand">{P.name}</TLink>
             <nav className="nav mono" aria-label="Primary">
