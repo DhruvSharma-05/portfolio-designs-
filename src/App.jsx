@@ -3,9 +3,8 @@ import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion } from "motion/react";
 import Lenis from "lenis";
-import { CSS, THEMES, P, prefersReduced } from "./data.js";
+import { CSS, THEME, P, prefersReduced } from "./data.js";
 import { AppProvider } from "./context.js";
 import { TLink, Cursor } from "./ui.jsx";
 import Home from "./pages/Home.jsx";
@@ -26,11 +25,10 @@ const NAV = [
 ];
 
 /* ==================================================================
-   SHELL — persists across route changes. Owns the theme, the smooth
-   scroll + reading-progress bar, and the aperture page transition.
+   SHELL — persists across route changes. Owns the smooth scroll +
+   reading-progress bar, and the aperture page transition.
    ================================================================== */
 export default function App() {
-  const [theme, setTheme] = useState(THEMES[0]);
   const [reduced] = useState(prefersReduced);
   const navigate = useNavigate();
   const location = useLocation();
@@ -88,12 +86,12 @@ export default function App() {
   }, [navigate, location.pathname, reduced]);
 
   const vars = {
-    "--bg": theme.bg, "--panel": theme.panel, "--ink": theme.ink, "--dim": theme.dim,
-    "--rule": theme.rule, "--accent": theme.accent, "--filter": theme.filter,
+    "--bg": THEME.bg, "--panel": THEME.panel, "--ink": THEME.ink, "--dim": THEME.dim,
+    "--rule": THEME.rule, "--accent": THEME.accent, "--filter": THEME.filter,
   };
 
   return (
-    <AppProvider value={{ theme, setTheme, go }}>
+    <AppProvider value={{ theme: THEME, go }}>
       <div className="pf" style={vars}>
         <style>{CSS}</style>
 
@@ -105,7 +103,7 @@ export default function App() {
           <div className="iris-lens" ref={irisRef} />
         </div>
 
-        {/* bar + accent switcher */}
+        {/* masthead bar */}
         <div className="bar">
           <div className="bar-in">
             <TLink to="/" className="mono brand">{P.name}</TLink>
@@ -120,17 +118,7 @@ export default function App() {
                 </TLink>
               ))}
             </nav>
-            <div className="chips" role="group" aria-label="Accent colour">
-              {THEMES.map((t) => (
-                <motion.button key={t.id} className="chip" aria-pressed={t.id === theme.id}
-                  aria-label={t.name} title={t.name} onClick={() => setTheme(t)}
-                  whileHover={{ scale: 1.25 }} whileTap={{ scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}>
-                  <i style={{ background: t.accent }} />
-                </motion.button>
-              ))}
-            </div>
-            <div className="themename mono">{theme.name}</div>
+            <span className="mono barmeta">{P.city} — Booking 2026</span>
           </div>
           <div className="prog" ref={progRef} style={{ width: "0%" }} />
         </div>

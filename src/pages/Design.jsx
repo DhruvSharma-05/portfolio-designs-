@@ -32,7 +32,7 @@ export default function Design() {
       {/* ---------- masthead ---------- */}
       <header>
         <div className="mono" style={{ marginBottom: 26 }}>
-          Web design & build — {P.city}
+          Web design & build by {P.photographer} — {P.city}
         </div>
         <h1 className="display">Sites for<br />people who<br />make things.</h1>
         <div className="drawline" style={{ height: 1, background: "var(--accent)", marginTop: 40 }} />
@@ -112,7 +112,7 @@ export default function Design() {
         <Reveal className="teaser">
           <TLink to="/photography">
             <span className="mono">The other half</span>
-            <h3>Photography</h3>
+            <h3>{P.photoBrand}</h3>
             <p>Editorial, portrait and event sets — the full edits.</p>
             <span className="go mono">See the projects <span className="arrow">→</span></span>
           </TLink>

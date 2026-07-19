@@ -14,11 +14,53 @@ export const prefersReduced = () =>
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export const P = {
-  name: "Crafted & Captured",
-  photographer: "Viraj",
+  name: "Crafted & Captured",   // the studio, shown in the masthead bar
+  photographer: "Viraj",        // the person the home page is about
+  photoBrand: "Lenzofviraj",    // the photography practice — /photography
+  designBrand: "Design & Build",// the web practice — /design
   role: "Photographer & Web Designer",
   email: "hello@yourstudio.com",
   city: "Your City",
+};
+
+/* ==================================================================
+   INTRO — the home page introduces the person, not one of the crafts.
+
+   Viraj runs two practices in parallel: photography as Lenzofviraj,
+   and web design & build. A visitor landing cold should learn who he
+   is, what he does, and what they walk away with — then choose a
+   door. Each craft keeps its own page.
+
+   PLACEHOLDER COPY: replace with Viraj's own words.
+   ================================================================== */
+export const INTRO = {
+  lead: "Viraj makes the pictures, then builds the place they live.",
+  body: [
+    "Two practices, one pair of hands. Under Lenzofviraj he shoots editorial, portraits and events; under design & build he draws and ships the sites those pictures end up on.",
+    "Most people hire one or the other. Hiring both means the shoot is planned around the layout and the layout is drawn around the shoot — so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
+  ],
+  /* the two doors, mirrored in the hero strip */
+  does: [
+    {
+      k: "Photography",
+      brand: "Lenzofviraj",
+      to: "/photography",
+      v: "Editorial, portrait, event and landscape sets. Shot, selected and graded as one body of work.",
+    },
+    {
+      k: "Web design & build",
+      brand: "Design & Build",
+      to: "/design",
+      v: "Sites designed and shipped end to end — Figma or Canva through to a live, fast, editable page.",
+    },
+  ],
+  /* what a client actually walks away with */
+  offer: [
+    { k: "A finished set", v: "Graded, consistent, delivered in web and print sizes. Not a folder of raws." },
+    { k: "A site that ships", v: "Designed, built and deployed — not a mockup you then have to find a developer for." },
+    { k: "One point of contact", v: "The person who shot it is the person who built it. No handover, no translation loss." },
+    { k: "Something you can edit", v: "You leave with the source file and a way to change the words yourself." },
+  ],
 };
 
 /* --- real photos (from Google Drive sync) ---------------------------
@@ -40,8 +82,7 @@ export const img = (s, w = 1200, h = 800) => {
   return `https://picsum.photos/seed/${s}/${w}/${h}`;
 };
 
-/* Shared near-black base. Themes differ ONLY by accent — the room stays
-   dark, one light changes. */
+/* Near-black base. Dark, quiet room; the work is the only bright thing. */
 const BASE = {
   bg: "#0A0A0B",
   panel: "#111114",
@@ -51,14 +92,10 @@ const BASE = {
   filter: "saturate(0.92) brightness(0.96)",
 };
 
-export const THEMES = [
-  { id: "mono", name: "Mono", accent: "#E4E4E7" },
-  { id: "amber", name: "Amber", accent: "#E0A93B" },
-  { id: "cyan", name: "Cyan", accent: "#38BDF8" },
-  { id: "violet", name: "Violet", accent: "#A78BFA" },
-  { id: "rose", name: "Rose", accent: "#F471A0" },
-  { id: "lime", name: "Lime", accent: "#A3E635" },
-].map((t) => ({ ...BASE, ...t }));
+/* One fixed palette. The accent switcher was removed at the client's
+   request, so the accent is a constant — every var(--accent) rule in
+   the CSS keeps working, it just never changes. */
+export const THEME = { ...BASE, accent: "#E4E4E7" };
 
 const FRAMES_FALLBACK = [
   { seed: "pf-01", t: "Selected Work 01", loc: "Location, XX", exif: "35mm · f/8 · 1/500", kind: "Photography",
@@ -337,20 +374,16 @@ export const CSS = `
 /* --- appear (GSAP-driven; see Reveal) --- */
 .rv { will-change: opacity, transform; }
 
-/* --- bar + accent switcher --- */
+/* --- bar --- */
 .bar { position: sticky; top: 0; z-index: 80;
   background: color-mix(in srgb, var(--bg) 80%, transparent);
   backdrop-filter: blur(16px); border-bottom: 1px solid var(--rule); }
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
-.chips { display: flex; gap: 8px; align-items: center; }
-.chip { width: 14px; height: 14px; border-radius: 50%; position: relative;
-  border: 1px solid var(--rule); display: grid; place-items: center; }
-.chip i { display: block; width: 10px; height: 10px; border-radius: 50%; }
-.chip[aria-pressed="true"] { box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--accent); }
-.themename { min-width: 92px; text-align: right; color: var(--accent); }
-@media (max-width: 640px) { .themename { display: none; } }
+/* sits where the accent switcher used to be */
+.barmeta { text-align: right; }
+@media (max-width: 860px) { .barmeta { display: none; } }
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
@@ -586,7 +619,13 @@ export const CSS = `
 .about-body p + p { margin-top: 20px; }
 .approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
   background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
-.approach div { background: var(--bg); padding: 30px 26px; }
+/* panels are plain <div> on the about page and <a> on the home page,
+   where each one is a door into that practice */
+.approach div, .approach a { background: var(--bg); padding: 30px 26px; display: block;
+  transition: background-color .4s ease; }
+.approach a:hover { background: var(--panel); }
+.approach a:hover h3 { color: var(--accent); }
+.approach h3 { transition: color .3s ease; }
 .approach h3 { font-weight: 400; letter-spacing: -0.02em; font-size: 19px; margin-bottom: 12px; }
 .approach p { color: var(--dim); font-size: 14.5px; line-height: 1.6; }
 .timeline { margin-top: 4vh; }
@@ -783,6 +822,33 @@ export const CSS = `
 .teaser .go { display: inline-flex; align-items: center; gap: 10px; }
 .teaser a:hover .go .arrow { transform: translateX(6px); }
 .teaser .go .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+
+/* --- masthead standfirst + the two practices ---
+   The home page introduces the person, so the masthead has to state
+   both crafts above the fold. The standfirst says it in words; the
+   two doors below let a visitor pick a practice immediately. */
+.standfirst { font-weight: 300; letter-spacing: -0.02em;
+  font-size: clamp(18px, 2.2vw, 27px); line-height: 1.4;
+  max-width: 36ch; margin-top: 24px; }
+.standfirst strong { font-weight: 400; color: var(--accent); }
+.standfirst i { font-style: normal; color: var(--dim); }
+
+.disciplines { display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--rule); border: 1px solid var(--rule); border-radius: 4px;
+  overflow: hidden; margin-top: 42px; max-width: 760px; }
+@media (max-width: 640px) { .disciplines { grid-template-columns: 1fr; } }
+.disc { position: relative; background: var(--bg); padding: 24px 26px;
+  display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.disc::before { content: ""; position: absolute; inset: 0; background: var(--accent);
+  transform: translateY(101%); transition: transform .5s cubic-bezier(.76,0,.24,1); }
+.disc:hover::before { transform: translateY(0); }
+.disc > * { position: relative; z-index: 1; transition: color .35s ease .05s; }
+.disc strong { font-weight: 400; letter-spacing: -0.02em;
+  font-size: clamp(21px, 2.5vw, 30px); }
+.disc .go { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; }
+.disc .go .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.disc:hover .go .arrow { transform: translateX(6px); }
+.disc:hover strong, .disc:hover .mono { color: var(--bg); }
 
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
