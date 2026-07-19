@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, lazy, Suspense } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -14,6 +14,9 @@ import Photography from "./pages/Photography.jsx";
 import PhotoProject from "./pages/PhotoProject.jsx";
 import Design from "./pages/Design.jsx";
 import DesignProject from "./pages/DesignProject.jsx";
+
+/* The admin is code-split: none of it ships to normal visitors. */
+const Admin = lazy(() => import("./pages/Admin.jsx"));
 
 /* Primary navigation. `/` matches exactly; the others also light up on
    their detail pages (/photography/:slug, /design/:slug). */
@@ -32,6 +35,9 @@ export default function App() {
   const [reduced] = useState(prefersReduced);
   const navigate = useNavigate();
   const location = useLocation();
+  /* The admin is a tool, not part of the portfolio: no public nav, and
+     no custom cursor (it hides the caret and makes forms miserable). */
+  const isAdmin = location.pathname.startsWith("/admin");
   const progRef = useRef(null);
   const barRef = useRef(null);
   const irisRef = useRef(null);
@@ -104,7 +110,7 @@ export default function App() {
         <style>{CSS}</style>
 
         <a className="skip" href="#main">Skip to content</a>
-        <Cursor />
+        {!isAdmin && <Cursor />}
 
         {/* aperture transition overlay */}
         <div className="iris" aria-hidden="true">
@@ -112,7 +118,7 @@ export default function App() {
         </div>
 
         {/* masthead bar */}
-        <div className="bar" ref={barRef}>
+        <div className="bar" ref={barRef} hidden={isAdmin}>
           <div className="bar-in">
             <TLink to="/" className="mono brand">{P.name}</TLink>
             <nav className="nav mono" aria-label="Primary">
@@ -139,6 +145,11 @@ export default function App() {
           <Route path="/design" element={<Design />} />
           <Route path="/design/:slug" element={<DesignProject />} />
           <Route path="/about" element={<About />} />
+          <Route path="/admin" element={
+            <Suspense fallback={<main className="admin wrap"><p className="mono">Loading…</p></main>}>
+              <Admin />
+            </Suspense>
+          } />
         </Routes>
       </div>
     </AppProvider>

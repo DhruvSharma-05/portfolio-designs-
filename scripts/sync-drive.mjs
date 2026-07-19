@@ -194,7 +194,11 @@ async function main() {
     : {};
   const nextCache = {};
   const usedSeeds = new Set();
-  const manifest = { generatedAt: new Date().toISOString(), work: [], gallery: [], portrait: null };
+  const manifest = {
+    generatedAt: new Date().toISOString(),
+    work: [], gallery: [], portrait: null,
+    projectPhotos: [], photoProjects: [], webProjects: [],
+  };
 
   for (const { key, env } of ROLES) {
     const folderId = process.env[env];
@@ -275,20 +279,126 @@ async function main() {
     else manifest[key] = entries;
   }
 
+  // Projects authored in /admin, stored as content.json in the same Drive.
+  await syncProjects(drive, cache, nextCache, usedSeeds, manifest);
+
   // Prune output files whose source is gone.
   await pruneOrphans(usedSeeds);
 
   await writeFile(MANIFEST, JSON.stringify(manifest, null, 2) + "\n");
   await writeFile(CACHE, JSON.stringify(nextCache, null, 2) + "\n");
   log(
-    `done — work:${manifest.work.length} gallery:${manifest.gallery.length} portrait:${manifest.portrait ? 1 : 0}`,
+    `done — work:${manifest.work.length} gallery:${manifest.gallery.length}` +
+      ` portrait:${manifest.portrait ? 1 : 0}` +
+      ` photoProjects:${manifest.photoProjects.length} webProjects:${manifest.webProjects.length}`,
   );
+}
+
+/* ==================================================================
+   ADMIN PROJECTS
+
+   /admin writes content.json into Drive: the projects, their words, and
+   the Drive file IDs of the photos in each. Here we resolve those IDs
+   into optimised local WebP exactly like the folder roles above, so the
+   published site never touches Drive at runtime.
+
+   Photos are keyed by Drive file ID (`p-<id>`), which is stable across
+   renames — so re-titling a file in Drive doesn't re-download it or
+   break a project that points at it.
+   ================================================================== */
+async function syncProjects(drive, cache, nextCache, usedSeeds, manifest) {
+  const fileId = process.env.DRIVE_CONTENT_FILE_ID;
+  if (!fileId) {
+    log("no DRIVE_CONTENT_FILE_ID — skipping admin projects");
+    return;
+  }
+
+  let content;
+  try {
+    const text = (await downloadBytes(drive, fileId)).toString("utf8").trim();
+    content = text ? JSON.parse(text) : null;
+  } catch (e) {
+    warn("Could not read content.json, keeping existing projects:", e.message);
+    return;
+  }
+  if (!content) return;
+
+  const photoProjects = (content.photoProjects || []).filter((p) => !p.hidden);
+  const webProjects = (content.webProjects || []).filter((w) => !w.hidden);
+
+  // every Drive photo any project points at, de-duplicated
+  const ids = new Set();
+  for (const p of photoProjects) for (const id of p.photos || []) ids.add(id);
+  for (const w of webProjects) {
+    if (w.cover) ids.add(w.cover);
+    for (const id of w.shots || []) ids.add(id);
+  }
+
+  const resolved = new Map();   // drive id → { seed, sm, lg, w, h }
+  for (const id of ids) {
+    const seed = `p-${id}`;
+    usedSeeds.add(`projects/${seed}`);
+
+    let meta;
+    try {
+      meta = await drive.files.get({ fileId: id, fields: "id, name, md5Checksum" });
+    } catch (e) {
+      warn(`project photo ${id} is unreadable, skipping:`, e.message);
+      continue;
+    }
+
+    const cacheKey = `projects/${id}`;
+    const stamp = meta.data.md5Checksum || meta.data.name;
+    const prev = cache[cacheKey];
+    const outputsExist =
+      prev?.variants &&
+      Object.values(prev.variants)
+        .filter((v) => typeof v === "string")
+        .every((rel) => existsSync(path.join(ROOT, "public", rel.replace(/^\//, ""))));
+
+    let variants;
+    if (prev && prev.stamp === stamp && outputsExist) {
+      variants = prev.variants;
+      log(`skip (cached) projects/${meta.data.name}`);
+    } else {
+      log(`fetch projects/${meta.data.name}`);
+      try {
+        variants = await renderVariants(await downloadBytes(drive, id), "projects", seed);
+      } catch (e) {
+        warn(`could not process ${meta.data.name}:`, e.message);
+        continue;
+      }
+    }
+
+    nextCache[cacheKey] = { seed, stamp, variants };
+    resolved.set(id, { seed, ...variants });
+  }
+
+  const keep = (arr) => (arr || []).filter((id) => resolved.has(id)).map((id) => `p-${id}`);
+
+  manifest.projectPhotos = [...resolved.values()].map((v) => ({
+    seed: v.seed, sm: v.sm, lg: v.lg, w: v.w, h: v.h,
+  }));
+
+  // A project with no usable photos would render as an empty page, so
+  // it is dropped rather than published broken.
+  manifest.photoProjects = photoProjects
+    .map((p) => ({ ...p, photos: keep(p.photos) }))
+    .filter((p) => p.slug && p.t && p.photos.length);
+
+  manifest.webProjects = webProjects
+    .map((w) => ({
+      ...w,
+      cover: resolved.has(w.cover) ? `p-${w.cover}` : keep(w.shots)[0] || "",
+      shots: keep(w.shots),
+    }))
+    .filter((w) => w.slug && w.t && w.cover);
 }
 
 /* Remove WebP outputs under public/photos that no longer correspond to
    a synced seed (photos deleted/renamed in Drive). */
 async function pruneOrphans(usedSeeds) {
-  for (const { key } of ROLES) {
+  for (const { key } of [...ROLES, { key: "projects" }]) {
     const dir = path.join(PUBLIC_PHOTOS, key);
     if (!existsSync(dir)) continue;
     let names;

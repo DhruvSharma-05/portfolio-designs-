@@ -71,6 +71,8 @@ export const INTRO = {
 const PHOTOS = new Map();
 for (const p of manifest.work || []) PHOTOS.set(p.seed, p);
 for (const p of manifest.gallery || []) PHOTOS.set(p.seed, p);
+/* photos placed into projects from /admin — keyed `p-<driveFileId>` */
+for (const p of manifest.projectPhotos || []) PHOTOS.set(p.seed, p);
 if (manifest.portrait) PHOTOS.set(manifest.portrait.seed, manifest.portrait);
 
 /* img(seed, w, h): resolves a seed to a local optimized image. Picks the
@@ -204,7 +206,13 @@ function withSyncedPhotos(projects) {
   });
 }
 
-export const PHOTO_PROJECTS = withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
+/* Projects made in /admin win outright — they are the real content.
+   Failing that we deal synced photos across the placeholder projects,
+   and failing THAT the placeholders stand alone, so a fresh clone with
+   no credentials still renders a complete site. */
+export const PHOTO_PROJECTS = manifest.photoProjects?.length
+  ? manifest.photoProjects
+  : withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
 
 /* Hero slideshow: the opening frame of each project, so the hero doubles
    as a table of contents. */
@@ -225,7 +233,7 @@ export const FEATURED = PHOTO_PROJECTS.map((p) => ({
    so a project without a public link still looks intentional.
    ================================================================== */
 
-export const WEB_PROJECTS = [
+const WEB_PROJECTS_FALLBACK = [
   {
     slug: "atelier-studio",
     t: "Atelier Studio",
@@ -287,6 +295,12 @@ export const WEB_PROJECTS = [
     ],
   },
 ];
+
+/* Same precedence as the photo projects: /admin content first, the
+   placeholder set only when nothing has been published yet. */
+export const WEB_PROJECTS = manifest.webProjects?.length
+  ? manifest.webProjects
+  : WEB_PROJECTS_FALLBACK;
 
 export const METRICS = [
   { v: 68, s: "", k: "Projects delivered" },
@@ -856,6 +870,124 @@ export const CSS = `
 .disc .go .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
 .disc:hover .go .arrow { transform: translateX(6px); }
 .disc:hover strong, .disc:hover .mono { color: var(--bg); }
+
+/* ==================================================================
+   ADMIN — /admin. Same palette as the site so it feels like one thing,
+   but plainer: forms want clarity, not atmosphere.
+   ================================================================== */
+.admin { padding: 6vh 0 14vh; max-width: 1100px; }
+.admin-top { display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 20px; flex-wrap: wrap; padding-bottom: 18px; margin-bottom: 34px;
+  border-bottom: 1px solid var(--rule); }
+.admin-top h1 { font-weight: 300; letter-spacing: -0.03em; font-size: clamp(30px, 5vw, 52px);
+  margin-top: 10px; }
+.admin-top a:hover { color: var(--accent); }
+
+.admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px;
+  overflow: hidden; margin-bottom: 26px; }
+.admin-stat { background: var(--bg); padding: 22px 20px; }
+.admin-stat b { display: block; font-weight: 300; letter-spacing: -0.03em;
+  font-size: clamp(28px, 3.4vw, 42px); line-height: 1; font-variant-numeric: tabular-nums; }
+.admin-stat span { display: block; margin-top: 10px; }
+
+.admin-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.btn { border: 1px solid var(--rule); border-radius: 100px; padding: 11px 22px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink);
+  transition: border-color .3s ease, background-color .3s ease, color .3s ease; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: .45; pointer-events: none; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.btn.primary:hover { filter: brightness(1.12); color: var(--bg); }
+.btn.ghost { border-color: transparent; color: var(--dim); }
+.btn.ghost:hover { color: var(--ink); }
+.btn.danger:hover { border-color: #F4595E; color: #F4595E; }
+.btn.small { padding: 8px 16px; font-size: 10px; }
+.mini { width: 30px; height: 30px; border: 1px solid var(--rule); border-radius: 4px;
+  display: grid; place-items: center; font-size: 12px; color: var(--dim);
+  transition: border-color .25s ease, color .25s ease; }
+.mini:hover { border-color: var(--accent); color: var(--accent); }
+.mini:disabled { opacity: .3; pointer-events: none; }
+.mini.danger:hover { border-color: #F4595E; color: #F4595E; }
+
+.admin-msg { padding: 12px 16px; border: 1px solid var(--rule); border-radius: 4px;
+  margin-bottom: 22px; color: var(--accent); }
+.admin-msg.bad { color: #F4595E; border-color: color-mix(in srgb, #F4595E 45%, var(--rule)); }
+.admin-msg.preview { color: #E0A93B; border-color: color-mix(in srgb, #E0A93B 45%, var(--rule));
+  background: color-mix(in srgb, #E0A93B 8%, transparent); }
+.admin-empty { padding: 22px 0; color: var(--dim); }
+
+.admin-sec { margin-top: 44px; }
+.admin-sec-head { display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 16px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+.admin-sec-head h2 { font-weight: 400; letter-spacing: -0.02em; font-size: 24px; }
+.admin-sec-head span { display: block; margin-top: 6px; }
+
+.admin-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 16px;
+  align-items: center; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.admin-row .num { color: var(--dim); }
+.admin-row-main strong { font-weight: 400; letter-spacing: -0.02em; font-size: 18px; display: block; }
+.admin-row-main .dim { color: var(--dim); font-style: normal; }
+.admin-row-main span { display: block; margin-top: 5px; }
+.admin-row-acts { display: flex; gap: 8px; align-items: center; }
+@media (max-width: 640px) {
+  .admin-row { grid-template-columns: 1fr; gap: 10px; }
+  .admin-row-acts { justify-content: flex-start; }
+}
+
+/* --- forms --- */
+.admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 30px; }
+@media (max-width: 720px) { .admin-form { grid-template-columns: 1fr; } }
+.admin-field { display: flex; flex-direction: column; gap: 8px; }
+.admin-field.wide { grid-column: 1 / -1; }
+.admin-field em { font-style: normal; font-size: 12.5px; color: var(--dim); }
+.admin-field input, .admin-field textarea, .admin-login input {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 4px;
+  color: var(--ink); font: inherit; font-size: 15px; padding: 12px 14px; width: 100%;
+  transition: border-color .25s ease; }
+.admin-field input:focus, .admin-field textarea:focus, .admin-login input:focus {
+  border-color: var(--accent); outline: none; }
+.admin-field textarea { resize: vertical; line-height: 1.6; }
+.admin-check { display: flex; align-items: center; gap: 10px; color: var(--dim); font-size: 14.5px; }
+.admin-check input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+.admin-login { max-width: 340px; display: flex; flex-direction: column; gap: 12px; margin-top: 8vh; }
+
+/* --- chosen pictures --- */
+.admin-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px; margin-top: 20px; }
+.admin-thumb { border: 1px solid var(--rule); border-radius: 4px; overflow: hidden;
+  background: var(--panel); }
+.admin-thumb img { aspect-ratio: 4/3; }
+.admin-thumb figcaption { display: flex; align-items: center; gap: 6px; padding: 8px;
+  justify-content: space-between; }
+
+/* --- Drive picker --- */
+.admin-picker { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,.72);
+  display: grid; place-items: center; padding: 24px; }
+.admin-picker-in { background: var(--bg); border: 1px solid var(--rule); border-radius: 6px;
+  width: min(1100px, 100%); height: min(80vh, 800px); display: flex; flex-direction: column;
+  overflow: hidden; }
+.admin-picker-top { display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--rule); }
+.admin-picker-body { display: grid; grid-template-columns: 220px 1fr; flex: 1; min-height: 0; }
+@media (max-width: 700px) { .admin-picker-body { grid-template-columns: 1fr; } .admin-folders { display: none; } }
+.admin-folders { border-right: 1px solid var(--rule); overflow-y: auto; padding: 12px; }
+.fold { display: block; width: 100%; text-align: left; padding: 9px 12px; border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .08em;
+  color: var(--dim); transition: background-color .25s ease, color .25s ease; }
+.fold:hover { background: var(--panel); color: var(--ink); }
+.fold.on { background: var(--accent); color: var(--bg); }
+.admin-grid { overflow-y: auto; padding: 16px; display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; align-content: start; }
+.pickfr { position: relative; border: 1px solid var(--rule); border-radius: 4px;
+  overflow: hidden; aspect-ratio: 1; transition: border-color .25s ease; }
+.pickfr:hover { border-color: var(--accent); }
+.pickfr.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.pickfr .badge { position: absolute; right: 6px; top: 6px; background: var(--accent);
+  color: var(--bg); border-radius: 100px; min-width: 22px; height: 22px; display: grid;
+  place-items: center; padding: 0 6px; font-size: 10px; }
 
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
