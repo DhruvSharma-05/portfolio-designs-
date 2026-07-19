@@ -40,13 +40,22 @@ export const img = (s, w = 1200, h = 800) => {
   return `https://picsum.photos/seed/${s}/${w}/${h}`;
 };
 
+/* ratio(seed, fw, fh): CSS aspect-ratio for a seed — the synced photo's
+   real dimensions when the manifest has them, the placeholder's requested
+   size otherwise. Lets free-flowing grids reserve space before the image
+   loads, so lazy loading doesn't shift the layout. */
+export const ratio = (s, fw = 3, fh = 2) => {
+  const p = PHOTOS.get(s);
+  return p?.w && p?.h ? `${p.w} / ${p.h}` : `${fw} / ${fh}`;
+};
+
 /* Shared near-black base. Themes differ ONLY by accent — the room stays
    dark, one light changes. */
 const BASE = {
   bg: "#0A0A0B",
   panel: "#111114",
   ink: "#ECECEC",
-  dim: "#71717A",
+  dim: "#82828B",
   rule: "#1E1E22",
   filter: "saturate(0.92) brightness(0.96)",
 };
@@ -344,11 +353,15 @@ export const CSS = `
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
-.chips { display: flex; gap: 8px; align-items: center; }
-.chip { width: 14px; height: 14px; border-radius: 50%; position: relative;
-  border: 1px solid var(--rule); display: grid; place-items: center; }
-.chip i { display: block; width: 10px; height: 10px; border-radius: 50%; }
-.chip[aria-pressed="true"] { box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--accent); }
+/* Each chip is a 30px tap target; the 14px ring it draws is the visual.
+   (44px targets won't fit the bar — 30px is the honest compromise.) */
+.chips { display: flex; gap: 2px; align-items: center; }
+.chip { width: 30px; height: 30px; border-radius: 50%; position: relative;
+  display: grid; place-items: center; }
+.chip::before { content: ""; position: absolute; inset: 0; margin: auto;
+  width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--rule); }
+.chip i { display: block; width: 10px; height: 10px; border-radius: 50%; position: relative; }
+.chip[aria-pressed="true"]::before { box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--accent); }
 .themename { min-width: 92px; text-align: right; color: var(--accent); }
 @media (max-width: 640px) { .themename { display: none; } }
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
@@ -501,9 +514,12 @@ export const CSS = `
 .q p { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(21px, 2.7vw, 32px);
   line-height: 1.35; max-width: 24ch; }
 .q footer { margin-top: 22px; }
-.dots { display: flex; gap: 8px; margin-top: 28px; }
-.dot { width: 26px; height: 2px; background: var(--rule); transition: background-color .4s; }
-.dot.on { background: var(--accent); }
+/* Each dot is a 26px-tall tap target; the 2px bar centred in it is the visual. */
+.dots { display: flex; gap: 8px; margin-top: 16px; }
+.dot { width: 26px; height: 26px; position: relative; }
+.dot::before { content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  margin-top: -1px; height: 2px; background: var(--rule); transition: background-color .4s; }
+.dot.on::before { background: var(--accent); }
 
 /* --- end --- */
 .end { padding: 14vh 0 44px; border-top: 1px solid var(--rule); }
@@ -641,10 +657,11 @@ export const CSS = `
 /* tick rail — one bar per featured project, the active one fills with
    the autoplay timer */
 .ticks { display: flex; gap: 10px; align-items: center; }
-.tick-btn { width: 54px; height: 2px; background: var(--rule); position: relative;
-  overflow: hidden; }
-.tick-btn i { position: absolute; inset: 0; background: var(--accent);
-  transform: scaleX(0); transform-origin: left; }
+.tick-btn { width: 54px; height: 26px; position: relative; }
+.tick-btn::before { content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  margin-top: -1px; height: 2px; background: var(--rule); }
+.tick-btn i { position: absolute; left: 0; right: 0; top: 50%; margin-top: -1px;
+  height: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; }
 .tick-btn[aria-current="true"] i { animation: tickFill 5.4s linear forwards; }
 @keyframes tickFill { to { transform: scaleX(1); } }
 .tick-btn:hover i { transform: scaleX(1); opacity: .4; animation: none; }
@@ -693,7 +710,7 @@ export const CSS = `
   position: relative; background: var(--panel); }
 .roll-fr img { pointer-events: none; }
 .roll-nav { display: flex; gap: 10px; margin-top: 4px; }
-.roll-btn { width: 42px; height: 42px; border: 1px solid var(--rule); border-radius: 50%;
+.roll-btn { width: 44px; height: 44px; border: 1px solid var(--rule); border-radius: 50%;
   display: grid; place-items: center; transition: border-color .3s ease, color .3s ease; }
 .roll-btn:hover { border-color: var(--accent); color: var(--accent); }
 @media (max-width: 700px) { .roll-fr { width: 84vw; } }
@@ -707,7 +724,8 @@ export const CSS = `
   object-fit: contain; border-radius: 3px; }
 .lb-foot { display: flex; justify-content: center; gap: 8px; }
 .lb-x { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
-  text-transform: uppercase; transition: color .3s; }
+  text-transform: uppercase; transition: color .3s;
+  padding: 14px; margin: -14px; } /* bigger tap target, no layout shift */
 .lb-x:hover { color: var(--accent); }
 .lb-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
   width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;

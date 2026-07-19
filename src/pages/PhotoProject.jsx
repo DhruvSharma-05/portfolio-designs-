@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
-import { PHOTO_PROJECTS, img, prefersReduced } from "../data.js";
+import { PHOTO_PROJECTS, img, ratio, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
@@ -100,6 +100,7 @@ export default function PhotoProject() {
             {p.photos.map((s, n) => (
               <figure key={s + n} onClick={() => setLb(n)} data-cursor="Expand"
                 role="button" tabIndex={0} aria-label={`Open frame ${n + 1}`}
+                style={{ aspectRatio: ratio(s, 900, n % 3 === 1 ? 1200 : 700) }}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLb(n); } }}>
                 <span className="idx mono">{String(n + 1).padStart(2, "0")}</span>
                 <img src={img(s, 900, n % 3 === 1 ? 1200 : 700)} alt={`${p.t}, frame ${n + 1}`} loading="lazy" />
@@ -182,19 +183,33 @@ function Roll({ photos, title, onOpen }) {
 
 /* ---------------- lightbox slideshow ----------------
    Full-screen viewer with keyboard control (← → Esc) and dots. Locks
-   page scroll while open so the page behind doesn't drift. */
+   page scroll while open so the page behind doesn't drift. Focus moves
+   to the Close button on open, Tab cycles inside the dialog, and focus
+   returns to the frame that opened it on close. */
 function Lightbox({ photos, title, index, setIndex, reduced }) {
   const close = useCallback(() => setIndex(-1), [setIndex]);
   const shift = useCallback(
     (d) => setIndex((n) => (n + d + photos.length) % photos.length),
     [setIndex, photos.length],
   );
+  const boxRef = useRef(null);
 
   useEffect(() => {
+    const opener = document.activeElement;
+    boxRef.current?.querySelector(".lb-x")?.focus();
     const key = (e) => {
       if (e.key === "Escape") close();
       if (e.key === "ArrowRight") shift(1);
       if (e.key === "ArrowLeft") shift(-1);
+      if (e.key === "Tab") {
+        const items = boxRef.current?.querySelectorAll("button");
+        if (!items?.length) return;
+        const first = items[0], last = items[items.length - 1];
+        const active = document.activeElement;
+        if (!boxRef.current.contains(active)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+      }
     };
     window.addEventListener("keydown", key);
     const prevOverflow = document.documentElement.style.overflow;
@@ -202,11 +217,12 @@ function Lightbox({ photos, title, index, setIndex, reduced }) {
     return () => {
       window.removeEventListener("keydown", key);
       document.documentElement.style.overflow = prevOverflow;
+      if (opener instanceof HTMLElement && document.contains(opener)) opener.focus();
     };
   }, [close, shift]);
 
   return (
-    <motion.div className="lb" role="dialog" aria-modal="true" aria-label={`${title} — frame viewer`}
+    <motion.div className="lb" ref={boxRef} role="dialog" aria-modal="true" aria-label={`${title} — frame viewer`}
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       transition={{ duration: reduced ? 0 : 0.3 }}>
       <div className="lb-bar">
@@ -230,6 +246,7 @@ function Lightbox({ photos, title, index, setIndex, reduced }) {
       <div className="lb-foot">
         {photos.map((s, n) => (
           <button key={s + n} className={`dot ${n === index ? "on" : ""}`}
+            aria-current={n === index || undefined}
             onClick={() => setIndex(n)} aria-label={`Frame ${n + 1}`} />
         ))}
       </div>
