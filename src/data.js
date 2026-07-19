@@ -989,6 +989,65 @@ export const CSS = `
   color: var(--bg); border-radius: 100px; min-width: 22px; height: 22px; display: grid;
   place-items: center; padding: 0 6px; font-size: 10px; }
 
+/* ==================================================================
+   CLIENT AREA — /client. The plainest page on the site: a client here
+   wants their photos, not an experience.
+   ================================================================== */
+.client { min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; padding: 12vh 0 8vh; text-align: center; }
+.client-kicker { margin-bottom: 40px; }
+.client-card { width: min(560px, 100%); border: 1px solid var(--rule); border-radius: 6px;
+  background: var(--panel); padding: 44px 38px; }
+@media (max-width: 560px) { .client-card { padding: 32px 22px; } }
+.client-card h1 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.05;
+  font-size: clamp(28px, 5vw, 44px); margin-top: 14px; text-wrap: balance; }
+.client-shoot { color: var(--dim); font-size: 15px; margin-top: 10px; }
+.client-lead { color: var(--dim); font-size: 15px; line-height: 1.7; margin-top: 14px; }
+.client-note { color: var(--ink); font-size: 15px; line-height: 1.7; margin-top: 22px;
+  padding: 16px 18px; border-left: 2px solid var(--accent); text-align: left;
+  background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+.client-card form { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+.client-card label { text-align: left; }
+.client-card input { background: var(--bg); border: 1px solid var(--rule); border-radius: 4px;
+  color: var(--ink); font-family: 'IBM Plex Mono', monospace; font-size: 16px;
+  letter-spacing: .06em; padding: 15px 16px; width: 100%; text-align: center;
+  transition: border-color .25s ease; }
+.client-card input:focus { border-color: var(--accent); outline: none; }
+
+/* one button does the whole job — make it obvious */
+.client-dl { display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; margin-top: 26px; padding: 17px 26px; border-radius: 4px;
+  background: var(--accent); color: var(--bg); border: 1px solid var(--accent);
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .16em;
+  text-transform: uppercase; transition: filter .3s ease, opacity .3s ease; }
+.client-dl:hover { filter: brightness(1.12); }
+.client-dl:disabled { opacity: .45; pointer-events: none; }
+.client-dl .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.client-dl:hover .arrow { transform: translate(2px, -2px); }
+
+.client-facts { display: flex; justify-content: center; gap: 34px; margin-top: 28px;
+  padding-top: 20px; border-top: 1px solid var(--rule); }
+.client-facts dd { margin: 6px 0 0; font-size: 19px; font-variant-numeric: tabular-nums; }
+.client-help { margin-top: 20px; line-height: 1.8; text-transform: none; letter-spacing: .04em; }
+.client-help a { color: var(--accent); }
+.client-err { margin-top: 18px; color: #F4595E; text-transform: none; letter-spacing: .04em;
+  line-height: 1.7; }
+.client-foot { margin-top: 44px; }
+.client-foot .back:hover { color: var(--accent); }
+
+/* --- admin: the delivery panel --- */
+.deliver { border: 1px solid var(--rule); border-radius: 6px; padding: 26px 24px;
+  background: var(--panel); }
+.deliver .admin-sec-head { border-bottom-color: var(--rule); }
+.admin-inline { display: flex; gap: 8px; align-items: center; }
+.admin-inline input { flex: 1; }
+.deliver-send { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--rule); }
+.deliver-send pre { background: var(--bg); border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 18px; margin: 12px 0 14px; white-space: pre-wrap; word-break: break-word;
+  font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.7; color: var(--dim); }
+.deliver-hint { margin-top: 12px; text-transform: none; letter-spacing: .04em; }
+
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1 !important; transform: none !important; }

@@ -76,6 +76,66 @@ export async function fileBytes(drive, fileId) {
   return Buffer.from(res.data);
 }
 
+/* ---- client delivery sharing --------------------------------------
+   The site manages the sharing so Viraj never opens Drive's share
+   dialog — which is where the real accident lives (sharing a PARENT
+   folder exposes every client inside it). We only ever touch the one
+   folder id the gallery points at.
+
+   Viewer role: the client can open and download, but cannot rename,
+   delete, upload, or see anything outside that folder.               */
+
+const ANYONE_READER = { role: "reader", type: "anyone", allowFileDiscovery: false };
+
+/* Is this folder currently shared by link? */
+export async function shareState(drive, folderId) {
+  const res = await drive.permissions.list({
+    fileId: folderId,
+    fields: "permissions(id, type, role, allowFileDiscovery)",
+  });
+  const link = (res.data.permissions || []).find((p) => p.type === "anyone");
+  return { shared: Boolean(link), permissionId: link?.id || null };
+}
+
+export async function grantLinkAccess(drive, folderId) {
+  const { shared } = await shareState(drive, folderId);
+  if (shared) return { shared: true, already: true };
+  await drive.permissions.create({
+    fileId: folderId,
+    requestBody: ANYONE_READER,
+    // sendNotificationEmail is only meaningful for user grants
+  });
+  return { shared: true };
+}
+
+export async function revokeLinkAccess(drive, folderId) {
+  const { permissionId } = await shareState(drive, folderId);
+  if (!permissionId) return { shared: false, already: true };
+  await drive.permissions.delete({ fileId: folderId, permissionId });
+  return { shared: false };
+}
+
+export async function folderMeta(drive, folderId) {
+  const res = await drive.files.get({
+    fileId: folderId,
+    fields: "id, name, mimeType, trashed",
+  });
+  return res.data;
+}
+
+/* How many images are in the delivery folder — shown to the client so
+   they can tell the download finished with everything in it. */
+export async function countImages(drive, folderId) {
+  const res = await drive.files.list({
+    q: `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`,
+    fields: "files(id)",
+    pageSize: 1000,
+  });
+  return (res.data.files || []).length;
+}
+
+export const folderUrl = (id) => `https://drive.google.com/drive/folders/${id}`;
+
 /* ---- content.json -------------------------------------------------
    The shape the admin edits and the build consumes. Kept deliberately
    flat and boring so it stays readable if anyone opens it in Drive. */

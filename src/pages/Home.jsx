@@ -395,7 +395,9 @@ export default function Home() {
           <hr className="rule" style={{ marginTop: 44 }} />
           <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, paddingTop: 18 }}>
             <span className="mono">© 2026 {P.name}</span>
-            <span className="mono">Shot, designed and built by the same person</span>
+            <span className="mono">
+              <TLink to="/client">Client area</TLink> — collect a finished shoot
+            </span>
           </div>
         </div>
       </section>

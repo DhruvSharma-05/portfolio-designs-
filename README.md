@@ -202,6 +202,65 @@ Until something is published, the site falls back to the placeholder projects in
 - There is **no rate limiting** on the sign-in endpoint beyond a fixed delay on a
   wrong password. If the URL ever gets out, a long password is what protects it.
 
+## Client downloads (`/client`)
+
+Viraj delivers regularly, so finished shoots are handed over from the site
+rather than by pasting Drive links.
+
+### How he does it
+
+In the project editor, tick **"This shoot is for a client"**. That reveals:
+
+- **Client name** — shown to them on the download page
+- **Access code** — generated for him, e.g. `after-hours-7q4m2x`; works until revoked
+- **Delivery folder** — the Drive folder ID holding the finished photos
+- **Note** — one line shown above the download button
+
+Then **Share folder**, save, and copy the pre-written WhatsApp message.
+
+The two existing toggles combine to cover every case:
+
+| Show on site | For a client | Result |
+| --- | --- | --- |
+| yes | no | Normal portfolio project |
+| yes | yes | Public project + private download |
+| no | yes | Pure delivery, nothing public |
+
+So a wedding he can't publish is just a project with the first box unticked.
+
+### How the client gets their photos
+
+1. Opens the link Viraj sent (`/client/<code>`, or `/client` and types the code)
+2. Sees their name, the shoot, the photo count, and one Download button
+3. Taps it — Google Drive opens on their folder only, and they download
+
+No account, no signup. There is also a quiet **Client area** link in the footer
+for anyone who loses the message.
+
+### Why the site does the sharing
+
+Viraj never opens Drive's share dialog, because that dialog is where the
+expensive mistake lives: sharing a **parent** folder exposes every client inside
+it. The site sets the permission on exactly the folder id the gallery points at,
+as **Viewer** — the client can open and download, but cannot rename, delete,
+upload, or see anything outside that folder.
+
+**Revoke** removes that permission again, killing the link for good.
+
+For this the service account needs **Editor** on the delivery folders (Viewer is
+enough for the portfolio folders), with "Editors can change permissions" left on.
+
+### What this does and does not protect
+
+- The code gates the *front door*. Codes are project name + 6 random characters
+  from a 31-letter alphabet, and the lookup endpoint is rate-limited to 10 tries
+  a minute per IP.
+- Once a client has the **Drive** link, forwarding it still works — the code
+  protects discovery, not the folder. Revoke is the answer if that happens.
+- `/client` is `noindex` and never cached.
+- Anyone who can download can also copy to their own Drive. Those are the same
+  permission in Drive; it cannot be split.
+
 ## Customising for the client
 
 Content is realistic **placeholder** — search for these to swap in the real

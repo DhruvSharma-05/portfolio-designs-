@@ -59,15 +59,31 @@ const slugify = (s) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
 
+const blankClient = () => ({ on: false, name: "", folderId: "", code: "", note: "", revoked: false });
+
+/* Codes are read aloud and typed on phones, so the alphabet leaves out
+   0/O/1/I/L. Six random characters on top of the project name is about
+   a billion combinations — enough that guessing is hopeless, short
+   enough to dictate over WhatsApp. */
+const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
+const makeCode = (title) => {
+  const rand = Array.from(crypto.getRandomValues(new Uint8Array(6)))
+    .map((n) => ALPHABET[n % ALPHABET.length]).join("");
+  const stem = slugify(title || "shoot").split("-").slice(0, 2).join("-") || "shoot";
+  return `${stem}-${rand}`;
+};
+
 const blankPhotoProject = () => ({
   slug: "", t: "", kind: "Editorial", loc: "", year: String(new Date().getFullYear()),
   exif: "", role: "", note: "", intro: "", photos: [], hidden: false,
+  client: blankClient(),
 });
 
 const blankWebProject = () => ({
   slug: "", t: "", tag: "Website", year: String(new Date().getFullYear()),
   role: "Design · Build", note: "", intro: "", tool: "Figma", href: "", live: "",
   stack: [], specs: [], cover: "", shots: [], hidden: false,
+  client: blankClient(),
 });
 
 export default function Admin() {
@@ -422,8 +438,27 @@ function Editor({ type, project, onChange, onBack, onSave, onDelete, msg }) {
               onChange={(e) => onChange({ hidden: !e.target.checked })} />
             <span>Show this project on the site</span>
           </label>
+          <label className="admin-check">
+            <input type="checkbox" checked={Boolean(project.client?.on)}
+              onChange={(e) => onChange({
+                client: {
+                  ...blankClient(), ...project.client, on: e.target.checked,
+                  // first tick pre-fills a code so there is nothing to think about
+                  code: project.client?.code || makeCode(project.t),
+                },
+              })} />
+            <span>This shoot is for a client (adds a download code)</span>
+          </label>
         </Field>
       </div>
+
+      {project.client?.on && (
+        <Delivery
+          client={project.client}
+          title={project.t}
+          onChange={(patch) => onChange({ client: { ...project.client, ...patch } })}
+        />
+      )}
 
       {/* ---- pictures ---- */}
       {isPhoto ? (
@@ -595,5 +630,120 @@ function Picker({ selected, multiple, onClose, onDone }) {
         </div>
       </div>
     </div>
+  );
+}
+
+/* ---------------- client delivery ----------------
+   Everything Viraj needs to hand a finished shoot over: which Drive
+   folder, the code, and the message to paste into WhatsApp.
+
+   Sharing is done here rather than in Drive's own dialog, because that
+   dialog is where the dangerous mistake lives — sharing a PARENT
+   folder would expose every client inside it. This only ever touches
+   the one folder id below. */
+function Delivery({ client, title, onChange }) {
+  const [state, setState] = useState(null);      // { shared, name, count }
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [copied, setCopied] = useState("");
+
+  const link = `${location.origin}/client/${client.code}`;
+  const message =
+    `Hi${client.name ? ` ${client.name}` : ""}, your photos from ${title || "the shoot"} are ready.\n\n` +
+    `${link}\n\nCode: ${client.code}\n\n— ${P.photographer}`;
+
+  const call = async (action) => {
+    if (!client.folderId) { setErr("Pick the Drive folder that holds the finished photos"); return; }
+    setBusy(true); setErr("");
+    try {
+      setState(await api("/api/share", { method: "POST", body: { folderId: client.folderId, action } }));
+      if (action === "revoke") onChange({ revoked: true });
+      if (action === "grant") onChange({ revoked: false });
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /* check the live sharing state whenever the folder changes */
+  useEffect(() => {
+    if (!client.folderId) { setState(null); return; }
+    let alive = true;
+    api("/api/share", { method: "POST", body: { folderId: client.folderId, action: "check" } })
+      .then((d) => alive && setState(d))
+      .catch((e) => alive && setErr(e.message));
+    return () => { alive = false; };
+  }, [client.folderId]);
+
+  const copy = async (text, what) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(what);
+      setTimeout(() => setCopied(""), 1800);
+    } catch {
+      setErr("Couldn't copy — select the text and copy it by hand");
+    }
+  };
+
+  return (
+    <section className="admin-sec deliver">
+      <div className="admin-sec-head">
+        <div>
+          <h2>Client download</h2>
+          <span className="mono">
+            {state?.shared
+              ? `Live — ${state.count ?? "?"} photos in ${state.name || "the folder"}`
+              : "Not shared yet"}
+          </span>
+        </div>
+        {state?.shared
+          ? <button className="btn danger" onClick={() => call("revoke")} disabled={busy}>Revoke access</button>
+          : <button className="btn primary" onClick={() => call("grant")} disabled={busy}>Share folder</button>}
+      </div>
+
+      <div className="admin-form">
+        <Field label="Client name" hint="Shown to them on the download page">
+          <input value={client.name} onChange={(e) => onChange({ name: e.target.value })} />
+        </Field>
+
+        <Field label="Access code" hint="They type this. Works until you revoke it.">
+          <div className="admin-inline">
+            <input value={client.code}
+              onChange={(e) => onChange({ code: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} />
+            <button className="btn small" onClick={() => onChange({ code: makeCode(title) })}>New</button>
+          </div>
+        </Field>
+
+        <Field label="Delivery folder (Drive folder ID)" wide
+          hint="The folder holding the finished photos — NOT a parent folder. Open it in Drive; the ID is the part of the URL after /folders/.">
+          <input value={client.folderId} placeholder="1a2b3c…"
+            onChange={(e) => onChange({ folderId: e.target.value.trim() })} />
+        </Field>
+
+        <Field label="Note to the client" hint="One line, shown above the download button" wide>
+          <input value={client.note} placeholder="Full set, edited — shout if you need any in a different crop."
+            onChange={(e) => onChange({ note: e.target.value })} />
+        </Field>
+      </div>
+
+      {err && <p className="admin-msg bad mono">{err}</p>}
+
+      <div className="deliver-send">
+        <div className="mono">Send this</div>
+        <pre>{message}</pre>
+        <div className="admin-row-acts">
+          <button className="btn" onClick={() => copy(message, "message")}>
+            {copied === "message" ? "Copied ✓" : "Copy message"}
+          </button>
+          <button className="btn ghost" onClick={() => copy(link, "link")}>
+            {copied === "link" ? "Copied ✓" : "Copy link only"}
+          </button>
+        </div>
+        <p className="mono deliver-hint">
+          Save the project after sharing, or the code won't be live.
+        </p>
+      </div>
+    </section>
   );
 }

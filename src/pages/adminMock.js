@@ -53,6 +53,11 @@ let store = {
       note: "A night series shot entirely on available light, made over two evenings across the old market.",
       intro: "Two nights, one lens, no flash. The city did the lighting.",
       photos: FOLDER_PHOTOS["f-after-hours"].slice(0, 7), hidden: false,
+      client: {
+        on: true, name: "North Café", folderId: "mock-folder-1",
+        code: "after-hours-7q4m2x", note: "Full set, edited. Shout if you need a different crop.",
+        revoked: false,
+      },
     },
     {
       slug: "faces", t: "Faces", kind: "Portraits",
@@ -61,6 +66,7 @@ let store = {
       note: "Twelve people, one afternoon, one light moved twice.",
       intro: "One light, moved twice. Everything else is the person.",
       photos: FOLDER_PHOTOS["f-faces"].slice(0, 5), hidden: false,
+      client: { on: false, name: "", folderId: "", code: "", note: "", revoked: false },
     },
   ],
   webProjects: [
@@ -83,6 +89,9 @@ let store = {
 };
 
 const wait = (ms = 260) => new Promise((r) => setTimeout(r, ms));
+
+/* which folders are "shared" in this preview session */
+const shared = new Set(["mock-folder-1"]);
 
 /* Mirrors the real endpoints closely enough that swapping back to the
    live API changes nothing in the page. */
@@ -107,6 +116,14 @@ export async function mockApi(url, options = {}) {
       return store;
     }
     return store;
+  }
+
+  if (url.startsWith("/api/share")) {
+    const { folderId, action } = options.body || {};
+    if (!folderId) throw new Error("Pick a delivery folder first");
+    if (action === "grant") shared.add(folderId);
+    if (action === "revoke") shared.delete(folderId);
+    return { shared: shared.has(folderId), name: "After Hours (preview)", count: 24 };
   }
 
   if (url.startsWith("/api/publish")) {

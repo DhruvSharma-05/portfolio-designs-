@@ -13,6 +13,21 @@ import { driveClient, readContent, writeContent } from "./_lib/drive.js";
 const str = (v, max = 2000) => (typeof v === "string" ? v.slice(0, max) : "");
 const arr = (v) => (Array.isArray(v) ? v : []);
 
+/* The client-delivery block that hangs off any project. Codes are
+   stored and compared lower-case so a client typing WEDDING-7Q4M2X
+   still gets in. */
+const cleanClient = (c) => {
+  if (!c || typeof c !== "object") return { on: false };
+  return {
+    on: Boolean(c.on),
+    name: str(c.name, 120),
+    folderId: str(c.folderId, 100),
+    code: str(c.code, 60).toLowerCase().replace(/[^a-z0-9-]/g, ""),
+    note: str(c.note, 600),
+    revoked: Boolean(c.revoked),
+  };
+};
+
 const cleanPhotoProject = (p) => ({
   slug: str(p.slug, 80),
   t: str(p.t, 120),
@@ -25,6 +40,7 @@ const cleanPhotoProject = (p) => ({
   intro: str(p.intro, 400),
   hidden: Boolean(p.hidden),
   photos: arr(p.photos).map((x) => str(x, 100)).filter(Boolean),
+  client: cleanClient(p.client),
 });
 
 const cleanWebProject = (w) => ({
@@ -44,6 +60,7 @@ const cleanWebProject = (w) => ({
     .filter((s) => s.k || s.v),
   cover: str(w.cover, 100),
   shots: arr(w.shots).map((x) => str(x, 100)).filter(Boolean),
+  client: cleanClient(w.client),
 });
 
 export default async function handler(req, res) {
@@ -75,6 +92,17 @@ export default async function handler(req, res) {
       const slugs = next[key].map((p) => p.slug);
       const dupe = slugs.find((s, i) => slugs.indexOf(s) !== i);
       if (dupe) return res.status(400).json({ error: `Two projects share the address "${dupe}"` });
+    }
+
+    /* Access codes are looked up across BOTH lists, so they have to be
+       unique across both — a duplicate would hand one client another
+       client's folder, which is the worst failure this system has. */
+    const codes = [...next.photoProjects, ...next.webProjects]
+      .filter((p) => p.client?.on && p.client.code)
+      .map((p) => p.client.code);
+    const dupeCode = codes.find((c, i) => codes.indexOf(c) !== i);
+    if (dupeCode) {
+      return res.status(400).json({ error: `Two galleries share the code "${dupeCode}" — give one a new code` });
     }
     try {
       return res.status(200).json(await writeContent(drive, next));

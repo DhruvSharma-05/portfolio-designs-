@@ -17,6 +17,7 @@ import DesignProject from "./pages/DesignProject.jsx";
 
 /* The admin is code-split: none of it ships to normal visitors. */
 const Admin = lazy(() => import("./pages/Admin.jsx"));
+const Client = lazy(() => import("./pages/Client.jsx"));
 
 /* Primary navigation. `/` matches exactly; the others also light up on
    their detail pages (/photography/:slug, /design/:slug). */
@@ -38,6 +39,9 @@ export default function App() {
   /* The admin is a tool, not part of the portfolio: no public nav, and
      no custom cursor (it hides the caret and makes forms miserable). */
   const isAdmin = location.pathname.startsWith("/admin");
+  /* The client area is a private handoff, not part of the portfolio —
+     it keeps the site chrome but stays out of the nav. */
+  const isBare = isAdmin || location.pathname.startsWith("/client");
   const progRef = useRef(null);
   const barRef = useRef(null);
   const irisRef = useRef(null);
@@ -110,7 +114,7 @@ export default function App() {
         <style>{CSS}</style>
 
         <a className="skip" href="#main">Skip to content</a>
-        {!isAdmin && <Cursor />}
+        {!isBare && <Cursor />}
 
         {/* aperture transition overlay */}
         <div className="iris" aria-hidden="true">
@@ -145,6 +149,16 @@ export default function App() {
           <Route path="/design" element={<Design />} />
           <Route path="/design/:slug" element={<DesignProject />} />
           <Route path="/about" element={<About />} />
+          <Route path="/client" element={
+            <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
+              <Client />
+            </Suspense>
+          } />
+          <Route path="/client/:code" element={
+            <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
+              <Client />
+            </Suspense>
+          } />
           <Route path="/admin" element={
             <Suspense fallback={<main className="admin wrap"><p className="mono">Loading…</p></main>}>
               <Admin />
