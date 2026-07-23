@@ -6,7 +6,7 @@ import { useGSAP } from "@gsap/react";
 import Lenis from "lenis";
 import { CSS, THEME, P, prefersReduced } from "./data.js";
 import { AppProvider } from "./context.js";
-import { TLink, Cursor } from "./ui.jsx";
+import { TLink, Cursor, Logo } from "./ui.jsx";
 import Home from "./pages/Home.jsx";
 import WorkDetail from "./pages/WorkDetail.jsx";
 import About from "./pages/About.jsx";
@@ -124,7 +124,7 @@ export default function App() {
         {/* masthead bar */}
         <div className="bar" ref={barRef} hidden={isAdmin}>
           <div className="bar-in">
-            <TLink to="/" className="mono brand">{P.name}</TLink>
+            <TLink to="/" className="mono brand" aria-label={`${P.name} — home`}><Logo /></TLink>
             <nav className="nav mono" aria-label="Primary">
               {NAV.map((n) => (
                 <TLink key={n.to} to={n.to}

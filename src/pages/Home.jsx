@@ -2,9 +2,12 @@ import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion, AnimatePresence } from "motion/react";
-import { P, img, INTRO, FRAMES, SHEET, TICKER, METRICS, QUOTES, SHOTLIST, WEB_PROJECTS, prefersReduced } from "../data.js";
-import { Reveal, Metrics, TLink } from "../ui.jsx";
+import { motion } from "motion/react";
+import {
+  P, img, ratio, INTRO, FRAMES, SHEET,
+  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, prefersReduced,
+} from "../data.js";
+import { Reveal, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 /* Three.js is code-split so the hero text (the LCP) paints first. */
@@ -16,13 +19,13 @@ const page = {
   animate: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-/* seeds for the sweeping horizontal gallery: the contact sheet plus a
-   few featured work frames, de-duplicated. */
-const GALLERY = [...new Set([...SHEET, ...FRAMES.map((f) => f.seed)])].slice(0, 12);
-
+/* ==================================================================
+   WORK — the front page. Deliberately slim: hero, the categorised
+   gallery, the photography projects, and the room reserved for the
+   design work. Everything about the person lives on /about.
+   ================================================================== */
 export default function Home() {
   const { theme } = useApp();
-  const [qi, setQi] = useState(0);
   const [heroActive, setHeroActive] = useState(true);
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
@@ -56,12 +59,6 @@ export default function Home() {
     return () => io.disconnect();
   }, []);
 
-  /* quote slideshow */
-  useEffect(() => {
-    const t = setInterval(() => setQi((i) => (i + 1) % QUOTES.length), 5200);
-    return () => clearInterval(t);
-  }, []);
-
   return (
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
       {/* masthead */}
@@ -79,7 +76,7 @@ export default function Home() {
           <h1 className="display">
             {[...P.name].map((c, i) => (
               <span className="ch" key={i} style={{ animationDelay: `${0.25 + i * 0.04}s` }}>
-                {c === " " ? " " : c}
+                {c === " " ? " " : c}
               </span>
             ))}
           </h1>
@@ -122,69 +119,14 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ticker */}
-      <div className="tick">
-        <div className="tick-in">
-          {[0, 1].map((k) => (
-            <span key={k} style={{ display: "flex" }}>
-              {TICKER.map((t) => <em key={t + k}>{t}</em>)}
-            </span>
-          ))}
-        </div>
-      </div>
+      {/* gallery — four categories, no captions */}
+      <Gallery />
 
-      {/* who he is — the home page introduces the person before it
-          shows a single project */}
-      <section className="thesis">
-        <div className="wrap thesis-grid">
-          <Reveal>
-            <p className="lead">
-              {INTRO.lead.split(" ").slice(0, 3).join(" ")}
-              <i> {INTRO.lead.split(" ").slice(3).join(" ")}</i>
-            </p>
-          </Reveal>
-          <Reveal delay={0.1} className="aside">
-            {INTRO.body.map((t, i) => <p key={i}>{t}</p>)}
-          </Reveal>
-        </div>
-      </section>
-
-      {/* what he does — one panel per practice, each a door to its page */}
-      <section className="sec">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">What he does</div>
-          <div className="approach">
-            {INTRO.does.map((d) => (
-              <TLink key={d.to} to={d.to} data-cursor="Open">
-                <h3>{d.k}</h3>
-                <p>{d.v}</p>
-                <span className="mono" style={{ color: "var(--accent)", display: "block", marginTop: 14 }}>
-                  {d.brand} →
-                </span>
-              </TLink>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* what you get — the client-facing promise, not a craft list */}
-      <section className="sec">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">What you get</div>
-          <div>
-            {INTRO.offer.map((o, i) => (
-              <Reveal className="sl-row" key={o.k} delay={i * 0.04}>
-                <span className="mono">{String(i + 1).padStart(2, "0")}</span>
-                <h3>{o.k}</h3>
-                <p>{o.v}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* work: sticky stacking cards → each opens a detail page */}
+      {/* photography — the selected projects, each opening a detail page */}
       <section className="wrap stack" id="work">
+        <div className="mono" style={{ padding: "0 0 34px" }}>
+          Photography — selected work
+        </div>
         {FRAMES.map((f, i) => (
           <Reveal className="card" key={f.seed} style={{ top: `${92 + i * 12}px`, zIndex: i + 1 }}>
             <div className="card-in">
@@ -210,141 +152,61 @@ export default function Home() {
         ))}
       </section>
 
-      {/* auto-playing horizontal gallery (marquee) */}
-      <section className={`gallery${reduced ? " reduced" : ""}`} aria-label="Selected frames">
-        <div className="wrap gallery-head">
-          <div className="mono" style={{ marginBottom: 18 }}>Selected frames</div>
-          <h2>A scroll through the archive.</h2>
-          <p>A rolling edit of recent frames — it drifts on its own; hover to pause.</p>
-        </div>
-        <div className="gallery-view">
-          <div className="gallery-track">
-            {[...GALLERY, ...GALLERY].map((s, i) => (
-              <figure className="gal-fr" key={s + i} aria-hidden={i >= GALLERY.length}>
-                <img src={img(s, 640, 853)} alt="" loading="lazy" />
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* web design — the other craft, previewed in browser frames */}
+      {/* design — real projects once they're published; until then the
+          space is visibly held for them */}
       <section className="sec" id="design">
         <div className="wrap sec-grid">
-          <div className="sec-label mono">Also on the web</div>
+          <div className="sec-label mono">Design</div>
           <div>
-            <Reveal>
-              <h2 style={{ fontWeight: 300, letterSpacing: "-0.03em", lineHeight: 1.04,
-                fontSize: "clamp(26px, 3.6vw, 46px)", marginBottom: 14 }}>
-                The pictures need somewhere to live.
-              </h2>
-              <p style={{ color: "var(--dim)", fontSize: 15, lineHeight: 1.72, maxWidth: "42ch", marginBottom: 36 }}>
-                I design and build the sites too — hover a frame to scroll the whole page.
-              </p>
-            </Reveal>
-            <div className="wgrid">
-              {WEB_PROJECTS.slice(0, 2).map((w, i) => (
-                <Reveal key={w.slug} delay={i * 0.06}>
-                  <TLink to={`/design/${w.slug}`} className="wcard" data-cursor="View"
-                    aria-label={`Open ${w.t}`}>
-                    <div className="browser">
-                      <div className="browser-bar">
-                        <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
-                        <span className="browser-url mono">{w.slug}.com</span>
-                        <span className="mono" style={{ opacity: 0.5 }}>{w.year}</span>
-                      </div>
-                      <div className="browser-view">
-                        <img src={img(w.cover, 1200, reduced ? 825 : 2100)}
-                          alt={`${w.t} — full page`} loading="lazy" />
-                      </div>
-                    </div>
-                    <div className="wcard-cap">
-                      <div>
-                        <h3>{w.t}</h3>
-                        <p>{w.intro}</p>
-                      </div>
-                      <span className="tool-badge mono">{w.tool}</span>
-                    </div>
+            {HAS_REAL_WEB ? (
+              <>
+                <div className="wgrid">
+                  {WEB_PROJECTS.slice(0, 2).map((w, i) => (
+                    <Reveal key={w.slug} delay={i * 0.06}>
+                      <TLink to={`/design/${w.slug}`} className="wcard" data-cursor="View"
+                        aria-label={`Open ${w.t}`}>
+                        <div className="browser">
+                          <div className="browser-bar">
+                            <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
+                            <span className="browser-url mono">{w.slug}.com</span>
+                            <span className="mono" style={{ opacity: 0.5 }}>{w.year}</span>
+                          </div>
+                          <div className="browser-view">
+                            <img src={img(w.cover, 1200, reduced ? 825 : 2100)}
+                              alt={`${w.t} — full page`} loading="lazy" />
+                          </div>
+                        </div>
+                        <div className="wcard-cap">
+                          <div>
+                            <h3>{w.t}</h3>
+                            <p>{w.intro}</p>
+                          </div>
+                          <span className="tool-badge mono">{w.tool}</span>
+                        </div>
+                      </TLink>
+                    </Reveal>
+                  ))}
+                </div>
+                <div style={{ marginTop: 34 }}>
+                  <TLink to="/design" className="extlink">
+                    All design work <span className="arrow">→</span>
                   </TLink>
-                </Reveal>
-              ))}
-            </div>
-            <div style={{ marginTop: 34 }}>
-              <TLink to="/design" className="extlink">
-                All design work <span className="arrow">→</span>
-              </TLink>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* the two halves — split entry into each section */}
-      <section className="sec">
-        <div className="wrap">
-          <Reveal className="teaser">
-            <TLink to="/photography">
-              <span className="mono">Photography — full archive</span>
-              <h3>{P.photoBrand}</h3>
-              <p>Editorial, portrait, landscape and event sets — each one opened as a complete edit.</p>
-              <span className="go mono">Enter the archive <span className="arrow">→</span></span>
-            </TLink>
-            <TLink to="/design">
-              <span className="mono">Design & build</span>
-              <h3>Web design</h3>
-              <p>Sites designed and shipped end to end, with the source file linked on every project.</p>
-              <span className="go mono">See the builds <span className="arrow">→</span></span>
-            </TLink>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* metrics */}
-      <section className="sec">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">The numbers</div>
-          <Metrics items={METRICS} />
-        </div>
-      </section>
-
-      {/* quotes — Framer crossfade */}
-      <section className="sec">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">What clients say</div>
-          <div>
-            <div className="slide">
-              <AnimatePresence mode="wait">
-                <motion.blockquote className="q" key={qi}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -14 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}>
-                  <p><span style={{ color: "var(--accent)" }}>“</span>{QUOTES[qi].q}</p>
-                  <footer className="mono">{QUOTES[qi].a} — {QUOTES[qi].r}</footer>
-                </motion.blockquote>
-              </AnimatePresence>
-            </div>
-            <div className="dots">
-              {QUOTES.map((q, i) => (
-                <button key={i} className={`dot ${i === qi ? "on" : ""}`}
-                  onClick={() => setQi(i)} aria-label={`Quote ${i + 1}`} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* services */}
-      <section className="sec" id="services">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">What I'm hired for</div>
-          <div>
-            {SHOTLIST.map((s, i) => (
-              <Reveal className="sl-row" key={s.k} delay={i * 0.04}>
-                <span className="mono">{String(i + 1).padStart(2, "0")}</span>
-                <h3>{s.k}</h3>
-                <p>{s.v}</p>
+                </div>
+              </>
+            ) : (
+              <Reveal className="reserved">
+                <span className="mono">Reserved</span>
+                <h3>The design work is on its way.</h3>
+                <p>
+                  This space is held for the design &amp; build side — identities,
+                  layouts and shipped sites. Projects appear here as they are
+                  published.
+                </p>
+                <TLink to="/design" className="extlink">
+                  Design &amp; build <span className="arrow">→</span>
+                </TLink>
               </Reveal>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -386,6 +248,48 @@ export default function Home() {
         </div>
       </section>
     </motion.div>
+  );
+}
+
+/* ==================================================================
+   GALLERY — four category tabs over a captionless masonry grid.
+   Simple on purpose: the frames are the content, nothing explains
+   them. Starts on the first category that actually has photos.
+   ================================================================== */
+function Gallery() {
+  const [cat, setCat] = useState(
+    () => GALLERY_CATS.find((c) => GALLERY_ITEMS.some((g) => g.cat === c)) ?? GALLERY_CATS[0],
+  );
+  const shots = GALLERY_ITEMS.filter((g) => g.cat === cat);
+
+  return (
+    <section className="gwork" id="gallery" aria-label="Gallery">
+      <div className="wrap">
+        <div className="gwork-head">
+          <div className="mono">Gallery</div>
+          <div className="gtabs" role="group" aria-label="Gallery categories">
+            {GALLERY_CATS.map((c) => (
+              <button key={c} className="gtab" aria-pressed={c === cat} onClick={() => setCat(c)}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {shots.length ? (
+          <div className="pgrid" key={cat}>
+            {shots.map((g) => (
+              <figure key={g.seed}>
+                <img src={img(g.seed, 640)} alt="" loading="lazy"
+                  style={{ aspectRatio: ratio(g.seed, 3, 4) }} />
+              </figure>
+            ))}
+          </div>
+        ) : (
+          <div className="gempty mono">{cat} — photos arriving soon</div>
+        )}
+      </div>
+    </section>
   );
 }
 

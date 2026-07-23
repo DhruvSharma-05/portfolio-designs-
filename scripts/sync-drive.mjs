@@ -71,7 +71,27 @@ function getAuth() {
   });
 }
 
-async function downloadBytes(drive, fileId) {
+async function downloadBytes(drive, fileId, publicDownload) {
+  // With an anonymous API key, Drive lists public files but forbids the
+  // API media download (403). Fetch the bytes from the public download
+  // endpoint instead — works for "anyone with the link" files and returns
+  // the full original (EXIF intact). Service-account auth uses the API.
+  if (publicDownload) {
+    let res = await fetch(
+      `https://drive.google.com/uc?export=download&id=${fileId}`,
+      { redirect: "follow" },
+    );
+    // Files >~100MB return a virus-scan HTML interstitial instead of bytes;
+    // retry the usercontent endpoint with a confirm token.
+    if ((res.headers.get("content-type") || "").startsWith("text/html")) {
+      res = await fetch(
+        `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`,
+        { redirect: "follow" },
+      );
+    }
+    if (!res.ok) throw new Error(`public download failed: ${res.status}`);
+    return Buffer.from(await res.arrayBuffer());
+  }
   const res = await drive.files.get(
     { fileId, alt: "media" },
     { responseType: "arraybuffer" },
@@ -132,6 +152,9 @@ async function main() {
   const usedSeeds = new Set();
   const manifest = { ...existing };
 
+  // Projects authored in /admin, stored as content.json in the same Drive.
+  // (The public Work/Gallery/Portrait photos come from Contentful — see
+  // scripts/sync-contentful.mjs, which owns those manifest sections.)
   await syncProjects(drive, cache, nextCache, usedSeeds, manifest);
 
   // Prune output files whose source is gone.

@@ -225,7 +225,15 @@ async function main() {
           h: variants.h,
         });
       } else {
-        buckets[role].push({ seed, sm: variants.sm, lg: variants.lg, w: variants.w, h: variants.h });
+        buckets[role].push({
+          seed,
+          // Gallery only: optional "category" text field on the Photo
+          // entry ("Professional Photoshoot" | "Wildlife" | "Open" |
+          // "Portraits"). Missing/unknown values land in "Open" on the
+          // site — see normCat() in src/data.js.
+          ...(role === "gallery" && entry.fields.category ? { cat: entry.fields.category } : {}),
+          sm: variants.sm, lg: variants.lg, w: variants.w, h: variants.h,
+        });
       }
     }
   }

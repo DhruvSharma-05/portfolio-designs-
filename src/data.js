@@ -138,6 +138,35 @@ export const SHEET = manifest.gallery?.length
 export const TICKER = ["Editorial", "Events", "Portraits", "Art direction", "Colour grading", "Design & build", "Booking 2026"];
 
 /* ==================================================================
+   GALLERY — the simple, captionless grid on the Work page.
+
+   Four fixed categories. A synced photo's category comes from the
+   Drive subfolder it lives in (see scripts/sync-drive.mjs): make four
+   subfolders inside the Gallery folder named after the categories and
+   the sync sorts everything automatically. Photos left in the Gallery
+   folder root land in "Open". With no manifest at all, placeholder
+   seeds are dealt across the categories so the grid still renders.
+   ================================================================== */
+export const GALLERY_CATS = ["Professional Photoshoot", "Wildlife", "Open", "Portraits"];
+
+const normCat = (raw = "") => {
+  const s = String(raw).toLowerCase();
+  if (s.includes("professional") || s.includes("shoot")) return "Professional Photoshoot";
+  if (s.includes("wild")) return "Wildlife";
+  if (s.includes("portrait")) return "Portraits";
+  return "Open";
+};
+
+export const GALLERY_ITEMS = manifest.gallery?.length
+  ? manifest.gallery.map((p) => ({ seed: p.seed, cat: normCat(p.cat) }))
+  : SHEET_FALLBACK.map((s, i) => ({ seed: s, cat: GALLERY_CATS[i % GALLERY_CATS.length] }));
+
+/* True once real design projects exist (published from /admin). Until
+   then the Work page shows the reserved-room panel instead of the
+   placeholder cards. */
+export const HAS_REAL_WEB = !!manifest.webProjects?.length;
+
+/* ==================================================================
    PHOTOGRAPHY — /photography and /photography/:slug
 
    FEATURED drives the hero slideshow; PHOTO_PROJECTS drives the sticky
@@ -509,6 +538,38 @@ export const CSS = `
 .gal-fr { flex: 0 0 auto; width: min(40vw, 420px); aspect-ratio: 3/4; overflow: hidden;
   border-radius: 4px; border: 1px solid var(--rule); margin-right: 24px; }
 @media (max-width: 700px) { .gal-fr { width: 70vw; } }
+
+/* --- brand logo in the bar ---
+   Drop the real file at public/logo.svg (or .png / .webp) and it is
+   picked up automatically; until then the wordmark text shows. The
+   .pf img reset (width/height 100% + filter) must not apply here. */
+.pf .logo-img { width: auto; height: 34px; object-fit: contain; filter: none; display: block; }
+.brand { display: inline-flex; align-items: center; min-height: 34px; }
+@media (max-width: 720px) { .pf .logo-img { height: 28px; } }
+
+/* --- categorised gallery (Work page) ---
+   Deliberately mute: four category tabs and a masonry of frames.
+   No captions, no notes — the grid is the whole statement. */
+.gwork { padding: 12vh 0; border-top: 1px solid var(--rule); }
+.gwork-head { display: flex; justify-content: space-between; align-items: center;
+  gap: 18px 28px; flex-wrap: wrap; margin-bottom: 36px; }
+.gtabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.gtab { border: 1px solid var(--rule); border-radius: 100px; padding: 8px 16px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--dim);
+  transition: border-color .3s ease, color .3s ease, background-color .3s ease; }
+.gtab:hover { border-color: var(--accent); color: var(--accent); }
+.gtab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.gempty { padding: 9vh 24px; text-align: center; border: 1px dashed var(--rule);
+  border-radius: 6px; }
+
+/* --- reserved room (design work not published yet) --- */
+.reserved { border: 1px dashed var(--rule); border-radius: 6px; padding: 8vh 36px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.reserved h3 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.05;
+  font-size: clamp(24px, 3.2vw, 40px); text-wrap: balance; }
+.reserved p { color: var(--dim); font-size: 15px; line-height: 1.7; max-width: 44ch; }
+.reserved .extlink { margin-top: 10px; }
 
 /* --- section shell with sticky label --- */
 .sec { padding: 13vh 0; border-top: 1px solid var(--rule); }

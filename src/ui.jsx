@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { prefersReduced } from "./data.js";
+import { P, prefersReduced } from "./data.js";
 import { useApp } from "./context.js";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -26,6 +26,31 @@ export function TLink({ to, children, className, ...rest }) {
       {children}
     </a>
   );
+}
+
+/* Brand logo for the bar. Probes public/ for logo.svg → logo.png →
+   logo.webp and shows the first one that loads; until a file exists it
+   falls back to the studio wordmark. Drop the file in public/ and
+   refresh — no code change needed. */
+export function Logo() {
+  const [src, setSrc] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      for (const cand of ["/logo.svg", "/logo.png", "/logo.webp"]) {
+        const ok = await new Promise((res) => {
+          const probe = new Image();
+          probe.onload = () => res(true);
+          probe.onerror = () => res(false);
+          probe.src = cand;
+        });
+        if (!alive) return;
+        if (ok) { setSrc(cand); return; }
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+  return src ? <img className="logo-img" src={src} alt={P.name} /> : <>{P.name}</>;
 }
 
 /* ---------------- shared animated primitives ----------------

@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion } from "motion/react";
-import { P, img, ABOUT, prefersReduced } from "../data.js";
-import { Reveal, TLink } from "../ui.jsx";
+import { motion, AnimatePresence } from "motion/react";
+import { P, img, ABOUT, INTRO, SHOTLIST, METRICS, QUOTES, prefersReduced } from "../data.js";
+import { Reveal, TLink, Metrics } from "../ui.jsx";
 
 const page = {
   initial: { opacity: 0, y: 12 },
@@ -70,6 +70,44 @@ export default function About() {
         ))}
       </section>
 
+      {/* what a client walks away with — moved here from the Work page,
+          which now stays about the work itself */}
+      <section style={{ marginTop: "10vh" }}>
+        <div className="mono" style={{ marginBottom: 24 }}>What you get</div>
+        <div>
+          {INTRO.offer.map((o, i) => (
+            <Reveal className="sl-row" key={o.k} delay={i * 0.04}>
+              <span className="mono">{String(i + 1).padStart(2, "0")}</span>
+              <h3>{o.k}</h3>
+              <p>{o.v}</p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section style={{ marginTop: "10vh" }}>
+        <div className="mono" style={{ marginBottom: 24 }}>What I'm hired for</div>
+        <div>
+          {SHOTLIST.map((s, i) => (
+            <Reveal className="sl-row" key={s.k} delay={i * 0.04}>
+              <span className="mono">{String(i + 1).padStart(2, "0")}</span>
+              <h3>{s.k}</h3>
+              <p>{s.v}</p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section style={{ marginTop: "10vh" }}>
+        <div className="mono" style={{ marginBottom: 24 }}>The numbers</div>
+        <Metrics items={METRICS} />
+      </section>
+
+      <section style={{ marginTop: "10vh" }}>
+        <div className="mono" style={{ marginBottom: 24 }}>What clients say</div>
+        <Quotes />
+      </section>
+
       <section className="end" style={{ marginTop: "12vh" }}>
         <Reveal>
           <h2 className="display">Let's make<br />something.</h2>
@@ -80,5 +118,37 @@ export default function About() {
         </div>
       </section>
     </motion.main>
+  );
+}
+
+/* Client quotes — the crossfading slideshow that used to sit on the
+   Work page. Autoplays; the dots jump straight to a quote. */
+function Quotes() {
+  const [qi, setQi] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setQi((i) => (i + 1) % QUOTES.length), 5200);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div>
+      <div className="slide">
+        <AnimatePresence mode="wait">
+          <motion.blockquote className="q" key={qi}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -14 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}>
+            <p><span style={{ color: "var(--accent)" }}>“</span>{QUOTES[qi].q}</p>
+            <footer className="mono">{QUOTES[qi].a} — {QUOTES[qi].r}</footer>
+          </motion.blockquote>
+        </AnimatePresence>
+      </div>
+      <div className="dots">
+        {QUOTES.map((q, i) => (
+          <button key={i} className={`dot ${i === qi ? "on" : ""}`}
+            onClick={() => setQi(i)} aria-label={`Quote ${i + 1}`} />
+        ))}
+      </div>
+    </div>
   );
 }

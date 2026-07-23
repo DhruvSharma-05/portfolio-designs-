@@ -1,5 +1,9 @@
 {
+<<<<<<< Updated upstream
   "generatedAt": "2026-07-23T11:52:32.758Z",
+=======
+  "generatedAt": "2026-07-23T11:54:38.067Z",
+>>>>>>> Stashed changes
   "work": [
     {
       "seed": "fountain-portrait",
@@ -298,5 +302,8 @@
       "h": 1126
     }
   ],
-  "portrait": null
+  "portrait": null,
+  "projectPhotos": [],
+  "photoProjects": [],
+  "webProjects": []
 }
