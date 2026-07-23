@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "npm run sync",
     "dev": "vite",
     "dev:api": "vercel dev",
     "sync": "node scripts/sync-contentful.mjs && node scripts/sync-drive.mjs",
