@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -84,17 +84,79 @@ export function Cursor() {
   return <div className="cursor" ref={dot} aria-hidden="true"><span className="cursor-label" ref={label} /></div>;
 }
 
-export function Counter({ to, suf }) {
-  const [n, setN] = useState(0);
+/* ---------------- figures block ----------------
+   Counting is only worth doing if it happens in front of the reader.
+
+   Deliberately NOT ScrollTrigger: the pinned horizontal gallery sits
+   directly above this block and inflates the scroll distance, so a
+   scroll-position trigger fires while the figures are still off-screen
+   and the count is over before they arrive. An IntersectionObserver
+   asks the browser the only question that matters — is this actually
+   on screen — and is immune to any pinning above it.
+
+   One observer drives every counter, so they start in perfect sync. */
+const COUNT_DUR = 2.1;
+
+export function Metrics({ items }) {
   const ref = useRef(null);
+  const [run, setRun] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (prefersReduced()) { setRun(true); el.classList.add("in"); return; }
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        setRun(true);
+        el.classList.add("in");   // drives the accent sweep in the CSS
+        io.disconnect();
+      },
+      { threshold: 0.35 },        // a third of the block visible = really here
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div className="metrics" ref={ref}>
+      {items.map((m, i) => (
+        <div className="metric" key={m.k}>
+          {/* small stagger so they cascade in and land together */}
+          <Counter to={m.v} suf={m.s} run={run} delay={i * 0.09} />
+          <span className="mono">{m.k}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* Counts 0 → `to` once `run` flips true. The suffix (%, wks) is its own
+   span so it can fly in as the number lands, rather than sitting there
+   through the whole count. */
+export function Counter({ to, suf, run = true, delay = 0 }) {
+  const [n, setN] = useState(0);
+  const sufRef = useRef(null);
+  const ref = useRef(null);
+
   useGSAP(() => {
+    if (!run) return;
     if (prefersReduced()) { setN(to); return; }
+
     const box = { n: 0 };
     gsap.to(box, {
-      n: to, duration: 1.6, ease: "power2.out",
+      n: to, duration: COUNT_DUR, delay,
+      ease: "power1.out",           // gentle enough that the climb stays readable
       onUpdate: () => setN(Math.round(box.n)),
-      scrollTrigger: { trigger: ref.current, start: "top 85%", once: true },
     });
-  }, { scope: ref });
-  return <b ref={ref}>{n}{suf}</b>;
+
+    if (suf && sufRef.current) {
+      gsap.from(sufRef.current, {
+        opacity: 0, xPercent: -40, duration: 0.55, ease: "back.out(2)",
+        delay: delay + COUNT_DUR * 0.62,
+      });
+    }
+  }, { scope: ref, dependencies: [run] });
+
+  return <b ref={ref}>{n}<span className="suf" ref={sufRef}>{suf}</span></b>;
 }

@@ -126,6 +126,149 @@ KeyCreation` org policy that blocks service-account keys on newer accounts):
 folders, then open the bookmarked Deploy Hook link. New photos are live a minute
 or two later.
 
+## The admin panel (`/admin`)
+
+Viraj uploads photos to Drive exactly as before. `/admin` is where he groups
+them into projects, writes the words, and publishes.
+
+**Nothing new to pay for.** Project metadata is stored as a single `content.json`
+file *in his own Drive* — there is no database and no second service. The
+serverless functions in `api/` are the only server-side code, and they only run
+when someone is signed into the admin.
+
+### How it flows
+
+```
+Viraj uploads photos      →  Google Drive  (one folder per shoot)
+Viraj opens /admin        →  picks photos, writes titles + descriptions
+Press "Save"              →  writes content.json back to Drive
+Press "Publish"           →  Vercel rebuild → photos resized to WebP → live
+```
+
+Publishing takes about a minute, because the rebuild is what optimises the
+photos. That is the trade-off for the public site being pure static files with
+zero runtime Drive calls — which is what keeps a photo-heavy site fast.
+
+### Looking at the interface first (no setup at all)
+
+```bash
+npm run dev          # then open http://localhost:5173/admin
+```
+
+`npm run dev` runs Vite only — it does not serve the functions in `api/`. When
+the admin sees no backend it drops into **preview mode**: no password, and the
+lists are filled with fake projects and placeholder frames so the whole
+interface can be clicked through. An amber banner says so. Nothing is saved,
+and this only ever happens in a dev build.
+
+To run the *real* thing locally you need the functions, which means the Vercel
+CLI plus a filled-in `.env`:
+
+```bash
+npm i -g vercel
+npm run dev:api      # = vercel dev, serves / and /api together
+```
+
+### One-time setup
+
+1. **Photo folder.** In Drive, make one folder to hold the shoot folders (e.g.
+   `Site Photos/`, containing `After Hours/`, `Faces/`, …). Share it with the
+   service-account email as **Viewer**. Put its ID in `DRIVE_ROOT_FOLDER_ID`.
+2. **Content file.** Create an empty file named `content.json` in Drive and share
+   it with the service account as **Editor**. Put its ID in
+   `DRIVE_CONTENT_FILE_ID`.
+   *You must create this file yourself* — a service account has no storage quota,
+   so it can update a file someone else owns but cannot create one.
+3. **Password.** Set `ADMIN_PASSWORD` (long) and `ADMIN_SESSION_SECRET` (random —
+   `node -e "console.log(crypto.randomUUID())"`).
+4. **Deploy hook.** Vercel → Settings → Git → Deploy Hooks → create one, and put
+   the URL in `VERCEL_DEPLOY_HOOK_URL`. This is what "Publish" calls.
+5. Add all of the above to Vercel → Settings → Environment Variables, and
+   redeploy so the functions pick them up.
+
+### Using it
+
+- **Dashboard** — counts, last-saved time, Save and Publish.
+- **New project** — one button per practice. Title auto-fills the web address.
+- **Choose from Drive** — browse the shoot folders and tick frames; the number on
+  each tick is its position, and photos can be reordered or removed afterwards.
+  The first photo is the project's cover.
+- **Hide** — untick "Show this project on the site" to keep a draft out of the
+  build without deleting it.
+- Deleting a project never touches the photos in Drive.
+
+Until something is published, the site falls back to the placeholder projects in
+`src/data.js`, so it is never empty.
+
+### Security notes
+
+- One password, held in an env var, exchanged for an HMAC-signed httpOnly cookie
+  (7 days). The cookie is signed, not encrypted — it carries only an expiry.
+- Every endpoint except sign-in requires that cookie.
+- Drive credentials never reach the browser: admin thumbnails are proxied through
+  `/api/thumb`, so photos work without being publicly shared.
+- There is **no rate limiting** on the sign-in endpoint beyond a fixed delay on a
+  wrong password. If the URL ever gets out, a long password is what protects it.
+
+## Client downloads (`/client`)
+
+Viraj delivers regularly, so finished shoots are handed over from the site
+rather than by pasting Drive links.
+
+### How he does it
+
+In the project editor, tick **"This shoot is for a client"**. That reveals:
+
+- **Client name** — shown to them on the download page
+- **Access code** — generated for him, e.g. `after-hours-7q4m2x`; works until revoked
+- **Delivery folder** — the Drive folder ID holding the finished photos
+- **Note** — one line shown above the download button
+
+Then **Share folder**, save, and copy the pre-written WhatsApp message.
+
+The two existing toggles combine to cover every case:
+
+| Show on site | For a client | Result |
+| --- | --- | --- |
+| yes | no | Normal portfolio project |
+| yes | yes | Public project + private download |
+| no | yes | Pure delivery, nothing public |
+
+So a wedding he can't publish is just a project with the first box unticked.
+
+### How the client gets their photos
+
+1. Opens the link Viraj sent (`/client/<code>`, or `/client` and types the code)
+2. Sees their name, the shoot, the photo count, and one Download button
+3. Taps it — Google Drive opens on their folder only, and they download
+
+No account, no signup. There is also a quiet **Client area** link in the footer
+for anyone who loses the message.
+
+### Why the site does the sharing
+
+Viraj never opens Drive's share dialog, because that dialog is where the
+expensive mistake lives: sharing a **parent** folder exposes every client inside
+it. The site sets the permission on exactly the folder id the gallery points at,
+as **Viewer** — the client can open and download, but cannot rename, delete,
+upload, or see anything outside that folder.
+
+**Revoke** removes that permission again, killing the link for good.
+
+For this the service account needs **Editor** on the delivery folders (Viewer is
+enough for the portfolio folders), with "Editors can change permissions" left on.
+
+### What this does and does not protect
+
+- The code gates the *front door*. Codes are project name + 6 random characters
+  from a 31-letter alphabet, and the lookup endpoint is rate-limited to 10 tries
+  a minute per IP.
+- Once a client has the **Drive** link, forwarding it still works — the code
+  protects discovery, not the folder. Revoke is the answer if that happens.
+- `/client` is `noindex` and never cached.
+- Anyone who can download can also copy to their own Drive. Those are the same
+  permission in Drive; it cannot be split.
+
 ## Customising for the client
 
 Content is realistic **placeholder** — search for these to swap in the real

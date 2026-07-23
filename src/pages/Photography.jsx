@@ -75,7 +75,9 @@ export default function Photography() {
 
         <div className="wrap phero-in">
           <div className="phero-top">
-            <span className="mono">Photography — selected projects</span>
+            <span className="mono" style={{ color: "var(--accent)" }}>
+              {P.photoBrand} — the photography practice
+            </span>
             <span className="mono">{P.city} — booking 2026</span>
           </div>
 
@@ -114,13 +116,16 @@ export default function Photography() {
         </div>
       </header>
 
-      {/* ---------- intro band ---------- */}
+      {/* ---------- the practice, named ---------- */}
       <section className="wrap band">
         <Reveal>
-          <h2>Projects, not a feed.</h2>
+          <div className="mono" style={{ marginBottom: 20 }}>
+            Photography by {P.photographer}
+          </div>
+          <h2>{P.photoBrand}</h2>
           <p>
-            Each set below is a single body of work — shot, selected and graded as one.
-            Open any of them for the full edit.
+            The photography half of {P.name}. Each set below is a single body of
+            work — shot, selected and graded as one. Open any of them for the full edit.
           </p>
         </Reveal>
       </section>

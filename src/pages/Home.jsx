@@ -3,8 +3,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
-import { P, img, FRAMES, SHEET, TICKER, METRICS, QUOTES, SHOTLIST, WEB_PROJECTS, prefersReduced } from "../data.js";
-import { Reveal, Counter, TLink } from "../ui.jsx";
+import { P, img, INTRO, FRAMES, SHEET, TICKER, METRICS, QUOTES, SHOTLIST, WEB_PROJECTS, prefersReduced } from "../data.js";
+import { Reveal, Metrics, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 /* Three.js is code-split so the hero text (the LCP) paints first. */
@@ -71,8 +71,11 @@ export default function Home() {
         </Suspense>
         <div className="wrap">
           <div className="mono" style={{ marginBottom: 26 }}>
-            {P.role} — {P.city} — booking 2026
+            {P.photographer} — {P.role} — {P.city} — Booking 2026
           </div>
+
+          {/* the studio name carries the masthead; the kicker and the
+              standfirst below it say who is behind it and what he does */}
           <h1 className="display">
             {[...P.name].map((c, i) => (
               <span className="ch" key={i} style={{ animationDelay: `${0.25 + i * 0.04}s` }}>
@@ -81,9 +84,28 @@ export default function Home() {
             ))}
           </h1>
           <div className="drawline" />
-          <div className="mono" style={{ marginTop: 16 }}>Photography by {P.photographer}</div>
+
+          <p className="standfirst">
+            Two practices, one pair of hands. Photographs made as{" "}
+            <strong>{P.photoBrand}</strong>, and the sites they live on designed
+            and built by the same person.
+            <i> Hire either. Hiring both is the point.</i>
+          </p>
+
+          {/* both doors stated above the fold, so a cold visitor can tell
+              inside three seconds that this is two crafts and not one */}
+          <div className="disciplines">
+            {INTRO.does.map((d, i) => (
+              <TLink key={d.to} to={d.to} className="disc" data-cursor="Enter">
+                <span className="mono">{String(i + 1).padStart(2, "0")} — {d.k}</span>
+                <strong>{d.brand}</strong>
+                <span className="mono go">Enter <span className="arrow">→</span></span>
+              </TLink>
+            ))}
+          </div>
+
           <div className="role">
-            <span className="mono">Available light. Clean grids. Shipped end to end.</span>
+            <span className="mono">Photography · Web design · Booking 2026</span>
             <span className="mono">Scroll —</span>
           </div>
         </div>
@@ -111,22 +133,53 @@ export default function Home() {
         </div>
       </div>
 
-      {/* thesis */}
+      {/* who he is — the home page introduces the person before it
+          shows a single project */}
       <section className="thesis">
         <div className="wrap thesis-grid">
           <Reveal>
             <p className="lead">
-              I shoot, I grade, and I build the site the pictures live on.
-              <i> One person, one decision, start to finish.</i>
+              {INTRO.lead.split(" ").slice(0, 3).join(" ")}
+              <i> {INTRO.lead.split(" ").slice(3).join(" ")}</i>
             </p>
           </Reveal>
           <Reveal delay={0.1} className="aside">
-            <p>
-              The switcher at the top of this page changes the accent, nothing else —
-              because a portfolio should stay out of the way of the work.
-            </p>
-            <p>It's the same restraint I bring to a client build. Just made in public.</p>
+            {INTRO.body.map((t, i) => <p key={i}>{t}</p>)}
           </Reveal>
+        </div>
+      </section>
+
+      {/* what he does — one panel per practice, each a door to its page */}
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">What he does</div>
+          <div className="approach">
+            {INTRO.does.map((d) => (
+              <TLink key={d.to} to={d.to} data-cursor="Open">
+                <h3>{d.k}</h3>
+                <p>{d.v}</p>
+                <span className="mono" style={{ color: "var(--accent)", display: "block", marginTop: 14 }}>
+                  {d.brand} →
+                </span>
+              </TLink>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* what you get — the client-facing promise, not a craft list */}
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">What you get</div>
+          <div>
+            {INTRO.offer.map((o, i) => (
+              <Reveal className="sl-row" key={o.k} delay={i * 0.04}>
+                <span className="mono">{String(i + 1).padStart(2, "0")}</span>
+                <h3>{o.k}</h3>
+                <p>{o.v}</p>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -230,8 +283,8 @@ export default function Home() {
         <div className="wrap">
           <Reveal className="teaser">
             <TLink to="/photography">
-              <span className="mono">Full archive</span>
-              <h3>Photography</h3>
+              <span className="mono">Photography — full archive</span>
+              <h3>{P.photoBrand}</h3>
               <p>Editorial, portrait, landscape and event sets — each one opened as a complete edit.</p>
               <span className="go mono">Enter the archive <span className="arrow">→</span></span>
             </TLink>
@@ -249,14 +302,7 @@ export default function Home() {
       <section className="sec">
         <div className="wrap sec-grid">
           <div className="sec-label mono">The numbers</div>
-          <Reveal className="metrics">
-            {METRICS.map((m) => (
-              <div className="metric" key={m.k}>
-                <Counter to={m.v} suf={m.s} />
-                <span className="mono">{m.k}</span>
-              </div>
-            ))}
-          </Reveal>
+          <Metrics items={METRICS} />
         </div>
       </section>
 
@@ -326,14 +372,16 @@ export default function Home() {
             </div>
             <div>
               <dt className="mono">Colophon</dt>
-              <dd>Dark, minimal, type-led. One accent at a time — currently {theme.name}.</dd>
+              <dd>Dark, minimal, type-led. Built so the pictures are the only bright thing on the page.</dd>
             </div>
           </Reveal>
 
           <hr className="rule" style={{ marginTop: 44 }} />
           <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, paddingTop: 18 }}>
             <span className="mono">© 2026 {P.name}</span>
-            <span className="mono">Shot, designed and built by the same person</span>
+            <span className="mono">
+              <TLink to="/client">Client area</TLink> — collect a finished shoot
+            </span>
           </div>
         </div>
       </section>

@@ -14,11 +14,53 @@ export const prefersReduced = () =>
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export const P = {
-  name: "Crafted & Captured",
-  photographer: "Viraj",
+  name: "Crafted & Captured",   // the studio, shown in the masthead bar
+  photographer: "Viraj",        // the person the home page is about
+  photoBrand: "Lenzofviraj",    // the photography practice — /photography
+  designBrand: "Design & Build",// the web practice — /design
   role: "Photographer & Web Designer",
   email: "hello@yourstudio.com",
   city: "Your City",
+};
+
+/* ==================================================================
+   INTRO — the home page introduces the person, not one of the crafts.
+
+   Viraj runs two practices in parallel: photography as Lenzofviraj,
+   and web design & build. A visitor landing cold should learn who he
+   is, what he does, and what they walk away with — then choose a
+   door. Each craft keeps its own page.
+
+   PLACEHOLDER COPY: replace with Viraj's own words.
+   ================================================================== */
+export const INTRO = {
+  lead: "Viraj makes the pictures, then builds the place they live.",
+  body: [
+    "Two practices, one pair of hands. Under Lenzofviraj he shoots editorial, portraits and events; under design & build he draws and ships the sites those pictures end up on.",
+    "Most people hire one or the other. Hiring both means the shoot is planned around the layout and the layout is drawn around the shoot — so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
+  ],
+  /* the two doors, mirrored in the hero strip */
+  does: [
+    {
+      k: "Photography",
+      brand: "Lenzofviraj",
+      to: "/photography",
+      v: "Editorial, portrait, event and landscape sets. Shot, selected and graded as one body of work.",
+    },
+    {
+      k: "Web design & build",
+      brand: "Design & Build",
+      to: "/design",
+      v: "Sites designed and shipped end to end — Figma or Canva through to a live, fast, editable page.",
+    },
+  ],
+  /* what a client actually walks away with */
+  offer: [
+    { k: "A finished set", v: "Graded, consistent, delivered in web and print sizes. Not a folder of raws." },
+    { k: "A site that ships", v: "Designed, built and deployed — not a mockup you then have to find a developer for." },
+    { k: "One point of contact", v: "The person who shot it is the person who built it. No handover, no translation loss." },
+    { k: "Something you can edit", v: "You leave with the source file and a way to change the words yourself." },
+  ],
 };
 
 /* --- real photos (from Google Drive sync) ---------------------------
@@ -29,6 +71,8 @@ export const P = {
 const PHOTOS = new Map();
 for (const p of manifest.work || []) PHOTOS.set(p.seed, p);
 for (const p of manifest.gallery || []) PHOTOS.set(p.seed, p);
+/* photos placed into projects from /admin — keyed `p-<driveFileId>` */
+for (const p of manifest.projectPhotos || []) PHOTOS.set(p.seed, p);
 if (manifest.portrait) PHOTOS.set(manifest.portrait.seed, manifest.portrait);
 
 /* img(seed, w, h): resolves a seed to a local optimized image. Picks the
@@ -49,8 +93,7 @@ export const ratio = (s, fw = 3, fh = 2) => {
   return p?.w && p?.h ? `${p.w} / ${p.h}` : `${fw} / ${fh}`;
 };
 
-/* Shared near-black base. Themes differ ONLY by accent — the room stays
-   dark, one light changes. */
+/* Near-black base. Dark, quiet room; the work is the only bright thing. */
 const BASE = {
   bg: "#0A0A0B",
   panel: "#111114",
@@ -60,14 +103,10 @@ const BASE = {
   filter: "saturate(0.92) brightness(0.96)",
 };
 
-export const THEMES = [
-  { id: "mono", name: "Mono", accent: "#E4E4E7" },
-  { id: "amber", name: "Amber", accent: "#E0A93B" },
-  { id: "cyan", name: "Cyan", accent: "#38BDF8" },
-  { id: "violet", name: "Violet", accent: "#A78BFA" },
-  { id: "rose", name: "Rose", accent: "#F471A0" },
-  { id: "lime", name: "Lime", accent: "#A3E635" },
-].map((t) => ({ ...BASE, ...t }));
+/* One fixed palette. The accent switcher was removed at the client's
+   request, so the accent is a constant — every var(--accent) rule in
+   the CSS keeps working, it just never changes. */
+export const THEME = { ...BASE, accent: "#E4E4E7" };
 
 const FRAMES_FALLBACK = [
   { seed: "pf-01", t: "Selected Work 01", loc: "Location, XX", exif: "35mm · f/8 · 1/500", kind: "Photography",
@@ -176,7 +215,13 @@ function withSyncedPhotos(projects) {
   });
 }
 
-export const PHOTO_PROJECTS = withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
+/* Projects made in /admin win outright — they are the real content.
+   Failing that we deal synced photos across the placeholder projects,
+   and failing THAT the placeholders stand alone, so a fresh clone with
+   no credentials still renders a complete site. */
+export const PHOTO_PROJECTS = manifest.photoProjects?.length
+  ? manifest.photoProjects
+  : withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
 
 /* Hero slideshow: the opening frame of each project, so the hero doubles
    as a table of contents. */
@@ -197,7 +242,7 @@ export const FEATURED = PHOTO_PROJECTS.map((p) => ({
    so a project without a public link still looks intentional.
    ================================================================== */
 
-export const WEB_PROJECTS = [
+const WEB_PROJECTS_FALLBACK = [
   {
     slug: "atelier-studio",
     t: "Atelier Studio",
@@ -259,6 +304,12 @@ export const WEB_PROJECTS = [
     ],
   },
 ];
+
+/* Same precedence as the photo projects: /admin content first, the
+   placeholder set only when nothing has been published yet. */
+export const WEB_PROJECTS = manifest.webProjects?.length
+  ? manifest.webProjects
+  : WEB_PROJECTS_FALLBACK;
 
 export const METRICS = [
   { v: 68, s: "", k: "Projects delivered" },
@@ -346,24 +397,21 @@ export const CSS = `
 /* --- appear (GSAP-driven; see Reveal) --- */
 .rv { will-change: opacity, transform; }
 
-/* --- bar + accent switcher --- */
+/* --- bar --- */
+/* Hides while reading down, returns the moment you scroll up (driven
+   from App.jsx) — so the page is uninterrupted, but navigation is one
+   flick away from anywhere, including the bottom. */
 .bar { position: sticky; top: 0; z-index: 80;
   background: color-mix(in srgb, var(--bg) 80%, transparent);
-  backdrop-filter: blur(16px); border-bottom: 1px solid var(--rule); }
+  backdrop-filter: blur(16px); border-bottom: 1px solid var(--rule);
+  transition: transform .42s cubic-bezier(.2,.8,.2,1); }
+.bar.hide { transform: translateY(-101%); }
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
-/* Each chip is a 30px tap target; the 14px ring it draws is the visual.
-   (44px targets won't fit the bar — 30px is the honest compromise.) */
-.chips { display: flex; gap: 2px; align-items: center; }
-.chip { width: 30px; height: 30px; border-radius: 50%; position: relative;
-  display: grid; place-items: center; }
-.chip::before { content: ""; position: absolute; inset: 0; margin: auto;
-  width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--rule); }
-.chip i { display: block; width: 10px; height: 10px; border-radius: 50%; position: relative; }
-.chip[aria-pressed="true"]::before { box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--accent); }
-.themename { min-width: 92px; text-align: right; color: var(--accent); }
-@media (max-width: 640px) { .themename { display: none; } }
+/* sits where the accent switcher used to be */
+.barmeta { text-align: right; }
+@media (max-width: 860px) { .barmeta { display: none; } }
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
@@ -479,6 +527,8 @@ export const CSS = `
 .metric b { display: block; font-weight: 300; letter-spacing: -0.03em;
   font-size: clamp(36px, 4.4vw, 60px); line-height: 1; font-variant-numeric: tabular-nums; }
 .metric span { display: block; margin-top: 12px; }
+/* the % / wks rides in as the number lands, so it needs its own box */
+.metric b .suf { display: inline-block; margin-top: 0; will-change: transform, opacity; }
 
 /* --- services / shot list ---
    Hover sweeps the current accent across the whole row and flips the
@@ -608,7 +658,13 @@ export const CSS = `
 .about-body p + p { margin-top: 20px; }
 .approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
   background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
-.approach div { background: var(--bg); padding: 30px 26px; }
+/* panels are plain <div> on the about page and <a> on the home page,
+   where each one is a door into that practice */
+.approach div, .approach a { background: var(--bg); padding: 30px 26px; display: block;
+  transition: background-color .4s ease; }
+.approach a:hover { background: var(--panel); }
+.approach a:hover h3 { color: var(--accent); }
+.approach h3 { transition: color .3s ease; }
 .approach h3 { font-weight: 400; letter-spacing: -0.02em; font-size: 19px; margin-bottom: 12px; }
 .approach p { color: var(--dim); font-size: 14.5px; line-height: 1.6; }
 .timeline { margin-top: 4vh; }
@@ -808,6 +864,210 @@ export const CSS = `
 .teaser a:hover .go .arrow { transform: translateX(6px); }
 .teaser .go .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
 
+/* --- masthead standfirst + the two practices ---
+   The home page introduces the person, so the masthead has to state
+   both crafts above the fold. The standfirst says it in words; the
+   two doors below let a visitor pick a practice immediately. */
+.standfirst { font-weight: 300; letter-spacing: -0.02em;
+  font-size: clamp(18px, 2.2vw, 27px); line-height: 1.4;
+  max-width: 36ch; margin-top: 24px; }
+.standfirst strong { font-weight: 400; color: var(--accent); }
+.standfirst i { font-style: normal; color: var(--dim); }
+
+.disciplines { display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--rule); border: 1px solid var(--rule); border-radius: 4px;
+  overflow: hidden; margin-top: 42px; max-width: 760px; }
+@media (max-width: 640px) { .disciplines { grid-template-columns: 1fr; } }
+.disc { position: relative; background: var(--bg); padding: 24px 26px;
+  display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.disc::before { content: ""; position: absolute; inset: 0; background: var(--accent);
+  transform: translateY(101%); transition: transform .5s cubic-bezier(.76,0,.24,1); }
+.disc:hover::before { transform: translateY(0); }
+.disc > * { position: relative; z-index: 1; transition: color .35s ease .05s; }
+.disc strong { font-weight: 400; letter-spacing: -0.02em;
+  font-size: clamp(21px, 2.5vw, 30px); }
+.disc .go { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; }
+.disc .go .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.disc:hover .go .arrow { transform: translateX(6px); }
+.disc:hover strong, .disc:hover .mono { color: var(--bg); }
+
+/* ==================================================================
+   ADMIN — /admin. Same palette as the site so it feels like one thing,
+   but plainer: forms want clarity, not atmosphere.
+   ================================================================== */
+.admin { padding: 6vh 0 14vh; max-width: 1100px; }
+.admin-top { display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 20px; flex-wrap: wrap; padding-bottom: 18px; margin-bottom: 34px;
+  border-bottom: 1px solid var(--rule); }
+.admin-top h1 { font-weight: 300; letter-spacing: -0.03em; font-size: clamp(30px, 5vw, 52px);
+  margin-top: 10px; }
+.admin-top a:hover { color: var(--accent); }
+
+.admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px;
+  overflow: hidden; margin-bottom: 26px; }
+.admin-stat { background: var(--bg); padding: 22px 20px; }
+.admin-stat b { display: block; font-weight: 300; letter-spacing: -0.03em;
+  font-size: clamp(28px, 3.4vw, 42px); line-height: 1; font-variant-numeric: tabular-nums; }
+.admin-stat span { display: block; margin-top: 10px; }
+
+.admin-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.btn { border: 1px solid var(--rule); border-radius: 100px; padding: 11px 22px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink);
+  transition: border-color .3s ease, background-color .3s ease, color .3s ease; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: .45; pointer-events: none; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.btn.primary:hover { filter: brightness(1.12); color: var(--bg); }
+.btn.ghost { border-color: transparent; color: var(--dim); }
+.btn.ghost:hover { color: var(--ink); }
+.btn.danger:hover { border-color: #F4595E; color: #F4595E; }
+.btn.small { padding: 8px 16px; font-size: 10px; }
+.mini { width: 30px; height: 30px; border: 1px solid var(--rule); border-radius: 4px;
+  display: grid; place-items: center; font-size: 12px; color: var(--dim);
+  transition: border-color .25s ease, color .25s ease; }
+.mini:hover { border-color: var(--accent); color: var(--accent); }
+.mini:disabled { opacity: .3; pointer-events: none; }
+.mini.danger:hover { border-color: #F4595E; color: #F4595E; }
+
+.admin-msg { padding: 12px 16px; border: 1px solid var(--rule); border-radius: 4px;
+  margin-bottom: 22px; color: var(--accent); }
+.admin-msg.bad { color: #F4595E; border-color: color-mix(in srgb, #F4595E 45%, var(--rule)); }
+.admin-msg.preview { color: #E0A93B; border-color: color-mix(in srgb, #E0A93B 45%, var(--rule));
+  background: color-mix(in srgb, #E0A93B 8%, transparent); }
+.admin-empty { padding: 22px 0; color: var(--dim); }
+
+.admin-sec { margin-top: 44px; }
+.admin-sec-head { display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 16px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+.admin-sec-head h2 { font-weight: 400; letter-spacing: -0.02em; font-size: 24px; }
+.admin-sec-head span { display: block; margin-top: 6px; }
+
+.admin-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 16px;
+  align-items: center; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.admin-row .num { color: var(--dim); }
+.admin-row-main strong { font-weight: 400; letter-spacing: -0.02em; font-size: 18px; display: block; }
+.admin-row-main .dim { color: var(--dim); font-style: normal; }
+.admin-row-main span { display: block; margin-top: 5px; }
+.admin-row-acts { display: flex; gap: 8px; align-items: center; }
+@media (max-width: 640px) {
+  .admin-row { grid-template-columns: 1fr; gap: 10px; }
+  .admin-row-acts { justify-content: flex-start; }
+}
+
+/* --- forms --- */
+.admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 30px; }
+@media (max-width: 720px) { .admin-form { grid-template-columns: 1fr; } }
+.admin-field { display: flex; flex-direction: column; gap: 8px; }
+.admin-field.wide { grid-column: 1 / -1; }
+.admin-field em { font-style: normal; font-size: 12.5px; color: var(--dim); }
+.admin-field input, .admin-field textarea, .admin-login input {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 4px;
+  color: var(--ink); font: inherit; font-size: 15px; padding: 12px 14px; width: 100%;
+  transition: border-color .25s ease; }
+.admin-field input:focus, .admin-field textarea:focus, .admin-login input:focus {
+  border-color: var(--accent); outline: none; }
+.admin-field textarea { resize: vertical; line-height: 1.6; }
+.admin-check { display: flex; align-items: center; gap: 10px; color: var(--dim); font-size: 14.5px; }
+.admin-check input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+.admin-login { max-width: 340px; display: flex; flex-direction: column; gap: 12px; margin-top: 8vh; }
+
+/* --- chosen pictures --- */
+.admin-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px; margin-top: 20px; }
+.admin-thumb { border: 1px solid var(--rule); border-radius: 4px; overflow: hidden;
+  background: var(--panel); }
+.admin-thumb img { aspect-ratio: 4/3; }
+.admin-thumb figcaption { display: flex; align-items: center; gap: 6px; padding: 8px;
+  justify-content: space-between; }
+
+/* --- Drive picker --- */
+.admin-picker { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,.72);
+  display: grid; place-items: center; padding: 24px; }
+.admin-picker-in { background: var(--bg); border: 1px solid var(--rule); border-radius: 6px;
+  width: min(1100px, 100%); height: min(80vh, 800px); display: flex; flex-direction: column;
+  overflow: hidden; }
+.admin-picker-top { display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--rule); }
+.admin-picker-body { display: grid; grid-template-columns: 220px 1fr; flex: 1; min-height: 0; }
+@media (max-width: 700px) { .admin-picker-body { grid-template-columns: 1fr; } .admin-folders { display: none; } }
+.admin-folders { border-right: 1px solid var(--rule); overflow-y: auto; padding: 12px; }
+.fold { display: block; width: 100%; text-align: left; padding: 9px 12px; border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .08em;
+  color: var(--dim); transition: background-color .25s ease, color .25s ease; }
+.fold:hover { background: var(--panel); color: var(--ink); }
+.fold.on { background: var(--accent); color: var(--bg); }
+.admin-grid { overflow-y: auto; padding: 16px; display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; align-content: start; }
+.pickfr { position: relative; border: 1px solid var(--rule); border-radius: 4px;
+  overflow: hidden; aspect-ratio: 1; transition: border-color .25s ease; }
+.pickfr:hover { border-color: var(--accent); }
+.pickfr.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.pickfr .badge { position: absolute; right: 6px; top: 6px; background: var(--accent);
+  color: var(--bg); border-radius: 100px; min-width: 22px; height: 22px; display: grid;
+  place-items: center; padding: 0 6px; font-size: 10px; }
+
+/* ==================================================================
+   CLIENT AREA — /client. The plainest page on the site: a client here
+   wants their photos, not an experience.
+   ================================================================== */
+.client { min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; padding: 12vh 0 8vh; text-align: center; }
+.client-kicker { margin-bottom: 40px; }
+.client-card { width: min(560px, 100%); border: 1px solid var(--rule); border-radius: 6px;
+  background: var(--panel); padding: 44px 38px; }
+@media (max-width: 560px) { .client-card { padding: 32px 22px; } }
+.client-card h1 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.05;
+  font-size: clamp(28px, 5vw, 44px); margin-top: 14px; text-wrap: balance; }
+.client-shoot { color: var(--dim); font-size: 15px; margin-top: 10px; }
+.client-lead { color: var(--dim); font-size: 15px; line-height: 1.7; margin-top: 14px; }
+.client-note { color: var(--ink); font-size: 15px; line-height: 1.7; margin-top: 22px;
+  padding: 16px 18px; border-left: 2px solid var(--accent); text-align: left;
+  background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+.client-card form { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+.client-card label { text-align: left; }
+.client-card input { background: var(--bg); border: 1px solid var(--rule); border-radius: 4px;
+  color: var(--ink); font-family: 'IBM Plex Mono', monospace; font-size: 16px;
+  letter-spacing: .06em; padding: 15px 16px; width: 100%; text-align: center;
+  transition: border-color .25s ease; }
+.client-card input:focus { border-color: var(--accent); outline: none; }
+
+/* one button does the whole job — make it obvious */
+.client-dl { display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; margin-top: 26px; padding: 17px 26px; border-radius: 4px;
+  background: var(--accent); color: var(--bg); border: 1px solid var(--accent);
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .16em;
+  text-transform: uppercase; transition: filter .3s ease, opacity .3s ease; }
+.client-dl:hover { filter: brightness(1.12); }
+.client-dl:disabled { opacity: .45; pointer-events: none; }
+.client-dl .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.client-dl:hover .arrow { transform: translate(2px, -2px); }
+
+.client-facts { display: flex; justify-content: center; gap: 34px; margin-top: 28px;
+  padding-top: 20px; border-top: 1px solid var(--rule); }
+.client-facts dd { margin: 6px 0 0; font-size: 19px; font-variant-numeric: tabular-nums; }
+.client-help { margin-top: 20px; line-height: 1.8; text-transform: none; letter-spacing: .04em; }
+.client-help a { color: var(--accent); }
+.client-err { margin-top: 18px; color: #F4595E; text-transform: none; letter-spacing: .04em;
+  line-height: 1.7; }
+.client-foot { margin-top: 44px; }
+.client-foot .back:hover { color: var(--accent); }
+
+/* --- admin: the delivery panel --- */
+.deliver { border: 1px solid var(--rule); border-radius: 6px; padding: 26px 24px;
+  background: var(--panel); }
+.deliver .admin-sec-head { border-bottom-color: var(--rule); }
+.admin-inline { display: flex; gap: 8px; align-items: center; }
+.admin-inline input { flex: 1; }
+.deliver-send { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--rule); }
+.deliver-send pre { background: var(--bg); border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 18px; margin: 12px 0 14px; white-space: pre-wrap; word-break: break-word;
+  font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.7; color: var(--dim); }
+.deliver-hint { margin-top: 12px; text-transform: none; letter-spacing: .04em; }
+
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1 !important; transform: none !important; }
@@ -817,6 +1077,9 @@ export const CSS = `
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
   .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }
   .card { position: static; }
+  /* with transitions off, an auto-hiding bar would blink in and out —
+     keep it put instead */
+  .bar.hide { transform: none !important; }
   .roll-track { scroll-snap-type: none; }
   .iris-lens { display: none; }
   .cursor { display: none; }
