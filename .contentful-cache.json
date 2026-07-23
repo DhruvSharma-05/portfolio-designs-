@@ -1,0 +1,376 @@
+{
+  "work/AuPPIaNnpICFJuy6jSj9X": {
+    "seed": "fountain-portrait",
+    "stamp": "3pGjznd2Y0QBC3FWGKcC9X:2026-07-23T11:12:41.361Z",
+    "variants": {
+      "sm": "/photos/work/fountain-portrait-sm.webp",
+      "lg": "/photos/work/fountain-portrait-lg.webp",
+      "w": 2000,
+      "h": 3553
+    },
+    "exif": ""
+  },
+  "work/6iMvrz5wZY4WWPjotXILRY": {
+    "seed": "evening-elegance",
+    "stamp": "5t3gqYhj5tYk2GHaUWxNRX:2026-07-23T11:13:37.954Z",
+    "variants": {
+      "sm": "/photos/work/evening-elegance-sm.webp",
+      "lg": "/photos/work/evening-elegance-lg.webp",
+      "w": 2000,
+      "h": 3554
+    },
+    "exif": ""
+  },
+  "work/54LQeyru37giubO6Md5umy": {
+    "seed": "between-takes",
+    "stamp": "2NcKEag63D5AxJu5hDvoVu:2026-07-23T11:13:19.766Z",
+    "variants": {
+      "sm": "/photos/work/between-takes-sm.webp",
+      "lg": "/photos/work/between-takes-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    "exif": ""
+  },
+  "work/qsR2l6BcsXCuDy3aVp0Ce": {
+    "seed": "the-gathering",
+    "stamp": "68RDwIpKoyU5il3WhBMvSz:2026-07-23T11:13:02.153Z",
+    "variants": {
+      "sm": "/photos/work/the-gathering-sm.webp",
+      "lg": "/photos/work/the-gathering-lg.webp",
+      "w": 2000,
+      "h": 1190
+    },
+    "exif": ""
+  },
+  "work/afOiAWGGeAEst5BRl1MQ8": {
+    "seed": "bighorn",
+    "stamp": "JbCOaFHiurT109fxqm6Zy:2026-07-23T11:13:53.542Z",
+    "variants": {
+      "sm": "/photos/work/bighorn-sm.webp",
+      "lg": "/photos/work/bighorn-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    "exif": "191mm · f/4 · 1/200 · ISO 100"
+  },
+  "work/45VOEwbsoD7gNhXGeisAuC": {
+    "seed": "venus",
+    "stamp": "3kApkX3aUJpobOLsl8evls:2026-07-23T11:14:28.013Z",
+    "variants": {
+      "sm": "/photos/work/venus-sm.webp",
+      "lg": "/photos/work/venus-lg.webp",
+      "w": 2000,
+      "h": 2858
+    },
+    "exif": "50mm · f/2 · 1/60 · ISO 1000"
+  },
+  "work/3Ibq7NmJd2A5J2obNNqtAe": {
+    "seed": "green-machine",
+    "stamp": "5ICEdEMXsmQjvdH4oind8t:2026-07-23T11:14:08.919Z",
+    "variants": {
+      "sm": "/photos/work/green-machine-sm.webp",
+      "lg": "/photos/work/green-machine-lg.webp",
+      "w": 2000,
+      "h": 3081
+    },
+    "exif": ""
+  },
+  "work/1id8s0DY5AlsntAmSbi9Il": {
+    "seed": "after-hours",
+    "stamp": "1207ubKaD6sXwz6UaTYrai:2026-07-23T11:14:17.413Z",
+    "variants": {
+      "sm": "/photos/work/after-hours-sm.webp",
+      "lg": "/photos/work/after-hours-lg.webp",
+      "w": 2000,
+      "h": 3555
+    },
+    "exif": ""
+  },
+  "gallery/3WUINXDvklrSJkB8Es51QT": {
+    "seed": "cream-gold",
+    "stamp": "79RfuxQFnRRXiY5jfixVvv:2026-07-23T11:20:10.385Z",
+    "variants": {
+      "sm": "/photos/gallery/cream-gold-sm.webp",
+      "lg": "/photos/gallery/cream-gold-lg.webp",
+      "w": 1365,
+      "h": 2048
+    },
+    "exif": ""
+  },
+  "gallery/4kjAEISunnvsWwhdrRnHsp": {
+    "seed": "blue-traditional",
+    "stamp": "1zX2hzvhIChlGteN4iAbj9:2026-07-23T11:20:36.180Z",
+    "variants": {
+      "sm": "/photos/gallery/blue-traditional-sm.webp",
+      "lg": "/photos/gallery/blue-traditional-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    "exif": ""
+  },
+  "gallery/5WL6pM98RUk6ryes7A6jeT": {
+    "seed": "maroon",
+    "stamp": "6coIfVL2ZdbDfeIB03QopW:2026-07-23T11:19:46.116Z",
+    "variants": {
+      "sm": "/photos/gallery/maroon-sm.webp",
+      "lg": "/photos/gallery/maroon-lg.webp",
+      "w": 1150,
+      "h": 2048
+    },
+    "exif": ""
+  },
+  "gallery/3ZSaZTelFmLE8xwXJM59Kb": {
+    "seed": "green-traditional",
+    "stamp": "1KYBatN5c1XfEM46G1aB2y:2026-07-23T11:19:13.298Z",
+    "variants": {
+      "sm": "/photos/gallery/green-traditional-sm.webp",
+      "lg": "/photos/gallery/green-traditional-lg.webp",
+      "w": 1150,
+      "h": 2048
+    },
+    "exif": ""
+  },
+  "gallery/3S5gY9khbDfH4HF4wSCV1i": {
+    "seed": "white-a",
+    "stamp": "7rFqFCdt3Pbs47C4qBtxlB:2026-07-23T11:19:04.285Z",
+    "variants": {
+      "sm": "/photos/gallery/white-a-sm.webp",
+      "lg": "/photos/gallery/white-a-lg.webp",
+      "w": 1150,
+      "h": 2048
+    },
+    "exif": ""
+  },
+  "gallery/6xsaB8ucYT7hnRu9ersAkR": {
+    "seed": "white-b",
+    "stamp": "BoYnjUO43MzMbLkQSo4TX:2026-07-23T11:19:22.229Z",
+    "variants": {
+      "sm": "/photos/gallery/white-b-sm.webp",
+      "lg": "/photos/gallery/white-b-lg.webp",
+      "w": 1365,
+      "h": 2048
+    },
+    "exif": ""
+  },
+  "gallery/4gQ4K0hbmZi91IZQQeLI98": {
+    "seed": "white-fence",
+    "stamp": "584iTWCvgIUhy5gBD4V7Hz:2026-07-23T11:21:02.827Z",
+    "variants": {
+      "sm": "/photos/gallery/white-fence-sm.webp",
+      "lg": "/photos/gallery/white-fence-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    "exif": ""
+  },
+  "gallery/4YKwixbVrJJJI1oa2NXgRY": {
+    "seed": "pink-field",
+    "stamp": "45db0fmDfxUFDJJgmg7WXz:2026-07-23T11:20:23.077Z",
+    "variants": {
+      "sm": "/photos/gallery/pink-field-sm.webp",
+      "lg": "/photos/gallery/pink-field-lg.webp",
+      "w": 2000,
+      "h": 3555
+    },
+    "exif": ""
+  },
+  "gallery/30HtQNkFENrbRs7FD0a7hG": {
+    "seed": "motion",
+    "stamp": "4aXWQz2J837pnKQVIVgW2:2026-07-23T11:19:57.904Z",
+    "variants": {
+      "sm": "/photos/gallery/motion-sm.webp",
+      "lg": "/photos/gallery/motion-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    "exif": ""
+  },
+  "gallery/VDCNyEl19MNJAz5ZWsLGl": {
+    "seed": "two-men-car",
+    "stamp": "6FwFACqQXFnq4dGupQHXYG:2026-07-23T11:18:55.732Z",
+    "variants": {
+      "sm": "/photos/gallery/two-men-car-sm.webp",
+      "lg": "/photos/gallery/two-men-car-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    "exif": ""
+  },
+  "gallery/3mGiXWkp0aZ7nMDoEpn4UB": {
+    "seed": "green-car",
+    "stamp": "3H4BOljtZE0PCmG4LoOu8e:2026-07-23T11:19:36.399Z",
+    "variants": {
+      "sm": "/photos/gallery/green-car-sm.webp",
+      "lg": "/photos/gallery/green-car-lg.webp",
+      "w": 2000,
+      "h": 3062
+    },
+    "exif": ""
+  },
+  "gallery/7bCr6dYPZezJlJbRKZwaQr": {
+    "seed": "sherwani",
+    "stamp": "1L0mVh4dcMQ7CpDdRYomSV:2026-07-23T11:17:20.878Z",
+    "variants": {
+      "sm": "/photos/gallery/sherwani-sm.webp",
+      "lg": "/photos/gallery/sherwani-lg.webp",
+      "w": 2000,
+      "h": 3877
+    },
+    "exif": ""
+  },
+  "gallery/5GDsikO1YhEby2aGZOHT2U": {
+    "seed": "black-fountain",
+    "stamp": "18t9nNZBg8Zn0IG0vYSaKL:2026-07-23T11:17:54.509Z",
+    "variants": {
+      "sm": "/photos/gallery/black-fountain-sm.webp",
+      "lg": "/photos/gallery/black-fountain-lg.webp",
+      "w": 2000,
+      "h": 3554
+    },
+    "exif": ""
+  },
+  "gallery/2VXLjaoKQdmLxZGkbOQP3d": {
+    "seed": "floral-seated",
+    "stamp": "176LNEYo7QrkXwQ8XVwjuX:2026-07-23T11:18:19.799Z",
+    "variants": {
+      "sm": "/photos/gallery/floral-seated-sm.webp",
+      "lg": "/photos/gallery/floral-seated-lg.webp",
+      "w": 2000,
+      "h": 3178
+    },
+    "exif": ""
+  },
+  "gallery/6gp5q7AEGCbZaVkpqiX6XH": {
+    "seed": "dusk",
+    "stamp": "3lhsnzi3C2rGUxy1pNyK1c:2026-07-23T11:18:39.226Z",
+    "variants": {
+      "sm": "/photos/gallery/dusk-sm.webp",
+      "lg": "/photos/gallery/dusk-lg.webp",
+      "w": 2000,
+      "h": 3553
+    },
+    "exif": ""
+  },
+  "gallery/2Q89KGzTh3EPLAOhQdChNi": {
+    "seed": "group-women",
+    "stamp": "sNBv6EIjw5CnGMnOIXMP2:2026-07-23T11:16:07.064Z",
+    "variants": {
+      "sm": "/photos/gallery/group-women-sm.webp",
+      "lg": "/photos/gallery/group-women-lg.webp",
+      "w": 2000,
+      "h": 3554
+    },
+    "exif": ""
+  },
+  "gallery/6K2ESaR7CxnbVYdkHaEG7G": {
+    "seed": "large-group",
+    "stamp": "6zAh7f6oxbghqVos9MlaId:2026-07-23T11:17:37.066Z",
+    "variants": {
+      "sm": "/photos/gallery/large-group-sm.webp",
+      "lg": "/photos/gallery/large-group-lg.webp",
+      "w": 2000,
+      "h": 1444
+    },
+    "exif": ""
+  },
+  "gallery/1ez1ODfYRCroYFTKIAWcBB": {
+    "seed": "event-seated",
+    "stamp": "AUjbtM9cbCqoty38Vwqih:2026-07-23T11:15:30.718Z",
+    "variants": {
+      "sm": "/photos/gallery/event-seated-sm.webp",
+      "lg": "/photos/gallery/event-seated-lg.webp",
+      "w": 2000,
+      "h": 1137
+    },
+    "exif": ""
+  },
+  "gallery/3Rr0jVr4KSPTLZ4CeXmIby": {
+    "seed": "friends",
+    "stamp": "7juT01qZMNweI1Lt6AcGUR:2026-07-23T11:20:48.548Z",
+    "variants": {
+      "sm": "/photos/gallery/friends-sm.webp",
+      "lg": "/photos/gallery/friends-lg.webp",
+      "w": 2000,
+      "h": 1123
+    },
+    "exif": ""
+  },
+  "gallery/1yoaIf3KfGk6prloCEgC13": {
+    "seed": "lionesses",
+    "stamp": "4eauKkjLFkLVLfrEyCWNDp:2026-07-23T11:15:47.650Z",
+    "variants": {
+      "sm": "/photos/gallery/lionesses-sm.webp",
+      "lg": "/photos/gallery/lionesses-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    "exif": ""
+  },
+  "gallery/3XoXGWR5L5gG65NhTP6BC5": {
+    "seed": "cheetah-rest",
+    "stamp": "40to6wAMefgsid23Y0DP2y:2026-07-23T11:14:50.879Z",
+    "variants": {
+      "sm": "/photos/gallery/cheetah-rest-sm.webp",
+      "lg": "/photos/gallery/cheetah-rest-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    "exif": ""
+  },
+  "gallery/3NRTkCK9DQKwXeDJkOsW3F": {
+    "seed": "cheetah",
+    "stamp": "42QXkWMIHcz3pDCvlsxKC4:2026-07-23T11:18:04.399Z",
+    "variants": {
+      "sm": "/photos/gallery/cheetah-sm.webp",
+      "lg": "/photos/gallery/cheetah-lg.webp",
+      "w": 2000,
+      "h": 1153
+    },
+    "exif": ""
+  },
+  "gallery/WrXWA4nX4NGlwDC29uEoG": {
+    "seed": "cheetahs",
+    "stamp": "2Lzi7gzNyAvDJCLVHgso8J:2026-07-23T11:16:44.055Z",
+    "variants": {
+      "sm": "/photos/gallery/cheetahs-sm.webp",
+      "lg": "/photos/gallery/cheetahs-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    "exif": ""
+  },
+  "gallery/2J00Jbh0jeomyYUMU4qp7z": {
+    "seed": "deer-pair",
+    "stamp": "wAgs6KSZQT7UyMXIsx9e7:2026-07-23T11:17:06.386Z",
+    "variants": {
+      "sm": "/photos/gallery/deer-pair-sm.webp",
+      "lg": "/photos/gallery/deer-pair-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    "exif": ""
+  },
+  "gallery/69cCncIiDdOJNCnkAuBHKQ": {
+    "seed": "buck",
+    "stamp": "LNAr7c8nlFRL5f0xmxR4W:2026-07-23T11:16:25.850Z",
+    "variants": {
+      "sm": "/photos/gallery/buck-sm.webp",
+      "lg": "/photos/gallery/buck-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    "exif": ""
+  },
+  "gallery/3AwlWbrrZ1Fv2gb1SkR72x": {
+    "seed": "stags",
+    "stamp": "24UMsfsfP9ndGdhoHwKdt4:2026-07-23T11:15:12.895Z",
+    "variants": {
+      "sm": "/photos/gallery/stags-sm.webp",
+      "lg": "/photos/gallery/stags-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    "exif": ""
+  }
+}

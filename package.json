@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "vercel dev",
-    "sync": "node scripts/sync-drive.mjs",
-    "prebuild": "node scripts/sync-drive.mjs",
+    "sync": "node scripts/sync-contentful.mjs && node scripts/sync-drive.mjs",
+    "prebuild": "npm run sync",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
