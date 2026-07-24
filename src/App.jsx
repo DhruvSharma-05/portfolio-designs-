@@ -1,29 +1,50 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, lazy, Suspense } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion } from "motion/react";
 import Lenis from "lenis";
-import { CSS, THEMES, P, prefersReduced } from "./data.js";
+import { CSS, THEME, P, prefersReduced } from "./data.js";
 import { AppProvider } from "./context.js";
-import { TLink, Cursor } from "./ui.jsx";
+import { TLink, Logo } from "./ui.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 import Home from "./pages/Home.jsx";
 import WorkDetail from "./pages/WorkDetail.jsx";
 import About from "./pages/About.jsx";
+import Photography from "./pages/Photography.jsx";
+import PhotoProject from "./pages/PhotoProject.jsx";
+import Design from "./pages/Design.jsx";
+import DesignProject from "./pages/DesignProject.jsx";
+import NotFound from "./pages/NotFound.jsx";
+
+/* The admin is code-split: none of it ships to normal visitors. */
+const Admin = lazy(() => import("./pages/Admin.jsx"));
+const Client = lazy(() => import("./pages/Client.jsx"));
+
+/* Primary navigation. `/` matches exactly; the others also light up on
+   their detail pages (/photography/:slug, /design/:slug). */
+const NAV = [
+  { to: "/", label: "Work" },
+  { to: "/photography", label: "Photography" },
+  { to: "/design", label: "Design" },
+  { to: "/about", label: "About" },
+];
 
 /* ==================================================================
-   SHELL — persists across route changes. Owns the theme, the smooth
-   scroll + reading-progress bar, and the aperture page transition.
+   SHELL — persists across route changes. Owns the smooth scroll +
+   reading-progress bar, and the aperture page transition.
    ================================================================== */
 export default function App() {
-  const [theme, setTheme] = useState(THEMES[0]);
   const [reduced] = useState(prefersReduced);
   const navigate = useNavigate();
   const location = useLocation();
+  /* The admin is a tool, not part of the portfolio: no public nav. */
+  const isAdmin = location.pathname.startsWith("/admin");
   const progRef = useRef(null);
+  const barRef = useRef(null);
   const irisRef = useRef(null);
   const lenisRef = useRef(null);
+  const topRef = useRef(null);
   const busy = useRef(false);
 
   /* Lenis smooth scroll (native scroll, so sticky keeps working) driven
@@ -44,6 +65,11 @@ export default function App() {
       start: 0, end: "max",
       onUpdate: (self) => {
         if (progRef.current) progRef.current.style.width = `${self.progress * 100}%`;
+        /* Bar hides while scrolling down and comes straight back on the
+           way up. Always shown near the top so it never starts hidden. */
+        const bar = barRef.current;
+        if (bar) bar.classList.toggle("hide", self.scroll() > 140 && self.direction === 1);
+        topRef.current?.classList.toggle("show", self.scroll() > 600);
       },
     });
     return () => {
@@ -61,6 +87,9 @@ export default function App() {
       navigate(to);
       lenisRef.current?.scrollTo(0, { immediate: true });
       window.scrollTo(0, 0);
+      // a programmatic jump to the top may not emit a scroll update, so
+      // reveal the bar explicitly on every navigation
+      barRef.current?.classList.remove("hide");
     };
     if (reduced || !irisRef.current) { finish(); return; }
     if (busy.current) return;
@@ -75,51 +104,83 @@ export default function App() {
   }, [navigate, location.pathname, reduced]);
 
   const vars = {
-    "--bg": theme.bg, "--panel": theme.panel, "--ink": theme.ink, "--dim": theme.dim,
-    "--rule": theme.rule, "--accent": theme.accent, "--filter": theme.filter,
+    "--bg": THEME.bg, "--panel": THEME.panel, "--ink": THEME.ink, "--dim": THEME.dim,
+    "--rule": THEME.rule, "--accent": THEME.accent, "--filter": THEME.filter,
   };
 
   return (
-    <AppProvider value={{ theme, setTheme, go }}>
+    <AppProvider value={{ theme: THEME, go }}>
       <div className="pf" style={vars}>
         <style>{CSS}</style>
 
         <a className="skip" href="#main">Skip to content</a>
-        <Cursor />
 
         {/* aperture transition overlay */}
         <div className="iris" aria-hidden="true">
           <div className="iris-lens" ref={irisRef} />
         </div>
 
-        {/* bar + accent switcher */}
-        <div className="bar">
+        {/* masthead bar */}
+        <div className="bar" ref={barRef} hidden={isAdmin}>
           <div className="bar-in">
-            <TLink to="/" className="mono brand">{P.name}</TLink>
+            <TLink to="/" className="mono brand" aria-label={`${P.name} — home`}><Logo /></TLink>
             <nav className="nav mono" aria-label="Primary">
-              <TLink to="/" aria-current={location.pathname === "/" ? "page" : undefined}>Work</TLink>
-              <TLink to="/about" aria-current={location.pathname === "/about" ? "page" : undefined}>About</TLink>
-            </nav>
-            <div className="chips" role="group" aria-label="Accent colour">
-              {THEMES.map((t) => (
-                <motion.button key={t.id} className="chip" aria-pressed={t.id === theme.id}
-                  aria-label={t.name} title={t.name} onClick={() => setTheme(t)}
-                  whileHover={{ scale: 1.25 }} whileTap={{ scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}>
-                  <i style={{ background: t.accent }} />
-                </motion.button>
+              {NAV.map((n) => (
+                <TLink key={n.to} to={n.to}
+                  aria-current={
+                    (n.to === "/" ? location.pathname === "/" : location.pathname.startsWith(n.to))
+                      ? "page" : undefined
+                  }>
+                  {n.label}
+                </TLink>
               ))}
-            </div>
-            <div className="themename mono">{theme.name}</div>
+            </nav>
+            <span className="mono barmeta">{P.city} — Booking 2026</span>
           </div>
           <div className="prog" ref={progRef} style={{ width: "0%" }} />
         </div>
 
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/work/:seed" element={<WorkDetail />} />
-          <Route path="/about" element={<About />} />
-        </Routes>
+        {/* back to top — fades in once you're a scroll past the fold */}
+        {!isAdmin && (
+          <button type="button" className="totop" ref={topRef} aria-label="Back to top"
+            onClick={() => {
+              if (reduced || !lenisRef.current) {
+                window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+                return;
+              }
+              lenisRef.current.scrollTo(0, { duration: 1 });
+            }}>
+            <span className="arrow" aria-hidden="true">↑</span>
+          </button>
+        )}
+
+        <ErrorBoundary key={location.pathname}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/work/:seed" element={<WorkDetail />} />
+            <Route path="/photography" element={<Photography />} />
+            <Route path="/photography/:slug" element={<PhotoProject />} />
+            <Route path="/design" element={<Design />} />
+            <Route path="/design/:slug" element={<DesignProject />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/client" element={
+              <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
+                <Client />
+              </Suspense>
+            } />
+            <Route path="/client/:code" element={
+              <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
+                <Client />
+              </Suspense>
+            } />
+            <Route path="/admin" element={
+              <Suspense fallback={<main className="admin wrap"><p className="mono">Loading…</p></main>}>
+                <Admin />
+              </Suspense>
+            } />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ErrorBoundary>
       </div>
     </AppProvider>
   );

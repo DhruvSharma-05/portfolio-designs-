@@ -1,6 +1,311 @@
 {
-  "generatedAt": null,
-  "work": [],
-  "gallery": [],
-  "portrait": null
+  "generatedAt": "2026-07-24T09:03:59.120Z",
+  "work": [
+    {
+      "seed": "fountain-portrait",
+      "t": "Fountain Portrait",
+      "loc": "",
+      "exif": "",
+      "kind": "Photography",
+      "note": "",
+      "year": "",
+      "role": "",
+      "sm": "/photos/work/fountain-portrait-sm.webp",
+      "lg": "/photos/work/fountain-portrait-lg.webp",
+      "w": 2000,
+      "h": 3553
+    },
+    {
+      "seed": "evening-elegance",
+      "t": "Evening Elegance",
+      "loc": "",
+      "exif": "",
+      "kind": "Photography",
+      "note": "",
+      "year": "",
+      "role": "",
+      "sm": "/photos/work/evening-elegance-sm.webp",
+      "lg": "/photos/work/evening-elegance-lg.webp",
+      "w": 2000,
+      "h": 3554
+    },
+    {
+      "seed": "between-takes",
+      "t": "Between Takes",
+      "loc": "",
+      "exif": "",
+      "kind": "Photography",
+      "note": "",
+      "year": "",
+      "role": "",
+      "sm": "/photos/work/between-takes-sm.webp",
+      "lg": "/photos/work/between-takes-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "the-gathering",
+      "t": "The Gathering",
+      "loc": "",
+      "exif": "",
+      "kind": "Photography",
+      "note": "",
+      "year": "",
+      "role": "",
+      "sm": "/photos/work/the-gathering-sm.webp",
+      "lg": "/photos/work/the-gathering-lg.webp",
+      "w": 2000,
+      "h": 1190
+    },
+    {
+      "seed": "bighorn",
+      "t": "Bighorn",
+      "loc": "",
+      "exif": "191mm · f/4 · 1/200 · ISO 100",
+      "kind": "Photography",
+      "note": "",
+      "year": "",
+      "role": "",
+      "sm": "/photos/work/bighorn-sm.webp",
+      "lg": "/photos/work/bighorn-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "venus",
+      "t": "Venus",
+      "loc": "",
+      "exif": "50mm · f/2 · 1/60 · ISO 1000",
+      "kind": "Photography",
+      "note": "",
+      "year": "",
+      "role": "",
+      "sm": "/photos/work/venus-sm.webp",
+      "lg": "/photos/work/venus-lg.webp",
+      "w": 2000,
+      "h": 2858
+    },
+    {
+      "seed": "green-machine",
+      "t": "Green Machine",
+      "loc": "",
+      "exif": "",
+      "kind": "Photography",
+      "note": "",
+      "year": "",
+      "role": "",
+      "sm": "/photos/work/green-machine-sm.webp",
+      "lg": "/photos/work/green-machine-lg.webp",
+      "w": 2000,
+      "h": 3081
+    },
+    {
+      "seed": "after-hours",
+      "t": "After Hours",
+      "loc": "",
+      "exif": "",
+      "kind": "Photography",
+      "note": "",
+      "year": "",
+      "role": "",
+      "sm": "/photos/work/after-hours-sm.webp",
+      "lg": "/photos/work/after-hours-lg.webp",
+      "w": 2000,
+      "h": 3555
+    }
+  ],
+  "gallery": [
+    {
+      "seed": "cream-gold",
+      "sm": "/photos/gallery/cream-gold-sm.webp",
+      "lg": "/photos/gallery/cream-gold-lg.webp",
+      "w": 1365,
+      "h": 2048
+    },
+    {
+      "seed": "blue-traditional",
+      "sm": "/photos/gallery/blue-traditional-sm.webp",
+      "lg": "/photos/gallery/blue-traditional-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    {
+      "seed": "maroon",
+      "sm": "/photos/gallery/maroon-sm.webp",
+      "lg": "/photos/gallery/maroon-lg.webp",
+      "w": 1150,
+      "h": 2048
+    },
+    {
+      "seed": "green-traditional",
+      "sm": "/photos/gallery/green-traditional-sm.webp",
+      "lg": "/photos/gallery/green-traditional-lg.webp",
+      "w": 1150,
+      "h": 2048
+    },
+    {
+      "seed": "white-a",
+      "sm": "/photos/gallery/white-a-sm.webp",
+      "lg": "/photos/gallery/white-a-lg.webp",
+      "w": 1150,
+      "h": 2048
+    },
+    {
+      "seed": "white-b",
+      "sm": "/photos/gallery/white-b-sm.webp",
+      "lg": "/photos/gallery/white-b-lg.webp",
+      "w": 1365,
+      "h": 2048
+    },
+    {
+      "seed": "white-fence",
+      "sm": "/photos/gallery/white-fence-sm.webp",
+      "lg": "/photos/gallery/white-fence-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    {
+      "seed": "pink-field",
+      "sm": "/photos/gallery/pink-field-sm.webp",
+      "lg": "/photos/gallery/pink-field-lg.webp",
+      "w": 2000,
+      "h": 3555
+    },
+    {
+      "seed": "motion",
+      "sm": "/photos/gallery/motion-sm.webp",
+      "lg": "/photos/gallery/motion-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    {
+      "seed": "two-men-car",
+      "sm": "/photos/gallery/two-men-car-sm.webp",
+      "lg": "/photos/gallery/two-men-car-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    {
+      "seed": "green-car",
+      "sm": "/photos/gallery/green-car-sm.webp",
+      "lg": "/photos/gallery/green-car-lg.webp",
+      "w": 2000,
+      "h": 3062
+    },
+    {
+      "seed": "sherwani",
+      "sm": "/photos/gallery/sherwani-sm.webp",
+      "lg": "/photos/gallery/sherwani-lg.webp",
+      "w": 2000,
+      "h": 3877
+    },
+    {
+      "seed": "black-fountain",
+      "sm": "/photos/gallery/black-fountain-sm.webp",
+      "lg": "/photos/gallery/black-fountain-lg.webp",
+      "w": 2000,
+      "h": 3554
+    },
+    {
+      "seed": "floral-seated",
+      "sm": "/photos/gallery/floral-seated-sm.webp",
+      "lg": "/photos/gallery/floral-seated-lg.webp",
+      "w": 2000,
+      "h": 3178
+    },
+    {
+      "seed": "dusk",
+      "sm": "/photos/gallery/dusk-sm.webp",
+      "lg": "/photos/gallery/dusk-lg.webp",
+      "w": 2000,
+      "h": 3553
+    },
+    {
+      "seed": "group-women",
+      "sm": "/photos/gallery/group-women-sm.webp",
+      "lg": "/photos/gallery/group-women-lg.webp",
+      "w": 2000,
+      "h": 3554
+    },
+    {
+      "seed": "large-group",
+      "sm": "/photos/gallery/large-group-sm.webp",
+      "lg": "/photos/gallery/large-group-lg.webp",
+      "w": 2000,
+      "h": 1444
+    },
+    {
+      "seed": "event-seated",
+      "sm": "/photos/gallery/event-seated-sm.webp",
+      "lg": "/photos/gallery/event-seated-lg.webp",
+      "w": 2000,
+      "h": 1137
+    },
+    {
+      "seed": "friends",
+      "sm": "/photos/gallery/friends-sm.webp",
+      "lg": "/photos/gallery/friends-lg.webp",
+      "w": 2000,
+      "h": 1123
+    },
+    {
+      "seed": "lionesses",
+      "sm": "/photos/gallery/lionesses-sm.webp",
+      "lg": "/photos/gallery/lionesses-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "cheetah-rest",
+      "sm": "/photos/gallery/cheetah-rest-sm.webp",
+      "lg": "/photos/gallery/cheetah-rest-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "cheetah",
+      "sm": "/photos/gallery/cheetah-sm.webp",
+      "lg": "/photos/gallery/cheetah-lg.webp",
+      "w": 2000,
+      "h": 1153
+    },
+    {
+      "seed": "cheetahs",
+      "sm": "/photos/gallery/cheetahs-sm.webp",
+      "lg": "/photos/gallery/cheetahs-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "deer-pair",
+      "sm": "/photos/gallery/deer-pair-sm.webp",
+      "lg": "/photos/gallery/deer-pair-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "buck",
+      "sm": "/photos/gallery/buck-sm.webp",
+      "lg": "/photos/gallery/buck-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "stags",
+      "sm": "/photos/gallery/stags-sm.webp",
+      "lg": "/photos/gallery/stags-lg.webp",
+      "w": 2000,
+      "h": 1126
+    }
+  ],
+  "portrait": {
+    "seed": "viraj-portrait",
+    "sm": "/photos/portrait/viraj-portrait-sm.webp",
+    "lg": "/photos/portrait/viraj-portrait-lg.webp",
+    "w": 2000,
+    "h": 2667
+  },
+  "projectPhotos": [],
+  "photoProjects": [],
+  "webProjects": []
 }
