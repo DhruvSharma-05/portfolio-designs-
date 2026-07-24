@@ -15,12 +15,20 @@ export const prefersReduced = () =>
 
 export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
-  photographer: "Viraj",        // the person the home page is about
-  photoBrand: "Lenzofviraj",    // the photography practice — /photography
+  photographer: "Viraj Mehta",  // the person the home page is about
+  photoBrand: "Lensofviraj",    // the photography practice — /photography
   designBrand: "Design & Build",// the web practice — /design
-  role: "Photographer & Web Designer",
-  email: "hello@yourstudio.com",
-  city: "Your City",
+  role: "Photographer & Designer",
+  email: "virajmehta@outlook.in",
+  email2: "virajmehta227@gmail.com", // secondary contact
+  phone: "+1 (672) 968-9680",
+  city: "Vancouver",
+  region: "British Columbia, Canada",
+  socials: [
+    { k: "Instagram", v: "@lensofviraj", href: "https://instagram.com/lensofviraj" },
+    { k: "Instagram (personal)", v: "@virajmehtaxo", href: "https://instagram.com/virajmehtaxo" },
+    { k: "LinkedIn", v: "virajmehtaa", href: "https://www.linkedin.com/in/virajmehtaa" },
+  ],
 };
 
 /* ==================================================================
@@ -34,24 +42,24 @@ export const P = {
    PLACEHOLDER COPY: replace with Viraj's own words.
    ================================================================== */
 export const INTRO = {
-  lead: "Viraj makes the pictures, then builds the place they live.",
+  lead: "Engineering taught him how things work. Design and photography taught him how they feel.",
   body: [
-    "Two practices, one pair of hands. Under Lenzofviraj he shoots editorial, portraits and events; under design & build he draws and ships the sites those pictures end up on.",
-    "Most people hire one or the other. Hiring both means the shoot is planned around the layout and the layout is drawn around the shoot — so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
+    "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling — designing intuitive digital products and capturing moments through photography.",
+    "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws and ships the sites and apps those pictures end up on — so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
   ],
   /* the two doors, mirrored in the hero strip */
   does: [
     {
       k: "Photography",
-      brand: "Lenzofviraj",
+      brand: "Lensofviraj",
       to: "/photography",
-      v: "Editorial, portrait, event and landscape sets. Shot, selected and graded as one body of work.",
+      v: "Portraits, events and visual stories. Shot, selected and graded as one body of work.",
     },
     {
       k: "Web design & build",
       brand: "Design & Build",
       to: "/design",
-      v: "Sites designed and shipped end to end — Figma or Canva through to a live, fast, editable page.",
+      v: "Apps and sites designed and shipped end to end — UI/UX through to a live, fast, editable page.",
     },
   ],
   /* what a client actually walks away with */
@@ -343,7 +351,7 @@ export const WEB_PROJECTS = manifest.webProjects?.length
 export const METRICS = [
   { v: 68, s: "", k: "Projects delivered" },
   { v: 92, s: "%", k: "Clients who returned" },
-  { v: 11, s: "", k: "Years behind a lens" },
+  { v: 10, s: "+", k: "Years behind a lens" },
   { v: 4, s: "wks", k: "Shoot to live site" },
 ];
 
@@ -362,25 +370,25 @@ export const SHOTLIST = [
   { k: "Colour grading", v: "Yours or mine. Consistent across a set, not just pretty alone." },
 ];
 
-/* PLACEHOLDER — replace with the client's real bio, approach and history. */
+/* Viraj's real bio — condensed from his own words. */
 export const ABOUT = {
   portrait: manifest.portrait?.seed ?? "pf-about",
-  lead: "I make pictures for a living and build the places they live online. Same eye, two crafts.",
+  lead: "I create meaningful visual experiences — digital products designed with intent, and moments captured through a lens.",
   body: [
-    "This is where the biography goes. Two or three short paragraphs — how you started, what you care about, the kind of work you say yes to. Keep it plain and specific; let the pictures carry the rest.",
-    "Mention the way you work: available light, small kits, quick turnarounds. Then the second craft — that you design and build the sites, so a shoot doesn't end at a folder of files.",
-    "Close with what you're after now — the briefs you want, who you'd like to hear from, and that you're booking for the year ahead.",
+    "My creative journey started with technology. While studying Computer Science Engineering I built a foundation in programming and problem-solving, working as a developer and building solutions through code. But I kept being drawn to the creative side of technology — not just how things work, but how they look, feel and connect with people. That curiosity led me into UI/UX design, and to designing applications and websites that pair functionality with meaningful experiences.",
+    "Photography has run alongside all of it. In 2014 I held my first point-and-shoot camera, and what started as simple curiosity grew into a passion for visual storytelling. In 2018 I bought my first DSLR and went deeper — eventually sharing what I'd learned by teaching others, and leading a photography group in college: organising shoots, collaborating with fellow creators, and helping people find their own perspective.",
+    "Today, based in Vancouver, I bring engineering, design and photography together — creating digital experiences and capturing visual stories that connect technology with human emotion.",
   ],
   approach: [
-    { k: "One decision", v: "Shot, graded and built by the same person, so nothing gets lost in the handover." },
-    { k: "Available light", v: "Natural first. Flash only when the picture actually needs it." },
-    { k: "Ship end to end", v: "The photograph sets the grid; the site is built around it, not the reverse." },
+    { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs — analytical where it helps, intuitive where it matters." },
+    { k: "One pair of hands", v: "Shot, designed and built by the same person, so nothing gets lost in a handover." },
+    { k: "Technology with emotion", v: "Products people can use without thinking; pictures people feel before they think." },
   ],
   timeline: [
-    { y: "2015", t: "Picked up a camera properly. First paid editorial." },
-    { y: "2018", t: "Went full-time. Started grading for other shooters." },
-    { y: "2021", t: "Added design & build — began shipping clients' sites." },
-    { y: "2026", t: "Booking campaigns, portraits and editorial builds." },
+    { y: "2014", t: "First point-and-shoot camera. Curiosity becomes a habit." },
+    { y: "2018", t: "First DSLR. Photography turns serious — and he starts teaching it." },
+    { y: "2019", t: "Leads the college photography group: shoots, collabs, mentoring." },
+    { y: "2026", t: "Vancouver. Designing digital products, shooting as Lensofviraj." },
   ],
 };
 
@@ -453,11 +461,18 @@ export const CSS = `
           mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%); }
 .display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
   font-size: clamp(52px, 12vw, 168px); text-wrap: balance; }
+/* Hero name, animated like the logo: each letter rises in as a hollow
+   outline (text-stroke, no fill), then the fill develops in — the type
+   equivalent of the mark's draw-then-develop. --d is the per-letter
+   stagger set inline, shared by both phases. */
 .display .ch { display: inline-block; opacity: 0; transform: translateY(0.4em) rotate(3deg);
-  filter: blur(12px); animation: charUp 1s cubic-bezier(.16,1,.3,1) both; }
-@keyframes charUp { to { opacity: 1; transform: none; filter: blur(0); } }
+  color: transparent; -webkit-text-stroke: 1.5px var(--ink);
+  animation: chDraw .8s cubic-bezier(.16,1,.3,1) var(--d, 0s) forwards,
+             chFill .65s ease calc(var(--d, 0s) + .6s) forwards; }
+@keyframes chDraw { to { opacity: 1; transform: none; } }
+@keyframes chFill { to { color: var(--ink); -webkit-text-stroke-color: transparent; } }
 .mast .drawline { height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left;
-  margin-top: 40px; animation: draw 1.1s .85s cubic-bezier(.76,0,.24,1) forwards; }
+  margin-top: 40px; animation: draw 1.1s 1.5s cubic-bezier(.76,0,.24,1) forwards; }
 @keyframes draw { to { transform: scaleX(1); } }
 .mast .role { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
   margin-top: 18px; }
@@ -469,7 +484,8 @@ export const CSS = `
 .strip-track { display: flex; gap: 10px; padding: 14px 0; width: max-content;
   animation: roll 48s linear infinite; }
 .strip:hover .strip-track { animation-play-state: paused; }
-.strip-fr { flex: 0 0 auto; width: 200px; height: 132px; overflow: hidden; border-radius: 2px; }
+.strip-fr { flex: 0 0 auto; width: 210px; height: 210px; overflow: hidden; border-radius: 2px; }
+@media (max-width: 640px) { .strip-fr { width: 160px; height: 160px; } }
 @keyframes roll { to { transform: translateX(-50%); } }
 
 /* --- ticker --- */
@@ -543,9 +559,34 @@ export const CSS = `
    Drop the real file at public/logo.svg (or .png / .webp) and it is
    picked up automatically; until then the wordmark text shows. The
    .pf img reset (width/height 100% + filter) must not apply here. */
-.pf .logo-img { width: auto; height: 34px; object-fit: contain; filter: none; display: block; }
+/* The C& mark + wordmark. On load the outline draws itself, then the
+   fill develops in — a nod to a print coming up in the tray. Hovering
+   the brand twists the mark slightly, like focusing a lens. */
+.logo { display: inline-flex; align-items: center; gap: 12px; }
+.logo-mark { height: 34px; width: auto; aspect-ratio: 13113 / 11894; color: var(--ink);
+  overflow: visible; transition: transform .5s cubic-bezier(.2,.8,.2,1), color .3s ease;
+  transform-origin: 50% 50%; }
+.logo-mark path { fill: currentColor; stroke: currentColor; stroke-width: 220;
+  stroke-dasharray: 1; stroke-dashoffset: 1; fill-opacity: 0;
+  animation: logoDraw 1.4s cubic-bezier(.4,0,.2,1) .2s forwards,
+             logoFill .7s ease 1.2s forwards; }
+@keyframes logoDraw { to { stroke-dashoffset: 0; } }
+@keyframes logoFill { to { fill-opacity: 1; } }
 .brand { display: inline-flex; align-items: center; min-height: 34px; }
-@media (max-width: 720px) { .pf .logo-img { height: 28px; } }
+.brand:hover .logo-mark { transform: rotate(-12deg) scale(1.08); }
+/* wordmark: each letter rises out of a clipped line, cascading left to
+   right so the name finishes composing just as the mark's fill lands.
+   On hover the letters track apart slightly — a quiet typographic nod. */
+.logo-word { display: inline-flex; overflow: hidden; gap: 0px;
+  transition: gap .45s cubic-bezier(.2,.8,.2,1), color .3s ease; }
+.logo-word b { font-weight: inherit; display: inline-block; opacity: 0;
+  transform: translateY(130%); animation: wordUp .6s cubic-bezier(.16,1,.3,1) forwards; }
+@keyframes wordUp { to { opacity: 1; transform: none; } }
+.brand:hover .logo-word { gap: 1.5px; }
+@media (max-width: 720px) {
+  .logo-mark { height: 28px; }
+  .logo-word { display: none; } /* the mark carries the brand on phones */
+}
 
 /* --- categorised gallery (Work page) ---
    Deliberately mute: four category tabs and a masonry of frames.
@@ -1132,7 +1173,10 @@ export const CSS = `
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1 !important; transform: none !important; }
-  .display .ch { opacity: 1 !important; transform: none !important; filter: none !important; }
+  .display .ch { opacity: 1 !important; transform: none !important; filter: none !important;
+    color: var(--ink) !important; -webkit-text-stroke: 0 !important; }
+  .logo-mark path { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; }
+  .logo-word b { opacity: 1 !important; transform: none !important; }
   .mast .drawline, .metrics::after { transform: scaleX(1) !important; }
   .shot img, .detail-fig img, .about-portrait img { transform: none !important; }
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }

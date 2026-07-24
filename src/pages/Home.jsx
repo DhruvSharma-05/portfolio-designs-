@@ -75,7 +75,7 @@ export default function Home() {
               standfirst below it say who is behind it and what he does */}
           <h1 className="display">
             {[...P.name].map((c, i) => (
-              <span className="ch" key={i} style={{ animationDelay: `${0.25 + i * 0.04}s` }}>
+              <span className="ch" key={i} style={{ "--d": `${0.25 + i * 0.04}s` }}>
                 {c === " " ? " " : c}
               </span>
             ))}
@@ -217,12 +217,19 @@ export default function Home() {
           <Reveal>
             <h2 className="display">Bring me<br />the difficult one.</h2>
             <MagneticMail email={P.email} reduced={reduced} />
+            <div className="mono" style={{ marginTop: 18 }}>
+              {P.phone} — {P.city}, {P.region}
+            </div>
           </Reveal>
 
           <Reveal as="dl" className="colophon">
             <div>
-              <dt className="mono">Shot on</dt>
-              <dd>Camera one · Camera two<br />Lens · Drone</dd>
+              <dt className="mono">Contact</dt>
+              <dd>
+                <a href={`mailto:${P.email}`}>{P.email}</a><br />
+                <a href={`mailto:${P.email2}`}>{P.email2}</a><br />
+                <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
+              </dd>
             </div>
             <div>
               <dt className="mono">Built with</dt>
@@ -230,7 +237,15 @@ export default function Home() {
             </div>
             <div>
               <dt className="mono">Elsewhere</dt>
-              <dd>Instagram<br />Behance</dd>
+              <dd>
+                {P.socials.map((s) => (
+                  <span key={s.href} style={{ display: "block" }}>
+                    <a href={s.href} target="_blank" rel="noreferrer">
+                      {s.k} — {s.v}
+                    </a>
+                  </span>
+                ))}
+              </dd>
             </div>
             <div>
               <dt className="mono">Colophon</dt>
