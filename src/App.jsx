@@ -6,7 +6,7 @@ import { useGSAP } from "@gsap/react";
 import Lenis from "lenis";
 import { CSS, THEME, P, prefersReduced } from "./data.js";
 import { AppProvider } from "./context.js";
-import { TLink, Cursor, Logo } from "./ui.jsx";
+import { TLink, Logo } from "./ui.jsx";
 import Home from "./pages/Home.jsx";
 import WorkDetail from "./pages/WorkDetail.jsx";
 import About from "./pages/About.jsx";
@@ -36,16 +36,13 @@ export default function App() {
   const [reduced] = useState(prefersReduced);
   const navigate = useNavigate();
   const location = useLocation();
-  /* The admin is a tool, not part of the portfolio: no public nav, and
-     no custom cursor (it hides the caret and makes forms miserable). */
+  /* The admin is a tool, not part of the portfolio: no public nav. */
   const isAdmin = location.pathname.startsWith("/admin");
-  /* The client area is a private handoff, not part of the portfolio —
-     it keeps the site chrome but stays out of the nav. */
-  const isBare = isAdmin || location.pathname.startsWith("/client");
   const progRef = useRef(null);
   const barRef = useRef(null);
   const irisRef = useRef(null);
   const lenisRef = useRef(null);
+  const topRef = useRef(null);
   const busy = useRef(false);
 
   /* Lenis smooth scroll (native scroll, so sticky keeps working) driven
@@ -70,6 +67,7 @@ export default function App() {
            way up. Always shown near the top so it never starts hidden. */
         const bar = barRef.current;
         if (bar) bar.classList.toggle("hide", self.scroll() > 140 && self.direction === 1);
+        topRef.current?.classList.toggle("show", self.scroll() > 600);
       },
     });
     return () => {
@@ -114,7 +112,6 @@ export default function App() {
         <style>{CSS}</style>
 
         <a className="skip" href="#main">Skip to content</a>
-        {!isBare && <Cursor />}
 
         {/* aperture transition overlay */}
         <div className="iris" aria-hidden="true">
@@ -140,6 +137,20 @@ export default function App() {
           </div>
           <div className="prog" ref={progRef} style={{ width: "0%" }} />
         </div>
+
+        {/* back to top — fades in once you're a scroll past the fold */}
+        {!isAdmin && (
+          <button type="button" className="totop" ref={topRef} aria-label="Back to top"
+            onClick={() => {
+              if (reduced || !lenisRef.current) {
+                window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+                return;
+              }
+              lenisRef.current.scrollTo(0, { duration: 1 });
+            }}>
+            <span className="arrow" aria-hidden="true">↑</span>
+          </button>
+        )}
 
         <Routes>
           <Route path="/" element={<Home />} />

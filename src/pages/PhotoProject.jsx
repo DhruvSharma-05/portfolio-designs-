@@ -98,7 +98,7 @@ export default function PhotoProject() {
           <div className="mono" style={{ marginBottom: 24 }}>Full set — click any frame</div>
           <div className="pgrid">
             {p.photos.map((s, n) => (
-              <figure key={s + n} onClick={() => setLb(n)} data-cursor="Expand"
+              <figure key={s + n} onClick={() => setLb(n)}
                 role="button" tabIndex={0} aria-label={`Open frame ${n + 1}`}
                 style={{ aspectRatio: ratio(s, 900, n % 3 === 1 ? 1200 : 700) }}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLb(n); } }}>
@@ -167,7 +167,7 @@ function Roll({ photos, title, onOpen }) {
       <div className="roll-track" ref={track}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
         {photos.map((s, n) => (
-          <figure className="roll-fr" key={s + n} data-cursor="Expand"
+          <figure className="roll-fr" key={s + n}
             onClick={() => { if (drag.current.moved < 6) onOpen(n); }}>
             <img src={img(s, 1400, 933)} alt={`${title}, frame ${n + 1}`} loading="lazy" />
           </figure>
