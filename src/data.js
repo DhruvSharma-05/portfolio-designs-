@@ -75,6 +75,24 @@ for (const p of manifest.gallery || []) PHOTOS.set(p.seed, p);
 for (const p of manifest.projectPhotos || []) PHOTOS.set(p.seed, p);
 if (manifest.portrait) PHOTOS.set(manifest.portrait.seed, manifest.portrait);
 
+/* Curated web-design sample screenshots — full-page site & app mockups
+   bundled in public/web-samples/ (never touched by the Drive/Contentful
+   sync). They back the WEB_PROJECTS_FALLBACK covers so the design
+   archive shows real interface work out of the box; any real project
+   published from /admin still overrides these by seed. Keyed `ws-*`. */
+const WEB_SAMPLES = {
+  "ws-vertex": "/web-samples/project-vertex.jpg",
+  "ws-galerie": "/web-samples/project-galerie.jpg",
+  "ws-gusoar": "/web-samples/concept-1.jpg",
+  "ws-saasf": "/web-samples/concept-2.jpg",
+  "ws-surtielo": "/web-samples/concept-3.jpg",
+  "ws-anton": "/web-samples/concept-4.jpg",
+  "ws-listafre": "/web-samples/concept-5.jpg",
+};
+for (const [seed, url] of Object.entries(WEB_SAMPLES)) {
+  PHOTOS.set(seed, { seed, sm: url, lg: url });
+}
+
 /* img(seed, w, h): resolves a seed to a local optimized image. Picks the
    small variant for thumbnail widths, the large one otherwise. Unknown
    seeds fall through to a picsum placeholder of the requested size. */
@@ -93,20 +111,24 @@ export const ratio = (s, fw = 3, fh = 2) => {
   return p?.w && p?.h ? `${p.w} / ${p.h}` : `${fw} / ${fh}`;
 };
 
-/* Near-black base. Dark, quiet room; the work is the only bright thing. */
+/* Warm paper base. A light, quiet editorial room: cream ground, dark
+   ink, one orange accent — the "Crafted & Captured" theme, matched to
+   the reference design. Every var(--…) rule in the CSS keeps working;
+   only these values changed to repaint the whole site. */
 const BASE = {
-  bg: "#0A0A0B",
-  panel: "#111114",
-  ink: "#ECECEC",
-  dim: "#82828B",
-  rule: "#1E1E22",
-  filter: "saturate(0.92) brightness(0.96)",
+  bg: "hsl(38 25% 96%)",
+  panel: "hsl(38 24% 92%)",
+  ink: "hsl(210 20% 12%)",
+  dim: "hsl(210 14% 42%)",
+  rule: "hsl(210 20% 12% / 0.12)",
+  /* light ground → show photographs at full strength, no dimming */
+  filter: "none",
 };
 
 /* One fixed palette. The accent switcher was removed at the client's
    request, so the accent is a constant — every var(--accent) rule in
    the CSS keeps working, it just never changes. */
-export const THEME = { ...BASE, accent: "#E4E4E7" };
+export const THEME = { ...BASE, accent: "hsl(18 78% 50%)" };
 
 const FRAMES_FALLBACK = [
   { seed: "pf-01", t: "Selected Work 01", loc: "Location, XX", exif: "35mm · f/8 · 1/500", kind: "Photography",
@@ -273,63 +295,145 @@ export const FEATURED = PHOTO_PROJECTS.map((p) => ({
 
 const WEB_PROJECTS_FALLBACK = [
   {
-    slug: "atelier-studio",
-    t: "Atelier Studio",
-    tag: "Studio site",
-    year: "2025",
-    role: "Design · Build",
-    note: "A studio site where the photograph sets the grid. Replace with the real brief, the constraints, and what shipped.",
-    intro: "Editorial layout, one accent, and a gallery that behaves on a phone.",
-    tool: "Figma",
-    href: "https://figma.com",
-    live: "",
-    stack: ["Figma", "React", "Vite", "Vercel"],
-    cover: "web-atelier-1",
-    shots: photoSeeds("web-atelier", 4),
-    specs: [
-      { k: "Scope", v: "Art direction, UI design, front-end build" },
-      { k: "Timeline", v: "4 weeks, design to live" },
-      { k: "Handoff", v: "Figma file + deployed site" },
-    ],
-  },
-  {
-    slug: "north-cafe",
-    t: "North Café",
-    tag: "Brand & menu",
-    year: "2025",
-    role: "Design · Brand",
-    note: "A small hospitality brand — identity, menu system and a one-page site. Swap for the real story.",
-    intro: "A menu that reads the same printed as it does on a phone.",
-    tool: "Canva",
-    href: "https://canva.com",
-    live: "",
-    stack: ["Canva", "Illustrator", "Webflow"],
-    cover: "web-north-1",
-    shots: photoSeeds("web-north", 4),
-    specs: [
-      { k: "Scope", v: "Identity, print menu, one-page site" },
-      { k: "Timeline", v: "3 weeks" },
-      { k: "Handoff", v: "Brand kit + editable templates" },
-    ],
-  },
-  {
-    slug: "field-notes",
-    t: "Field Notes",
-    tag: "Editorial CMS",
+    slug: "vertex-capital",
+    t: "Vertex Capital",
+    tag: "Fintech",
     year: "2024",
     role: "Design · Build",
-    note: "An editorial publication with a CMS behind it. Describe the volume, the constraints and the result.",
-    intro: "Long-form reading, built so the writer never needs a developer.",
+    status: "Delivered",
+    note: "A trading & wealth app — dashboard, live positions, and a marketing site sharing one design system. Swap for the real brief and what shipped.",
+    intro: "A fintech product and its marketing site, drawn from one system.",
+    tool: "Figma · React",
+    href: "https://figma.com",
+    live: "https://example.com",
+    stack: ["Figma", "React", "TypeScript", "Vercel"],
+    cover: "ws-vertex",
+    shots: photoSeeds("web-vertex", 4),
+    specs: [
+      { k: "Scope", v: "Product UI, design system, front-end build" },
+      { k: "Timeline", v: "8 weeks, design to live" },
+      { k: "Handoff", v: "Figma library + deployed app" },
+    ],
+  },
+  {
+    slug: "galerie-noir",
+    t: "Galerie Noir",
+    tag: "Culture",
+    year: "2025",
+    role: "Design · Build",
+    status: "Delivered",
+    note: "A contemporary gallery — exhibitions, a shop, and an editorial voice, all typography-led. Replace with the real story.",
+    intro: "An art gallery where the type does the talking.",
+    tool: "Figma · Webflow",
+    href: "https://figma.com",
+    live: "https://example.com",
+    stack: ["Figma", "Webflow", "GSAP"],
+    cover: "ws-galerie",
+    shots: photoSeeds("web-galerie", 4),
+    specs: [
+      { k: "Scope", v: "Art direction, UI design, CMS build" },
+      { k: "Timeline", v: "6 weeks" },
+      { k: "Handoff", v: "Editable CMS + brand kit" },
+    ],
+  },
+  {
+    slug: "gusoar",
+    t: "Gusoar",
+    tag: "E-commerce",
+    year: "2025",
+    role: "Concept · UI",
+    note: "A fashion storefront concept — product grid, quick-add, and a checkout that stays out of the way.",
+    intro: "A fashion storefront concept, from grid to checkout.",
     tool: "Figma",
     href: "https://figma.com",
     live: "",
-    stack: ["Figma", "React", "Sanity"],
-    cover: "web-field-1",
-    shots: photoSeeds("web-field", 4),
+    stack: ["Figma", "Shopify"],
+    cover: "ws-gusoar",
+    shots: photoSeeds("web-gusoar", 4),
     specs: [
-      { k: "Scope", v: "Design system, CMS modelling, build" },
-      { k: "Timeline", v: "6 weeks" },
-      { k: "Handoff", v: "Design system + editor training" },
+      { k: "Scope", v: "UX flow, UI design, prototype" },
+      { k: "Timeline", v: "Self-directed" },
+      { k: "Handoff", v: "Interactive Figma prototype" },
+    ],
+  },
+  {
+    slug: "saasf",
+    t: "Saasf",
+    tag: "SaaS",
+    year: "2025",
+    role: "Concept · Product",
+    note: "A SaaS dashboard concept — dense data made calm, with a component set built to scale.",
+    intro: "A SaaS dashboard concept: dense data, kept calm.",
+    tool: "Figma · React",
+    href: "https://figma.com",
+    live: "",
+    stack: ["Figma", "React", "Recharts"],
+    cover: "ws-saasf",
+    shots: photoSeeds("web-saasf", 4),
+    specs: [
+      { k: "Scope", v: "Information design, UI kit, prototype" },
+      { k: "Timeline", v: "Self-directed" },
+      { k: "Handoff", v: "Component library" },
+    ],
+  },
+  {
+    slug: "surtielo",
+    t: "Surtielo",
+    tag: "Restaurant",
+    year: "2024",
+    role: "Concept · Brand",
+    note: "A restaurant brand concept — a warm one-pager with the menu and a reservation flow front and centre.",
+    intro: "A restaurant one-pager: menu, mood, and a table booked.",
+    tool: "Figma",
+    href: "https://figma.com",
+    live: "",
+    stack: ["Figma", "Illustrator"],
+    cover: "ws-surtielo",
+    shots: photoSeeds("web-surtielo", 4),
+    specs: [
+      { k: "Scope", v: "Brand direction, one-page site" },
+      { k: "Timeline", v: "Self-directed" },
+      { k: "Handoff", v: "Figma file" },
+    ],
+  },
+  {
+    slug: "anton-studio",
+    t: "Anton Studio",
+    tag: "Editorial",
+    year: "2025",
+    role: "Concept · UI",
+    note: "An outdoor editorial concept — big imagery, a mountain hero, and a reading experience that gets out of the way.",
+    intro: "An editorial concept built around big landscape imagery.",
+    tool: "Figma · Webflow",
+    href: "https://figma.com",
+    live: "",
+    stack: ["Figma", "Webflow"],
+    cover: "ws-anton",
+    shots: photoSeeds("web-anton", 4),
+    specs: [
+      { k: "Scope", v: "Art direction, UI design" },
+      { k: "Timeline", v: "Self-directed" },
+      { k: "Handoff", v: "Figma file" },
+    ],
+  },
+  {
+    slug: "listafre",
+    t: "Listafre",
+    tag: "Travel",
+    year: "2026",
+    role: "Concept · Product",
+    note: "A travel-planning app concept — itineraries, saved places, and a booking flow designed for the phone first.",
+    intro: "A travel-planning app concept, designed phone-first.",
+    tool: "Figma",
+    href: "https://figma.com",
+    live: "",
+    stack: ["Figma", "React Native"],
+    cover: "ws-listafre",
+    shots: photoSeeds("web-listafre", 4),
+    specs: [
+      { k: "Scope", v: "UX, UI design, prototype" },
+      { k: "Timeline", v: "Self-directed" },
+      { k: "Handoff", v: "Interactive prototype" },
     ],
   },
 ];
@@ -451,11 +555,17 @@ export const CSS = `
   pointer-events: none;
   -webkit-mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%);
           mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%); }
+<<<<<<< Updated upstream
 .display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
   font-size: clamp(52px, 12vw, 168px); text-wrap: balance; }
 .display .ch { display: inline-block; opacity: 0; transform: translateY(0.4em) rotate(3deg);
   filter: blur(12px); animation: charUp 1s cubic-bezier(.16,1,.3,1) both; }
 @keyframes charUp { to { opacity: 1; transform: none; filter: blur(0); } }
+=======
+.display { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase;
+  letter-spacing: -0.015em; line-height: .88;
+  font-size: clamp(52px, 11.5vw, 150px); text-wrap: balance; }
+>>>>>>> Stashed changes
 .mast .drawline { height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left;
   margin-top: 40px; animation: draw 1.1s .85s cubic-bezier(.76,0,.24,1) forwards; }
 @keyframes draw { to { transform: scaleX(1); } }
@@ -884,6 +994,118 @@ export const CSS = `
 .wcard-cap p { color: var(--dim); font-size: 14.5px; line-height: 1.6; margin-top: 10px; max-width: 40ch; }
 .tool-badge { flex: 0 0 auto; border: 1px solid var(--rule); border-radius: 100px;
   padding: 5px 12px; }
+
+/* ==================================================================
+   DESIGN PAGE — the "editorial" archive (.dlx)
+
+   Inherits the now-global warm-paper theme; this block only adds the
+   page's own layout: an Anton display, a staggered cursor-tilt grid,
+   and generous spacing. Projects still come from WEB_PROJECTS
+   (Contentful / Drive) — only the presentation is bespoke here.
+   ================================================================== */
+.dlx {
+  min-height: 100vh; padding: clamp(72px, 12vh, 132px) 0 0;
+  position: relative; z-index: 1;
+}
+.dlx-wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+
+/* --- masthead + filter tabs --- */
+.dlx-head { display: flex; flex-direction: column; gap: 26px;
+  border-bottom: 1px solid var(--rule); padding-bottom: 28px; }
+@media (min-width: 820px) {
+  .dlx-head { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 40px; }
+}
+.dlx-kicker { color: var(--accent); font-size: 10px; }
+.dlx-title { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase;
+  letter-spacing: -0.015em; line-height: 0.9; font-size: clamp(60px, 12vw, 150px); margin-top: 18px; }
+.dlx-intro { margin-top: 22px; max-width: 48ch; color: var(--dim); font-size: 15.5px; line-height: 1.7; }
+.dlx-tabs { display: flex; gap: 8px; flex-shrink: 0; }
+.dlx-tab { border: 1px solid var(--rule); border-radius: 100px; padding: 9px 18px;
+  font-size: 10px; color: var(--dim);
+  transition: color .3s ease, background-color .3s ease, border-color .3s ease; }
+.dlx-tab:hover { border-color: var(--ink); color: var(--ink); }
+.dlx-tab.on { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+/* --- staggered archive --- */
+.dlx-archive { padding-top: clamp(64px, 9vw, 120px); }
+.dlx-grid { display: grid; grid-template-columns: 1fr; gap: clamp(52px, 8vw, 92px) 48px; }
+@media (min-width: 820px) {
+  .dlx-grid { grid-template-columns: 1fr 1fr; }
+  /* the diagonal: the right column drops so nothing lines up in rows */
+  .dlx-grid > .dlx-cell:nth-child(even) { margin-top: clamp(48px, 10vw, 128px); }
+}
+.dlx-proj { display: block; }
+.dlx-proj-head { display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px; margin-bottom: 15px; color: var(--dim); font-size: 10px;
+  transition: color .35s ease; }
+.dlx-proj:hover .dlx-proj-head { color: var(--ink); }
+.dlx-proj-head .idx { color: var(--ink); }
+.dlx-card { overflow: hidden; border-radius: 12px; background: var(--panel);
+  border: 1px solid var(--rule); will-change: transform;
+  transition: transform .28s ease-out, box-shadow .5s ease; }
+.dlx-card.is-portrait { aspect-ratio: 4 / 5; }
+.dlx-card.is-wide { aspect-ratio: 16 / 10; }
+/* covers are full-page screenshots — anchor the crop to the top */
+.dlx-card img { object-position: top; }
+.dlx-proj:hover .dlx-card { box-shadow: 0 34px 60px -34px hsl(210 25% 12% / 0.4); }
+.dlx-cap { display: flex; align-items: baseline; justify-content: space-between;
+  gap: 18px; margin-top: 22px; }
+.dlx-cap h3 { font-weight: 500; letter-spacing: -0.01em;
+  font-size: clamp(20px, 2.4vw, 27px); transition: color .3s ease; }
+.dlx-proj:hover .dlx-cap h3 { color: var(--accent); }
+.dlx-cap .cat { flex: 0 0 auto; color: var(--dim); font-size: 14px; }
+.dlx-empty { text-align: center; padding: 90px 0; color: var(--dim); }
+
+/* --- process --- */
+.dlx-craft { padding-top: clamp(80px, 12vw, 168px); display: grid;
+  grid-template-columns: 1fr; gap: 32px; }
+@media (min-width: 900px) {
+  .dlx-craft { grid-template-columns: 320px 1fr; gap: 64px; align-items: start; }
+  .dlx-craft-head { position: sticky; top: 100px; }
+}
+.dlx-h2 { font-family: 'Anton', sans-serif; text-transform: uppercase; font-weight: 400;
+  letter-spacing: -0.01em; font-size: clamp(30px, 4vw, 50px); line-height: 0.95; margin-top: 14px; }
+.dlx-craft-row { border-top: 1px solid var(--rule); padding: 26px 0; display: grid; gap: 10px;
+  transition: padding-left .35s ease; }
+.dlx-craft-row:hover { padding-left: 14px; }
+@media (min-width: 720px) { .dlx-craft-row { grid-template-columns: 1fr 1fr; align-items: baseline; } }
+.dlx-craft-row h3 { font-weight: 500; font-size: clamp(20px, 2.4vw, 28px);
+  display: flex; align-items: baseline; gap: 14px; letter-spacing: -0.01em; }
+.dlx-craft-row h3 .idx { color: var(--accent); font-size: 13px; }
+.dlx-craft-row p { color: var(--dim); max-width: 44ch; font-size: 14.5px; line-height: 1.65; }
+
+/* --- cross-links --- */
+.dlx-teaser { padding-top: clamp(80px, 12vw, 168px); display: grid;
+  grid-template-columns: 1fr; gap: 20px; }
+@media (min-width: 760px) { .dlx-teaser { grid-template-columns: 1fr 1fr; gap: 28px; } }
+.dlx-teaser > a { display: block; border: 1px solid var(--rule); border-radius: 14px;
+  padding: 34px; background: var(--panel);
+  transition: border-color .35s ease, transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease; }
+.dlx-teaser > a:hover { border-color: var(--accent); transform: translateY(-4px);
+  box-shadow: 0 30px 50px -34px hsl(210 25% 12% / 0.35); }
+.dlx-teaser .mono { color: var(--accent); }
+.dlx-teaser h3 { font-weight: 500; letter-spacing: -0.01em;
+  font-size: clamp(23px, 3vw, 33px); margin: 16px 0 10px; }
+.dlx-teaser p { color: var(--dim); font-size: 14.5px; line-height: 1.65; max-width: 34ch; }
+.dlx-teaser .go { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; color: var(--dim); }
+.dlx-teaser .go .arrow { transition: transform .3s ease; }
+.dlx-teaser > a:hover .go { color: var(--ink); }
+.dlx-teaser > a:hover .go .arrow { transform: translateX(5px); }
+
+/* --- closing CTA --- */
+.dlx-cta { padding: clamp(100px, 16vw, 200px) 0 clamp(80px, 12vw, 140px); text-align: center; }
+.dlx-cta .dlx-title { font-size: clamp(42px, 8vw, 104px); }
+.dlx-mail { display: inline-flex; align-items: center; gap: 10px; margin-top: 30px;
+  font-family: 'IBM Plex Mono', monospace; font-size: clamp(15px, 2.2vw, 22px); letter-spacing: -0.01em;
+  border-bottom: 1px solid var(--rule); padding-bottom: 6px;
+  transition: color .3s ease, border-color .3s ease; }
+.dlx-mail:hover { color: var(--accent); border-color: var(--accent); }
+.dlx-mail .arrow { transition: transform .3s ease; }
+.dlx-mail:hover .arrow { transform: translateX(5px); }
+.dlx-back { margin-top: 50px; }
+.dlx-back a { display: inline-flex; align-items: center; gap: 8px; color: var(--dim);
+  transition: color .3s ease; }
+.dlx-back a:hover { color: var(--ink); }
 
 /* stack pills */
 .stack-pills { display: flex; flex-wrap: wrap; gap: 8px; }

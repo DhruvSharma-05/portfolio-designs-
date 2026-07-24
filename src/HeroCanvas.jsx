@@ -57,14 +57,17 @@ function Field({ reduced, pointer }) {
             args={[positions, 3]}
           />
         </bufferGeometry>
+        {/* On the warm-paper theme the field reads as soft dark ink.
+            NormalBlending (not Additive) so the points actually darken
+            the cream ground instead of washing out to invisible. */}
         <pointsMaterial
-          color="#278837"
-          size={0.045}
+          color="#1B2430"
+          size={0.04}
           sizeAttenuation
           transparent
-          opacity={0.85}
+          opacity={0.5}
           depthWrite={false}
-          blending={THREE.AdditiveBlending}
+          blending={THREE.NormalBlending}
         />
       </points>
     </group>

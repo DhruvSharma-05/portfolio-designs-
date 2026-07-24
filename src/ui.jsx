@@ -53,6 +53,33 @@ export function Logo() {
   return src ? <img className="logo-img" src={src} alt={P.name} /> : <>{P.name}</>;
 }
 
+/* Mouse-tilt: the element rotates toward the cursor while hovered, for a
+   subtle 3D "card floating in space" feel. Skipped entirely under reduced
+   motion or a coarse (touch) pointer, where it would just fight the user. */
+export function useMouseTilt(max = 8) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (prefersReduced() || matchMedia("(pointer: coarse)").matches) return;
+    const onMove = (e) => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      el.style.transform =
+        `perspective(1000px) rotateY(${(x * max).toFixed(2)}deg) rotateX(${(-y * max).toFixed(2)}deg) scale(1.02)`;
+    };
+    const reset = () => { el.style.transform = "perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1)"; };
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", reset);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", reset);
+    };
+  }, [max]);
+  return ref;
+}
+
 /* ---------------- shared animated primitives ----------------
    Reveal and Counter run inside useGSAP (a scoped layout effect); under
    reduced motion they skip the animation and render final state. */
