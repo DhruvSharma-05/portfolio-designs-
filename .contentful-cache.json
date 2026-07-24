@@ -372,5 +372,16 @@
       "h": 1126
     },
     "exif": ""
+  },
+  "portrait/3tRoBe35sCxMvUEtBUTpjw": {
+    "seed": "viraj-portrait",
+    "stamp": "rHXHPhIcekIUDfXHUpGw8:2026-07-24T08:53:48.971Z",
+    "variants": {
+      "sm": "/photos/portrait/viraj-portrait-sm.webp",
+      "lg": "/photos/portrait/viraj-portrait-lg.webp",
+      "w": 2000,
+      "h": 2667
+    },
+    "exif": ""
   }
 }

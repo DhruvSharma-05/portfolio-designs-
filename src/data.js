@@ -148,20 +148,18 @@ export const TICKER = ["Editorial", "Events", "Portraits", "Art direction", "Col
 /* ==================================================================
    GALLERY — the simple, captionless grid on the Work page.
 
-   Four fixed categories. A synced photo's category comes from the
-   Drive subfolder it lives in (see scripts/sync-drive.mjs): make four
+   Three fixed categories. A synced photo's category comes from the
+   Drive subfolder it lives in (see scripts/sync-drive.mjs): make
    subfolders inside the Gallery folder named after the categories and
    the sync sorts everything automatically. Photos left in the Gallery
    folder root land in "Open". With no manifest at all, placeholder
    seeds are dealt across the categories so the grid still renders.
    ================================================================== */
-export const GALLERY_CATS = ["Professional Photoshoot", "Wildlife", "Open", "Portraits"];
+export const GALLERY_CATS = ["Professional Photoshoot", "Open"];
 
 const normCat = (raw = "") => {
   const s = String(raw).toLowerCase();
   if (s.includes("professional") || s.includes("shoot")) return "Professional Photoshoot";
-  if (s.includes("wild")) return "Wildlife";
-  if (s.includes("portrait")) return "Portraits";
   return "Open";
 };
 
@@ -452,6 +450,24 @@ export const CSS = `
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
+/* --- back to top --- */
+/* .pf-scoped (not bare .totop) so its border/background survive the
+   .pf button { border: none; background: none; } reset above, which
+   otherwise wins on specificity (class+type beats a single class). */
+.pf .totop { position: fixed; z-index: 90;
+  right: max(24px, env(safe-area-inset-right));
+  bottom: max(24px, env(safe-area-inset-bottom));
+  width: 48px; height: 48px; display: grid; place-items: center;
+  border: 1px solid var(--rule); border-radius: 50%;
+  background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px);
+  opacity: 0; transform: translateY(8px) scale(0.9); pointer-events: none;
+  transition: opacity .3s ease, transform .3s cubic-bezier(.2,.8,.2,1), border-color .3s ease; }
+.pf .totop.show { opacity: 1; transform: none; pointer-events: auto; }
+.pf .totop:hover { border-color: var(--accent); color: var(--accent); }
+.pf .totop .arrow { font-size: 18px; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.pf .totop:hover .arrow { transform: translateY(-3px); }
+@media (max-width: 640px) { .pf .totop { width: 44px; height: 44px; right: 16px; bottom: 16px; } }
+
 /* --- masthead --- */
 .mast { padding: 17vh 0 10vh; position: relative; }
 .mast .wrap { position: relative; z-index: 1; }
@@ -461,19 +477,15 @@ export const CSS = `
           mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%); }
 .display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
   font-size: clamp(52px, 12vw, 168px); text-wrap: balance; }
-/* Hero name, animated like the logo: each letter rises in as a hollow
-   outline (text-stroke, no fill), then the fill develops in — the type
-   equivalent of the mark's draw-then-develop. --d is the per-letter
-   stagger set inline, shared by both phases. */
-.display .ch { display: inline-block; opacity: 0; transform: translateY(0.4em) rotate(3deg);
-  color: transparent; -webkit-text-stroke: 1.5px var(--ink);
-  animation: chDraw .8s cubic-bezier(.16,1,.3,1) var(--d, 0s) forwards,
-             chFill .65s ease calc(var(--d, 0s) + .6s) forwards; }
-@keyframes chDraw { to { opacity: 1; transform: none; } }
-@keyframes chFill { to { color: var(--ink); -webkit-text-stroke-color: transparent; } }
 .mast .drawline { height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left;
-  margin-top: 40px; animation: draw 1.1s 1.5s cubic-bezier(.76,0,.24,1) forwards; }
+  margin-top: 40px; animation: draw 1.1s var(--line-delay, 1.5s) cubic-bezier(.76,0,.24,1) forwards; }
 @keyframes draw { to { transform: scaleX(1); } }
+/* standfirst / disciplines / role: fade+rise in after the headline
+   resolves (--rd, set inline per element), so the primary hero text
+   settles before the supporting copy and CTAs do. */
+.hero-reveal { opacity: 0; transform: translateY(14px);
+  animation: heroUp .6s cubic-bezier(.16,1,.3,1) var(--rd, 0s) forwards; }
+@keyframes heroUp { to { opacity: 1; transform: none; } }
 .mast .role { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
   margin-top: 18px; }
 
@@ -714,19 +726,6 @@ export const CSS = `
 .pager strong { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(18px, 2.4vw, 26px);
   transition: color .3s; }
 .pager a:hover strong { color: var(--accent); }
-
-/* --- custom cursor (fine-pointer, non-reduced only) --- */
-.cursor-on, .cursor-on * { cursor: none !important; }
-.cursor { position: fixed; top: 0; left: 0; z-index: 600; width: 12px; height: 12px;
-  border-radius: 50%; background: #fff; mix-blend-mode: difference; pointer-events: none;
-  opacity: 0; display: grid; place-items: center; will-change: transform;
-  transition: width .3s cubic-bezier(.2,.8,.2,1), height .3s cubic-bezier(.2,.8,.2,1),
-    background-color .3s ease, mix-blend-mode 0s; }
-.cursor.is-hover { width: 40px; height: 40px; }
-.cursor.is-view { width: 84px; height: 84px; background: var(--accent); mix-blend-mode: normal; }
-.cursor-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--bg); opacity: 0; transition: opacity .25s; white-space: nowrap; }
-.cursor.is-view .cursor-label { opacity: 1; }
 
 /* --- nav links in the bar --- */
 .nav { display: flex; gap: 22px; align-items: center; }
@@ -1173,8 +1172,7 @@ export const CSS = `
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1 !important; transform: none !important; }
-  .display .ch { opacity: 1 !important; transform: none !important; filter: none !important;
-    color: var(--ink) !important; -webkit-text-stroke: 0 !important; }
+  .hero-reveal { opacity: 1 !important; transform: none !important; }
   .logo-mark path { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; }
   .logo-word b { opacity: 1 !important; transform: none !important; }
   .mast .drawline, .metrics::after { transform: scaleX(1) !important; }
@@ -1187,6 +1185,5 @@ export const CSS = `
   .bar.hide { transform: none !important; }
   .roll-track { scroll-snap-type: none; }
   .iris-lens { display: none; }
-  .cursor { display: none; }
 }
 `;

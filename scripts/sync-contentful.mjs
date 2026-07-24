@@ -228,9 +228,8 @@ async function main() {
         buckets[role].push({
           seed,
           // Gallery only: optional "category" text field on the Photo
-          // entry ("Professional Photoshoot" | "Wildlife" | "Open" |
-          // "Portraits"). Missing/unknown values land in "Open" on the
-          // site — see normCat() in src/data.js.
+          // entry ("Professional Photoshoot" | "Open"). Missing/unknown
+          // values land in "Open" on the site — see normCat() in src/data.js.
           ...(role === "gallery" && entry.fields.category ? { cat: entry.fields.category } : {}),
           sm: variants.sm, lg: variants.lg, w: variants.w, h: variants.h,
         });

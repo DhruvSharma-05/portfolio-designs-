@@ -19,6 +19,12 @@ const page = {
   animate: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
+/* Hero entrance timing: the headline fades/rises in first (HEADLINE_DELAY,
+   duration matches .hero-reveal's .6s in the CSS), then the supporting
+   copy, CTAs and drawline cascade in after it settles at HEADLINE_DONE. */
+const HEADLINE_DELAY = 0.1;
+const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
+
 /* ==================================================================
    WORK — the front page. Deliberately slim: hero, the categorised
    gallery, the photography projects, and the room reserved for the
@@ -73,16 +79,15 @@ export default function Home() {
 
           {/* the studio name carries the masthead; the kicker and the
               standfirst below it say who is behind it and what he does */}
-          <h1 className="display">
-            {[...P.name].map((c, i) => (
-              <span className="ch" key={i} style={{ "--d": `${0.25 + i * 0.04}s` }}>
-                {c === " " ? " " : c}
-              </span>
-            ))}
+          <h1 className="display hero-reveal" style={{ "--rd": `${HEADLINE_DELAY}s` }}>
+            {P.name}
           </h1>
-          <div className="drawline" />
+          <div className="drawline" style={{ "--line-delay": `${HEADLINE_DONE}s` }} />
 
-          <p className="standfirst">
+          {/* supporting content waits for the headline to finish composing
+              (HEADLINE_DONE) so the primary hero text resolves before the
+              secondary copy and CTAs do, not after */}
+          <p className="standfirst hero-reveal" style={{ "--rd": `${HEADLINE_DONE}s` }}>
             Two practices, one pair of hands. Photographs made as{" "}
             <strong>{P.photoBrand}</strong>, and the sites they live on designed
             and built by the same person.
@@ -91,9 +96,9 @@ export default function Home() {
 
           {/* both doors stated above the fold, so a cold visitor can tell
               inside three seconds that this is two crafts and not one */}
-          <div className="disciplines">
+          <div className="disciplines hero-reveal" style={{ "--rd": `${HEADLINE_DONE + 0.08}s` }}>
             {INTRO.does.map((d, i) => (
-              <TLink key={d.to} to={d.to} className="disc" data-cursor="Enter">
+              <TLink key={d.to} to={d.to} className="disc">
                 <span className="mono">{String(i + 1).padStart(2, "0")} — {d.k}</span>
                 <strong>{d.brand}</strong>
                 <span className="mono go">Enter <span className="arrow">→</span></span>
@@ -101,7 +106,7 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="role">
+          <div className="role hero-reveal" style={{ "--rd": `${HEADLINE_DONE + 0.16}s` }}>
             <span className="mono">Photography · Web design · Booking 2026</span>
             <span className="mono">Scroll —</span>
           </div>
@@ -130,7 +135,7 @@ export default function Home() {
         {FRAMES.map((f, i) => (
           <Reveal className="card" key={f.seed} style={{ top: `${92 + i * 12}px`, zIndex: i + 1 }}>
             <div className="card-in">
-              <TLink to={`/work/${f.seed}`} className="shot" aria-label={`Open ${f.t}`} data-cursor="View">
+              <TLink to={`/work/${f.seed}`} className="shot" aria-label={`Open ${f.t}`}>
                 <Suspense fallback={<img data-par src={img(f.seed, 1200, 900)} alt={f.t} />}>
                   <DistortImage src={img(f.seed, 1200, 900)} alt={f.t} />
                 </Suspense>
@@ -163,7 +168,7 @@ export default function Home() {
                 <div className="wgrid">
                   {WEB_PROJECTS.slice(0, 2).map((w, i) => (
                     <Reveal key={w.slug} delay={i * 0.06}>
-                      <TLink to={`/design/${w.slug}`} className="wcard" data-cursor="View"
+                      <TLink to={`/design/${w.slug}`} className="wcard"
                         aria-label={`Open ${w.t}`}>
                         <div className="browser">
                           <div className="browser-bar">

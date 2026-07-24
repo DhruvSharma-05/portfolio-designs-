@@ -94,7 +94,7 @@ export default function Photography() {
                   <span className="mono">{f.loc}</span>
                   <span className="mono" style={{ color: "var(--accent)" }}>{f.year}</span>
                 </div>
-                <TLink to={`/photography/${f.slug}`} className="phero-open" data-cursor="Open">
+                <TLink to={`/photography/${f.slug}`} className="phero-open">
                   Open project <span className="arrow">→</span>
                 </TLink>
               </motion.div>
@@ -136,7 +136,7 @@ export default function Photography() {
           <Reveal className="card" key={p.slug} style={{ top: `${92 + n * 12}px`, zIndex: n + 1 }}>
             <div className="card-in">
               <TLink to={`/photography/${p.slug}`} className="shot"
-                aria-label={`Open ${p.t}`} data-cursor="View">
+                aria-label={`Open ${p.t}`}>
                 <Suspense fallback={<img data-par src={img(p.photos[0], 1200, 900)} alt={p.t} />}>
                   <DistortImage src={img(p.photos[0], 1200, 900)} alt={p.t} />
                 </Suspense>

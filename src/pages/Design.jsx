@@ -66,7 +66,7 @@ export default function Design() {
         <div className="wgrid">
           {WEB_PROJECTS.map((w, i) => (
             <Reveal key={w.slug} delay={i * 0.06}>
-              <TLink to={`/design/${w.slug}`} className="wcard" data-cursor="View"
+              <TLink to={`/design/${w.slug}`} className="wcard"
                 aria-label={`Open ${w.t}`}>
                 <div className="browser">
                   <div className="browser-bar">
