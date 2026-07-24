@@ -1,18 +1,20 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { P } from "../data.js";
-import { isMock, enableMock, mockApi, thumbUrl } from "./adminMock.js";
+import { isMock, enableMock, mockApi } from "./adminMock.js";
 
 /* ==================================================================
-   ADMIN — Viraj's control room.
+   ADMIN — client-delivery control room.
 
-   Flow: photos are uploaded to Google Drive exactly as before. Here he
-   groups them into projects, writes the words, and presses Publish.
-   Project metadata is saved back to Drive as content.json; publishing
-   rebuilds the site, which optimises the photos and bakes them in.
+   Viraj shoots, edits and uploads to Drive exactly as before. Here he
+   hands a finished shoot over: create (or reuse) the Drive folder,
+   share it, and send the client their code — by WhatsApp copy-paste or
+   straight email. That's the whole job; there is no project/portfolio
+   editor here (public Work/Gallery/Portrait photos come from Contentful,
+   synced at build time — see CLAUDE.md).
 
-   Deliberately plain: one dashboard, two lists, one editor. Everything
-   is auto-slugged and pre-filled so a project can be made in under a
-   minute, and nothing is destructive without a confirm.
+   Client-delivery lookups (api/client.js, api/download.js) read Drive
+   LIVE at request time, not from the static build, so nothing here ever
+   needs a rebuild to take effect.
 
    This page is lazy-loaded so none of it ships to normal visitors.
    ================================================================== */
@@ -59,10 +61,8 @@ const slugify = (s) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
 
-const blankClient = () => ({ on: false, name: "", folderId: "", code: "", note: "", email: "", revoked: false });
-
 /* Codes are read aloud and typed on phones, so the alphabet leaves out
-   0/O/1/I/L. Six random characters on top of the project name is about
+   0/O/1/I/L. Six random characters on top of the shoot title is about
    a billion combinations — enough that guessing is hopeless, short
    enough to dictate over WhatsApp. */
 const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
@@ -73,23 +73,14 @@ const makeCode = (title) => {
   return `${stem}-${rand}`;
 };
 
-const blankPhotoProject = () => ({
-  slug: "", t: "", kind: "Editorial", loc: "", year: String(new Date().getFullYear()),
-  exif: "", role: "", note: "", intro: "", photos: [], hidden: false,
-  client: blankClient(),
-});
-
-const blankWebProject = () => ({
-  slug: "", t: "", tag: "Website", year: String(new Date().getFullYear()),
-  role: "Design · Build", note: "", intro: "", tool: "Figma", href: "", live: "",
-  stack: [], specs: [], cover: "", shots: [], hidden: false,
-  client: blankClient(),
+const blankClientEntry = () => ({
+  title: "", name: "", email: "", folderId: "", code: "", note: "", revoked: false,
 });
 
 export default function Admin() {
   const [authed, setAuthed] = useState(null);   // null = still checking
-  const [content, setContent] = useState(null);
-  const [editing, setEditing] = useState(null); // { type, index }
+  const [clients, setClients] = useState(null);
+  const [editing, setEditing] = useState(null); // index into clients, or null
   const [msg, setMsg] = useState(null);
   const [dirty, setDirty] = useState(false);
 
@@ -100,7 +91,8 @@ export default function Admin() {
 
   const load = useCallback(async () => {
     try {
-      setContent(await api("/api/content"));
+      const content = await api("/api/content");
+      setClients(content.clients || []);
       setDirty(false);
     } catch (e) {
       setMsg({ bad: true, text: e.message });
@@ -117,12 +109,12 @@ export default function Admin() {
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
 
-  const save = async (next = content) => {
+  const save = async (next = clients) => {
     try {
-      const saved = await api("/api/content", { method: "PUT", body: next });
-      setContent(saved);
+      const saved = await api("/api/content", { method: "PUT", body: { clients: next } });
+      setClients(saved.clients || []);
       setDirty(false);
-      setMsg({ text: "Saved to Drive. Press Publish to put it live." });
+      setMsg({ text: "Saved." });
       return true;
     } catch (e) {
       setMsg({ bad: true, text: e.message });
@@ -130,68 +122,44 @@ export default function Admin() {
     }
   };
 
-  const publish = async () => {
-    if (dirty && !(await save())) return;
-    try {
-      await api("/api/publish", { method: "POST" });
-      setMsg({ text: "Rebuilding — the live site updates in about a minute." });
-    } catch (e) {
-      setMsg({ bad: true, text: e.message });
-    }
-  };
-
-  const update = (type, index, patch) => {
-    setContent((c) => {
-      const list = [...c[type]];
-      list[index] = { ...list[index], ...patch };
-      return { ...c, [type]: list };
+  const update = (index, patch) => {
+    setClients((list) => {
+      const next = [...list];
+      next[index] = { ...next[index], ...patch };
+      return next;
     });
     setDirty(true);
   };
 
-  const add = (type) => {
-    const blank = type === "photoProjects" ? blankPhotoProject() : blankWebProject();
-    setContent((c) => ({ ...c, [type]: [...c[type], blank] }));
+  const add = () => {
+    setClients((list) => [...list, { ...blankClientEntry(), code: makeCode("shoot") }]);
     setDirty(true);
-    setEditing({ type, index: content[type].length });
+    setEditing(clients.length);
   };
 
-  const remove = (type, index) => {
-    const p = content[type][index];
-    if (!confirm(`Delete "${p.t || "this project"}"? The photos stay in Drive.`)) return;
-    setContent((c) => ({ ...c, [type]: c[type].filter((_, i) => i !== index) }));
+  const remove = (index) => {
+    const c = clients[index];
+    if (!confirm(`Delete "${c.name || c.title || "this client"}"? The photos stay in Drive.`)) return;
+    setClients((list) => list.filter((_, i) => i !== index));
     setDirty(true);
     setEditing(null);
   };
 
-  const move = (type, index, dir) => {
-    const to = index + dir;
-    setContent((c) => {
-      const list = [...c[type]];
-      if (to < 0 || to >= list.length) return c;
-      [list[index], list[to]] = [list[to], list[index]];
-      return { ...c, [type]: list };
-    });
-    setDirty(true);
-  };
-
   if (authed === null) return <Shell><p className="mono">Checking…</p></Shell>;
   if (!authed) return <Login onIn={() => setAuthed(true)} />;
-  if (!content) return <Shell><p className="mono">Loading projects…</p></Shell>;
+  if (!clients) return <Shell><p className="mono">Loading clients…</p></Shell>;
 
-  if (editing) {
-    const list = content[editing.type];
-    const project = list[editing.index];
-    if (!project) { setEditing(null); return null; }
+  if (editing !== null) {
+    const client = clients[editing];
+    if (!client) { setEditing(null); return null; }
     return (
       <Shell>
-        <Editor
-          type={editing.type}
-          project={project}
-          onChange={(patch) => update(editing.type, editing.index, patch)}
+        <ClientEditor
+          client={client}
+          onChange={(patch) => update(editing, patch)}
           onBack={() => setEditing(null)}
           onSave={async () => { if (await save()) setEditing(null); }}
-          onDelete={() => remove(editing.type, editing.index)}
+          onDelete={() => remove(editing)}
           msg={msg}
         />
       </Shell>
@@ -200,10 +168,10 @@ export default function Admin() {
 
   return (
     <Shell>
-      <Dashboard
-        content={content} dirty={dirty} msg={msg}
-        onSave={() => save()} onPublish={publish}
-        onAdd={add} onEdit={setEditing} onRemove={remove} onMove={move}
+      <ClientList
+        clients={clients} dirty={dirty} msg={msg}
+        onSave={() => save()}
+        onAdd={add} onEdit={setEditing} onRemove={remove}
         onSignOut={async () => { await api("/api/auth", { method: "DELETE" }); setAuthed(false); }}
       />
     </Shell>
@@ -224,7 +192,7 @@ function Shell({ children }) {
       </header>
       {isMock() && (
         <p className="admin-msg mono preview">
-          Preview mode — no Drive connected. The projects below are fake and
+          Preview mode — no Drive connected. The clients below are fake and
           nothing you change here is saved.
         </p>
       )}
@@ -266,45 +234,57 @@ function Login({ onIn }) {
   );
 }
 
-/* ---------------- dashboard ---------------- */
+/* ---------------- client list ---------------- */
 
-function Dashboard({ content, dirty, msg, onSave, onPublish, onAdd, onEdit, onRemove, onMove, onSignOut }) {
-  const photos = content.photoProjects;
-  const webs = content.webProjects;
-  const frames = photos.reduce((n, p) => n + p.photos.length, 0);
+function ClientList({ clients, dirty, msg, onSave, onAdd, onEdit, onRemove, onSignOut }) {
+  const active = clients.filter((c) => !c.revoked && c.folderId).length;
 
   return (
     <>
       <div className="admin-stats">
-        <Stat n={photos.length} k="Photography projects" />
-        <Stat n={webs.length} k="Web design projects" />
-        <Stat n={frames} k="Photos placed" />
-        <Stat
-          n={content.updatedAt ? new Date(content.updatedAt).toLocaleDateString() : "—"}
-          k="Last saved" small
-        />
+        <Stat n={clients.length} k="Clients" />
+        <Stat n={active} k="Active deliveries" />
+        <Stat n={clients.filter((c) => c.revoked).length} k="Revoked" />
       </div>
 
       <div className="admin-actions">
         <button className="btn" onClick={onSave} disabled={!dirty}>
           {dirty ? "Save changes" : "All changes saved"}
         </button>
-        <button className="btn primary" onClick={onPublish}>Publish to the live site</button>
         <button className="btn ghost" onClick={onSignOut}>Sign out</button>
       </div>
 
       {msg && <p className={`admin-msg mono ${msg.bad ? "bad" : ""}`}>{msg.text}</p>}
 
-      <ProjectList
-        title="Photography" brand={P.photoBrand} type="photoProjects" items={photos}
-        onAdd={onAdd} onEdit={onEdit} onRemove={onRemove} onMove={onMove}
-        count={(p) => `${p.photos.length} photos`}
-      />
-      <ProjectList
-        title="Web design" brand="Design & build" type="webProjects" items={webs}
-        onAdd={onAdd} onEdit={onEdit} onRemove={onRemove} onMove={onMove}
-        count={(w) => `${w.shots.length} screens`}
-      />
+      <section className="admin-sec">
+        <div className="admin-sec-head">
+          <div>
+            <h2>Clients</h2>
+            <span className="mono">Photo deliveries</span>
+          </div>
+          <button className="btn" onClick={onAdd}>+ New client</button>
+        </div>
+
+        {!clients.length && (
+          <p className="admin-empty mono">Nothing here yet — press "New client".</p>
+        )}
+
+        {clients.map((c, i) => (
+          <div className="admin-row" key={i}>
+            <span className="mono num">{String(i + 1).padStart(2, "0")}</span>
+            <div className="admin-row-main">
+              <strong>{c.name || <em className="dim">Untitled</em>}</strong>
+              <span className="mono">
+                {c.title || "No shoot title"} — {c.code || "no code"}{c.revoked ? " — revoked" : ""}
+              </span>
+            </div>
+            <div className="admin-row-acts">
+              <button className="btn small" onClick={() => onEdit(i)}>Edit</button>
+              <button className="mini danger" onClick={() => onRemove(i)} aria-label="Delete">✕</button>
+            </div>
+          </div>
+        ))}
+      </section>
     </>
   );
 }
@@ -318,191 +298,6 @@ function Stat({ n, k, small }) {
   );
 }
 
-function ProjectList({ title, brand, type, items, onAdd, onEdit, onRemove, onMove, count }) {
-  return (
-    <section className="admin-sec">
-      <div className="admin-sec-head">
-        <div>
-          <h2>{title}</h2>
-          <span className="mono">{brand}</span>
-        </div>
-        <button className="btn" onClick={() => onAdd(type)}>+ New {title.toLowerCase()} project</button>
-      </div>
-
-      {!items.length && (
-        <p className="admin-empty mono">
-          Nothing here yet — press “New {title.toLowerCase()} project”.
-        </p>
-      )}
-
-      {items.map((p, i) => (
-        <div className="admin-row" key={p.slug || i}>
-          <span className="mono num">{String(i + 1).padStart(2, "0")}</span>
-          <div className="admin-row-main">
-            <strong>{p.t || <em className="dim">Untitled</em>}</strong>
-            <span className="mono">/{p.slug || "no-address"} — {count(p)}{p.hidden ? " — hidden" : ""}</span>
-          </div>
-          <div className="admin-row-acts">
-            <button className="mini" onClick={() => onMove(type, i, -1)} disabled={i === 0} aria-label="Move up">↑</button>
-            <button className="mini" onClick={() => onMove(type, i, 1)} disabled={i === items.length - 1} aria-label="Move down">↓</button>
-            <button className="btn small" onClick={() => onEdit({ type, index: i })}>Edit</button>
-            <button className="mini danger" onClick={() => onRemove(type, i)} aria-label="Delete">✕</button>
-          </div>
-        </div>
-      ))}
-    </section>
-  );
-}
-
-/* ---------------- editor ---------------- */
-
-function Editor({ type, project, onChange, onBack, onSave, onDelete, msg }) {
-  const isPhoto = type === "photoProjects";
-  const [picking, setPicking] = useState(null); // "photos" | "shots" | "cover"
-
-  /* auto-fill the address from the title until it is edited by hand */
-  const setTitle = (t) => {
-    const auto = !project.slug || project.slug === slugify(project.t || "");
-    onChange({ t, ...(auto ? { slug: slugify(t) } : null) });
-  };
-
-  return (
-    <>
-      <div className="admin-actions">
-        <button className="btn ghost" onClick={onBack}>← Back</button>
-        <button className="btn primary" onClick={onSave}>Save project</button>
-        <button className="btn danger" onClick={onDelete}>Delete</button>
-      </div>
-      {msg && <p className={`admin-msg mono ${msg.bad ? "bad" : ""}`}>{msg.text}</p>}
-
-      <div className="admin-form">
-        <Field label="Title" hint="Shown as the project heading">
-          <input value={project.t} onChange={(e) => setTitle(e.target.value)} />
-        </Field>
-        <Field label="Address" hint="The web address — letters and dashes only">
-          <input value={project.slug}
-            onChange={(e) => onChange({ slug: slugify(e.target.value) })} />
-        </Field>
-
-        {isPhoto ? (
-          <>
-            <Field label="Kind" hint="Editorial, Portraits, Events, Landscape…">
-              <input value={project.kind} onChange={(e) => onChange({ kind: e.target.value })} />
-            </Field>
-            <Field label="Location"><input value={project.loc} onChange={(e) => onChange({ loc: e.target.value })} /></Field>
-            <Field label="Year"><input value={project.year} onChange={(e) => onChange({ year: e.target.value })} /></Field>
-            <Field label="Camera line" hint="e.g. 35mm · f/1.8 · 1/125">
-              <input value={project.exif} onChange={(e) => onChange({ exif: e.target.value })} />
-            </Field>
-            <Field label="Role" hint="e.g. Photography · Grade">
-              <input value={project.role} onChange={(e) => onChange({ role: e.target.value })} />
-            </Field>
-          </>
-        ) : (
-          <>
-            <Field label="Type" hint="Website, Brand & menu, Editorial CMS…">
-              <input value={project.tag} onChange={(e) => onChange({ tag: e.target.value })} />
-            </Field>
-            <Field label="Year"><input value={project.year} onChange={(e) => onChange({ year: e.target.value })} /></Field>
-            <Field label="Role" hint="e.g. Design · Build">
-              <input value={project.role} onChange={(e) => onChange({ role: e.target.value })} />
-            </Field>
-            <Field label="Made in" hint="Figma, Canva, Webflow…">
-              <input value={project.tool} onChange={(e) => onChange({ tool: e.target.value })} />
-            </Field>
-            <Field label="Source link" hint="Figma or Canva URL — leave empty to show it as private">
-              <input value={project.href} placeholder="https://figma.com/…"
-                onChange={(e) => onChange({ href: e.target.value })} />
-            </Field>
-            <Field label="Live site" hint="Optional">
-              <input value={project.live} placeholder="https://…"
-                onChange={(e) => onChange({ live: e.target.value })} />
-            </Field>
-            <Field label="Built with" hint="Comma separated">
-              <input value={project.stack.join(", ")}
-                onChange={(e) => onChange({ stack: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })} />
-            </Field>
-          </>
-        )}
-
-        <Field label="One-liner" hint="The big line at the top of the project page" wide>
-          <input value={project.intro} onChange={(e) => onChange({ intro: e.target.value })} />
-        </Field>
-        <Field label="Description" hint="A short paragraph — what it was and what it was for" wide>
-          <textarea rows={4} value={project.note} onChange={(e) => onChange({ note: e.target.value })} />
-        </Field>
-
-        <Field label="Visibility" wide>
-          <label className="admin-check">
-            <input type="checkbox" checked={!project.hidden}
-              onChange={(e) => onChange({ hidden: !e.target.checked })} />
-            <span>Show this project on the site</span>
-          </label>
-          <label className="admin-check">
-            <input type="checkbox" checked={Boolean(project.client?.on)}
-              onChange={(e) => onChange({
-                client: {
-                  ...blankClient(), ...project.client, on: e.target.checked,
-                  // first tick pre-fills a code so there is nothing to think about
-                  code: project.client?.code || makeCode(project.t),
-                },
-              })} />
-            <span>This shoot is for a client (adds a download code)</span>
-          </label>
-        </Field>
-      </div>
-
-      {project.client?.on && (
-        <Delivery
-          client={project.client}
-          title={project.t}
-          onChange={(patch) => onChange({ client: { ...project.client, ...patch } })}
-        />
-      )}
-
-      {/* ---- pictures ---- */}
-      {isPhoto ? (
-        <PhotoSlot
-          label="Photos in this project"
-          hint="The first one is used as the cover."
-          ids={project.photos}
-          onOpen={() => setPicking("photos")}
-          onChange={(photos) => onChange({ photos })}
-        />
-      ) : (
-        <>
-          <PhotoSlot
-            label="Cover screenshot"
-            hint="The full-page screenshot shown in the browser frame."
-            ids={project.cover ? [project.cover] : []}
-            onOpen={() => setPicking("cover")}
-            onChange={(ids) => onChange({ cover: ids[0] || "" })}
-          />
-          <PhotoSlot
-            label="Screens"
-            hint="Every other screenshot, in order."
-            ids={project.shots}
-            onOpen={() => setPicking("shots")}
-            onChange={(shots) => onChange({ shots })}
-          />
-        </>
-      )}
-
-      {picking && (
-        <Picker
-          multiple={picking !== "cover"}
-          selected={picking === "cover" ? (project.cover ? [project.cover] : []) : project[picking]}
-          onClose={() => setPicking(null)}
-          onDone={(ids) => {
-            onChange(picking === "cover" ? { cover: ids[0] || "" } : { [picking]: ids });
-            setPicking(null);
-          }}
-        />
-      )}
-    </>
-  );
-}
-
 function Field({ label, hint, children, wide }) {
   return (
     <label className={`admin-field${wide ? " wide" : ""}`}>
@@ -513,133 +308,10 @@ function Field({ label, hint, children, wide }) {
   );
 }
 
-/* A chosen set of Drive photos, with reordering and removal. */
-function PhotoSlot({ label, hint, ids, onOpen, onChange }) {
-  const move = (i, dir) => {
-    const to = i + dir;
-    if (to < 0 || to >= ids.length) return;
-    const next = [...ids];
-    [next[i], next[to]] = [next[to], next[i]];
-    onChange(next);
-  };
-  return (
-    <section className="admin-sec">
-      <div className="admin-sec-head">
-        <div>
-          <h2>{label}</h2>
-          <span className="mono">{ids.length} selected — {hint}</span>
-        </div>
-        <button className="btn" onClick={onOpen}>Choose from Drive</button>
-      </div>
-      <div className="admin-thumbs">
-        {ids.map((id, i) => (
-          <figure key={id} className="admin-thumb">
-            <img src={thumbUrl(id)} alt="" loading="lazy" />
-            <figcaption>
-              <button className="mini" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Earlier">←</button>
-              <span className="mono">{String(i + 1).padStart(2, "0")}</span>
-              <button className="mini" onClick={() => move(i, 1)} disabled={i === ids.length - 1} aria-label="Later">→</button>
-              <button className="mini danger" onClick={() => onChange(ids.filter((x) => x !== id))} aria-label="Remove">✕</button>
-            </figcaption>
-          </figure>
-        ))}
-        {!ids.length && <p className="admin-empty mono">No pictures chosen yet.</p>}
-      </div>
-    </section>
-  );
-}
-
-/* Drive browser: folders on the left, frames on the right, tick to pick. */
-function Picker({ selected, multiple, onClose, onDone }) {
-  const [folders, setFolders] = useState([]);
-  const [photos, setPhotos] = useState([]);
-  const [folder, setFolder] = useState(null);
-  const [pick, setPick] = useState(selected);
-  const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(true);
-  const boxRef = useRef(null);
-
-  useEffect(() => {
-    setBusy(true);
-    const url = folder ? `/api/library?folder=${encodeURIComponent(folder)}` : "/api/library";
-    api(url)
-      .then((d) => { if (!folder) setFolders(d.folders); setPhotos(d.photos); setErr(""); })
-      .catch((e) => setErr(e.message))
-      .finally(() => setBusy(false));
-  }, [folder]);
-
-  useEffect(() => {
-    const esc = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", esc);
-    const prev = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", esc);
-      document.documentElement.style.overflow = prev;
-    };
-  }, [onClose]);
-
-  const toggle = (id) => {
-    if (!multiple) return setPick([id]);
-    setPick((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
-  };
-
-  return (
-    <div className="admin-picker" role="dialog" aria-modal="true" aria-label="Choose photos from Drive">
-      <div className="admin-picker-in" ref={boxRef}>
-        <div className="admin-picker-top">
-          <div>
-            <strong>Choose from Drive</strong>
-            <span className="mono"> — {pick.length} selected</span>
-          </div>
-          <div className="admin-row-acts">
-            <button className="btn ghost" onClick={onClose}>Cancel</button>
-            <button className="btn primary" onClick={() => onDone(pick)}>Use these</button>
-          </div>
-        </div>
-
-        <div className="admin-picker-body">
-          <nav className="admin-folders">
-            <button className={`fold ${!folder ? "on" : ""}`} onClick={() => setFolder(null)}>
-              All / root
-            </button>
-            {folders.map((f) => (
-              <button key={f.id} className={`fold ${folder === f.id ? "on" : ""}`}
-                onClick={() => setFolder(f.id)}>{f.name}</button>
-            ))}
-          </nav>
-
-          <div className="admin-grid">
-            {busy && <p className="mono">Reading Drive…</p>}
-            {err && <p className="admin-msg bad mono">{err}</p>}
-            {!busy && !err && !photos.length && (
-              <p className="admin-empty mono">No photos in this folder.</p>
-            )}
-            {photos.map((ph) => {
-              const on = pick.includes(ph.id);
-              const order = pick.indexOf(ph.id) + 1;
-              return (
-                <button key={ph.id} className={`pickfr ${on ? "on" : ""}`}
-                  onClick={() => toggle(ph.id)} title={ph.name}>
-                  <img src={thumbUrl(ph.id)} alt="" loading="lazy" />
-                  {on && <span className="badge mono">{multiple ? order : "✓"}</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* Drive folder browser + creator, for picking (or making) the ONE folder
-   a client delivery points at. Deliberately its own component rather
-   than a variant of Picker above — the interaction is breadcrumb
-   drill-down plus an inline create form, not a multi-select photo grid.
-   "Use this folder" always refers to whatever level is currently open,
-   so picking an existing folder and picking one just created both end
-   the same way. */
+   a client delivery points at. "Use this folder" always refers to
+   whatever level is currently open, so picking an existing folder and
+   picking one just created both end the same way. */
 function FolderPicker({ onClose, onDone }) {
   const [path, setPath] = useState([]); // [{id, name}, ...] — empty = root
   const [folders, setFolders] = useState([]);
@@ -744,7 +416,7 @@ function FolderPicker({ onClose, onDone }) {
   );
 }
 
-/* ---------------- client delivery ----------------
+/* ---------------- client editor ----------------
    Everything Viraj needs to hand a finished shoot over: which Drive
    folder, the code, the message to paste into WhatsApp, or an email
    sent straight from here.
@@ -753,7 +425,7 @@ function FolderPicker({ onClose, onDone }) {
    dialog is where the dangerous mistake lives — sharing a PARENT
    folder would expose every client inside it. This only ever touches
    the one folder id below. */
-function Delivery({ client, title, onChange }) {
+function ClientEditor({ client, onChange, onBack, onSave, onDelete, msg }) {
   const [state, setState] = useState(null);      // { shared, name, count }
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -764,7 +436,7 @@ function Delivery({ client, title, onChange }) {
 
   const link = `${location.origin}/client/${client.code}`;
   const message =
-    `Hi${client.name ? ` ${client.name}` : ""}, your photos from ${title || "the shoot"} are ready.\n\n` +
+    `Hi${client.name ? ` ${client.name}` : ""}, your photos from ${client.title || "the shoot"} are ready.\n\n` +
     `${link}\n\nCode: ${client.code}\n\n— ${P.photographer}`;
 
   const call = async (action) => {
@@ -806,7 +478,7 @@ function Delivery({ client, title, onChange }) {
     try {
       await api("/api/mail", {
         method: "POST",
-        body: { to: client.email, subject: `Your photos — ${title || "the shoot"}`, text: message },
+        body: { to: client.email, subject: `Your photos — ${client.title || "the shoot"}`, text: message },
       });
       setMailed(true);
       setTimeout(() => setMailed(false), 2400);
@@ -818,87 +490,100 @@ function Delivery({ client, title, onChange }) {
   };
 
   return (
-    <section className="admin-sec deliver">
-      <div className="admin-sec-head">
-        <div>
-          <h2>Client download</h2>
-          <span className="mono">
-            {state?.shared
-              ? `Live — ${state.count ?? "?"} photos in ${state.name || "the folder"}`
-              : "Not shared yet"}
-          </span>
-        </div>
-        {state?.shared
-          ? <button className="btn danger" onClick={() => call("revoke")} disabled={busy}>Revoke access</button>
-          : <button className="btn primary" onClick={() => call("grant")} disabled={busy}>Share folder</button>}
+    <>
+      <div className="admin-actions">
+        <button className="btn ghost" onClick={onBack}>← Back</button>
+        <button className="btn primary" onClick={onSave}>Save client</button>
+        <button className="btn danger" onClick={onDelete}>Delete</button>
       </div>
+      {msg && <p className={`admin-msg mono ${msg.bad ? "bad" : ""}`}>{msg.text}</p>}
 
-      <div className="admin-form">
-        <Field label="Client name" hint="Shown to them on the download page">
-          <input value={client.name} onChange={(e) => onChange({ name: e.target.value })} />
-        </Field>
-
-        <Field label="Client email" hint="Optional — lets you email the code instead of just copying it">
-          <input type="email" value={client.email} placeholder="client@example.com"
-            onChange={(e) => onChange({ email: e.target.value.trim() })} />
-        </Field>
-
-        <Field label="Access code" hint="They type this. Works until you revoke it.">
-          <div className="admin-inline">
-            <input value={client.code}
-              onChange={(e) => onChange({ code: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} />
-            <button className="btn small" onClick={() => onChange({ code: makeCode(title) })}>New</button>
-          </div>
-        </Field>
-
-        <Field label="Delivery folder" wide
-          hint="The folder holding the finished photos — NOT a parent folder.">
-          <div className="admin-inline">
+      <section className="admin-sec deliver">
+        <div className="admin-sec-head">
+          <div>
+            <h2>Client download</h2>
             <span className="mono">
-              {state?.name || client.folderId || "No folder chosen yet"}
+              {state?.shared
+                ? `Live — ${state.count ?? "?"} photos in ${state.name || "the folder"}`
+                : "Not shared yet"}
             </span>
-            <button className="btn small" onClick={() => setPicking(true)}>Choose / create folder</button>
           </div>
-          <details className="admin-folder-manual">
-            <summary className="mono">Paste a folder ID directly instead</summary>
-            <input value={client.folderId} placeholder="1a2b3c…"
-              onChange={(e) => onChange({ folderId: e.target.value.trim() })} />
-          </details>
-        </Field>
-
-        <Field label="Note to the client" hint="One line, shown above the download button" wide>
-          <input value={client.note} placeholder="Full set, edited — shout if you need any in a different crop."
-            onChange={(e) => onChange({ note: e.target.value })} />
-        </Field>
-      </div>
-
-      {err && <p className="admin-msg bad mono">{err}</p>}
-
-      <div className="deliver-send">
-        <div className="mono">Send this</div>
-        <pre>{message}</pre>
-        <div className="admin-row-acts">
-          <button className="btn" onClick={() => copy(message, "message")}>
-            {copied === "message" ? "Copied ✓" : "Copy message"}
-          </button>
-          <button className="btn ghost" onClick={() => copy(link, "link")}>
-            {copied === "link" ? "Copied ✓" : "Copy link only"}
-          </button>
-          <button className="btn ghost" onClick={sendEmail} disabled={!client.email || mailing}>
-            {mailed ? "Sent ✓" : mailing ? "Sending…" : "Email this to them"}
-          </button>
+          {state?.shared
+            ? <button className="btn danger" onClick={() => call("revoke")} disabled={busy}>Revoke access</button>
+            : <button className="btn primary" onClick={() => call("grant")} disabled={busy}>Share folder</button>}
         </div>
-        <p className="mono deliver-hint">
-          Save the project after sharing, or the code won't be live.
-        </p>
-      </div>
 
-      {picking && (
-        <FolderPicker
-          onClose={() => setPicking(false)}
-          onDone={({ id }) => { onChange({ folderId: id }); setPicking(false); }}
-        />
-      )}
-    </section>
+        <div className="admin-form">
+          <Field label="Shoot title" hint={'Shown to the client, e.g. "Autumn menu shoot"'}>
+            <input value={client.title} onChange={(e) => onChange({ title: e.target.value })} />
+          </Field>
+
+          <Field label="Client name" hint="Shown to them on the download page">
+            <input value={client.name} onChange={(e) => onChange({ name: e.target.value })} />
+          </Field>
+
+          <Field label="Client email" hint="Optional — lets you email the code instead of just copying it">
+            <input type="email" value={client.email} placeholder="client@example.com"
+              onChange={(e) => onChange({ email: e.target.value.trim() })} />
+          </Field>
+
+          <Field label="Access code" hint="They type this. Works until you revoke it.">
+            <div className="admin-inline">
+              <input value={client.code}
+                onChange={(e) => onChange({ code: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} />
+              <button className="btn small" onClick={() => onChange({ code: makeCode(client.title) })}>New</button>
+            </div>
+          </Field>
+
+          <Field label="Delivery folder" wide
+            hint="The folder holding the finished photos — NOT a parent folder.">
+            <div className="admin-inline">
+              <span className="mono">
+                {state?.name || client.folderId || "No folder chosen yet"}
+              </span>
+              <button className="btn small" onClick={() => setPicking(true)}>Choose / create folder</button>
+            </div>
+            <details className="admin-folder-manual">
+              <summary className="mono">Paste a folder ID directly instead</summary>
+              <input value={client.folderId} placeholder="1a2b3c…"
+                onChange={(e) => onChange({ folderId: e.target.value.trim() })} />
+            </details>
+          </Field>
+
+          <Field label="Note to the client" hint="One line, shown above the download button" wide>
+            <input value={client.note} placeholder="Full set, edited — shout if you need any in a different crop."
+              onChange={(e) => onChange({ note: e.target.value })} />
+          </Field>
+        </div>
+
+        {err && <p className="admin-msg bad mono">{err}</p>}
+
+        <div className="deliver-send">
+          <div className="mono">Send this</div>
+          <pre>{message}</pre>
+          <div className="admin-row-acts">
+            <button className="btn" onClick={() => copy(message, "message")}>
+              {copied === "message" ? "Copied ✓" : "Copy message"}
+            </button>
+            <button className="btn ghost" onClick={() => copy(link, "link")}>
+              {copied === "link" ? "Copied ✓" : "Copy link only"}
+            </button>
+            <button className="btn ghost" onClick={sendEmail} disabled={!client.email || mailing}>
+              {mailed ? "Sent ✓" : mailing ? "Sending…" : "Email this to them"}
+            </button>
+          </div>
+          <p className="mono deliver-hint">
+            Save after sharing, or the code won't be live.
+          </p>
+        </div>
+
+        {picking && (
+          <FolderPicker
+            onClose={() => setPicking(false)}
+            onDone={({ id }) => { onChange({ folderId: id }); setPicking(false); }}
+          />
+        )}
+      </section>
+    </>
   );
 }

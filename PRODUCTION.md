@@ -2,10 +2,12 @@
 
 Status of the portfolio (React 19 + Vite, static on Vercel). Public
 Work/Gallery/Portrait photos sync from **Contentful** at build time
-(`scripts/sync-contentful.mjs`); Google Drive is used only for `/admin`-authored
-project metadata and the private client-delivery folders (`scripts/sync-drive.mjs`,
-`api/`). Two parts: **scaling under high traffic** (technical) and **pre-launch
-gaps** (content/SEO/ops). Mirrors the working todo list.
+(`scripts/sync-contentful.mjs`); Google Drive is used only by `/admin`, which
+is **client-delivery only** — creating/sharing delivery folders and the
+`content.json` client list (`api/`). There is no admin-authored portfolio
+project metadata anymore. Two parts: **scaling under high traffic**
+(technical) and **pre-launch gaps** (content/SEO/ops). Mirrors the working
+todo list.
 
 ---
 
@@ -46,14 +48,18 @@ Done:
 
 Not done / narrower than it looks:
 
-6. **`picsum.photos` is mostly gone from the hot path, but not entirely.**
-   Work, Gallery, Photography, and the About portrait are all real synced
-   photos now. The one remaining live picsum path is `/design` and
-   `/design/:slug` — their placeholder cover/screenshot images
-   (`WEB_PROJECTS_FALLBACK` in `src/data.js`), because no real web projects
-   have been published from `/admin` yet. Resolves itself once real projects
-   are published; not worth building throwaway local placeholder assets for
-   content that's explicitly temporary.
+6. **`picsum.photos` is mostly gone from the hot path, but not entirely —
+   and this one is now permanent, not "until published".** Work, Gallery,
+   Photography, and the About portrait are all real synced photos. The
+   remaining live picsum paths are `/photography/:slug` and `/design`/
+   `/design/:slug` — their placeholder content (`PHOTO_PROJECTS_FALLBACK`/
+   `WEB_PROJECTS_FALLBACK` in `src/data.js`), because `/admin` no longer has
+   any project editor (it's client-delivery only now — see `CLAUDE.md`).
+   `content.json`'s `photoProjects`/`webProjects` are frozen at empty, so
+   nothing will ever populate these pages with real content unless a
+   project-editing feature is rebuilt. Not worth building throwaway local
+   placeholder assets for a permanent placeholder state; worth deciding
+   deliberately whether these detail pages should exist at all going forward.
 7. **Vercel plan / bandwidth.** Hobby (free) caps ~100 GB/month; unoptimized
    images + high traffic will throttle or bill. High traffic ⇒ Pro plan, or
    put Cloudflare in front. `api/download.js`'s `maxDuration: 60` in
@@ -88,6 +94,9 @@ Not done / narrower than it looks:
   fully automatic (see `CLAUDE.md`).
 
 ### 🟡 Polish / later
-- Real web design projects published from `/admin` (closes gap #6 above).
+- Decide the fate of `/photography/:slug` and `/design`/`/design/:slug`
+  (closes gap #6 above) — since `/admin` no longer edits projects, these
+  either need a project-editing feature rebuilt somewhere, or should be
+  reconsidered/removed if they're not needed going forward.
 - Privacy policy / cookie notice — required once analytics or a form is added.
 - Accessibility pass (gallery images are decorative `alt=""`; run Lighthouse).

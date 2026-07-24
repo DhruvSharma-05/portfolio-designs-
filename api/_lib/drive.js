@@ -168,8 +168,12 @@ export const folderUrl = (id) => `https://drive.google.com/drive/folders/${id}`;
 export const EMPTY_CONTENT = {
   version: 1,
   updatedAt: null,
+  // Frozen — /admin no longer edits these (it's client-delivery only now),
+  // but they stay here so scripts/sync-drive.mjs keeps reading valid arrays
+  // and a pre-existing content.json isn't silently truncated on next write.
   photoProjects: [],
   webProjects: [],
+  clients: [],
 };
 
 export async function readContent(drive) {

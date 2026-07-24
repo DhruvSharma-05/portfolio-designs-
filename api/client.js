@@ -10,7 +10,7 @@
        ZIP-download cap (api/download.js enforces the same numbers)
      · the Drive folder link
 
-   It never returns the project list, other galleries, other codes, or
+   It never returns the client list, other galleries, other codes, or
    anything about a code that does not match. A wrong code gets a flat
    404 with no hint about whether the gallery exists.
    ================================================================== */
@@ -46,9 +46,9 @@ export default async function handler(req, res) {
     const overCap = !images || images.length > MAX_FILES || totalBytes > MAX_BYTES;
 
     return res.status(200).json({
-      client: found.project.client.name || "",
-      title: found.project.t || "",
-      note: found.project.client.note || "",
+      client: found.client.name || "",
+      title: found.client.title || "",
+      note: found.client.note || "",
       count: images ? images.length : null,
       url: folderUrl(found.folderId),
       zip: {

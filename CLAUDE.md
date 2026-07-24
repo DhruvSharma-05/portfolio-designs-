@@ -27,10 +27,14 @@ at runtime.
   template. On Vercel, the same vars go in Project Settings → Environment
   Variables; the existing **Deploy Hook** URL still triggers a rebuild after
   changing photos.
-- **Drive is not gone** — it still backs `/admin`-authored project metadata
-  (`content.json`) and the private client-delivery folder sharing, via
-  `scripts/sync-drive.mjs` and `api/`. Only the public Work/Gallery/Portrait
-  photo source moved off Drive.
+- **Drive is not gone** — it backs the private client-delivery system only:
+  `content.json`'s `clients` list + per-folder link sharing, via `api/` and
+  `/admin` ([src/pages/Admin.jsx](src/pages/Admin.jsx)). `/admin` is
+  **client-delivery only** now — it does not manage portfolio projects; the
+  public Work/Gallery/Portrait photo source moved fully off Drive onto
+  Contentful. `scripts/sync-drive.mjs` still reads `content.json`'s
+  `photoProjects`/`webProjects` keys for backward compatibility, but nothing
+  writes to them anymore — they're frozen at whatever they already were.
 
 ## Production readiness & scaling
 
@@ -39,12 +43,15 @@ See [PRODUCTION.md](PRODUCTION.md) for the high-traffic/scalability notes
 cache headers, Vercel plan) and the pre-launch gap list (content, SEO, contact
 form, 404, analytics, deploy hook).
 
-## Not yet built
+## Client delivery is built, not deferred
 
-A separate **private client-delivery** feature (Viraj uploads his clients'
-shoots; those clients log in and download) was discussed but deferred. It needs
-real auth + private storage — do **not** conflate it with the public portfolio
-sync above.
+Viraj uploads a finished shoot to Drive, then in `/admin` creates/picks the
+delivery folder, shares it, and sends the client a code (WhatsApp copy-paste
+or SMTP email). The client opens `/client/<code>` to download a ZIP or open
+the folder in Drive directly. Lookups (`api/client.js`, `api/download.js`)
+read Drive live at request time — no rebuild needed for any of this. See
+`README.md`'s "The admin panel" and "Client downloads" sections for the full
+flow and security model.
 
 ## Commands
 

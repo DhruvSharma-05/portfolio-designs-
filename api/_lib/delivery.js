@@ -9,31 +9,28 @@
 
 import { readContent, shareState } from "./drive.js";
 
-/* Every project — photo or web — can carry a delivery. */
-const deliveries = (content) =>
-  [...(content.photoProjects || []), ...(content.webProjects || [])]
-    .filter((p) => p.client?.on && p.client?.code && p.client?.folderId);
-
 export async function resolveDelivery(drive, code) {
   const clean = String(code || "").trim().toLowerCase();
   if (!clean) return { ok: false, status: 400, error: "Enter your code" };
 
   const content = await readContent(drive);
-  const found = deliveries(content).find((p) => p.client.code.toLowerCase() === clean);
+  const found = (content.clients || [])
+    .filter((c) => c.code && c.folderId)
+    .find((c) => c.code.toLowerCase() === clean);
 
   // Same answer for "no such code" and "code exists but is revoked", so
   // the response can't be used to probe which codes are real.
-  if (!found || found.client.revoked) {
+  if (!found || found.revoked) {
     return { ok: false, status: 404, error: "That code doesn't match a gallery. Check it with Viraj." };
   }
 
-  const folderId = found.client.folderId;
+  const folderId = found.folderId;
   const share = await shareState(drive, folderId).catch(() => ({ shared: false }));
   if (!share.shared) {
     return { ok: false, status: 409, error: "This gallery isn't open yet. Ask Viraj to re-share it." };
   }
 
-  return { ok: true, project: found, folderId };
+  return { ok: true, client: found, folderId };
 }
 
 /* Caps on the server-built ZIP a client can download directly from the
