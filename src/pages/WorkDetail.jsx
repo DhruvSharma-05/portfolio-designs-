@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
-import { FRAMES, img, prefersReduced } from "../data.js";
+import { FRAMES, img, srcSet, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
@@ -59,7 +59,8 @@ export default function WorkDetail() {
       </div>
 
       <figure className="detail-fig">
-        <img ref={figImg} src={img(f.seed, 1600, 1067)} alt={f.t} />
+        <img ref={figImg} src={img(f.seed, 1600, 1067)} srcSet={srcSet(f.seed)}
+          sizes="(max-width: 1180px) 100vw, 1180px" alt={f.t} />
       </figure>
 
       <div className="detail-grid">

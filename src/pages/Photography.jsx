@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
-import { P, img, FEATURED, PHOTO_PROJECTS, SHEET, prefersReduced } from "../data.js";
+import { P, img, srcSet, FEATURED, PHOTO_PROJECTS, SHEET, prefersReduced, heavyVisualsAllowed } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 
 const DistortImage = lazy(() => import("../DistortImage.jsx"));
@@ -25,6 +25,7 @@ const HOLD = 5400; // ms per hero slide — matches the tick-fill keyframe
 export default function Photography() {
   const [i, setI] = useState(0);
   const [reduced] = useState(prefersReduced);
+  const [heavy] = useState(heavyVisualsAllowed);
   const root = useRef(null);
 
   /* autoplay — restarts whenever the index changes, so a manual pick
@@ -65,7 +66,7 @@ export default function Photography() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: reduced ? 0 : 1.1, ease: "easeInOut" }}>
-              <motion.img src={img(f.seed, 2000, 1200)} alt=""
+              <motion.img src={img(f.seed, 2000, 1200)} srcSet={srcSet(f.seed)} sizes="100vw" alt=""
                 initial={{ scale: 1.12 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: reduced ? 0 : 8, ease: "linear" }} />
@@ -137,9 +138,18 @@ export default function Photography() {
             <div className="card-in">
               <TLink to={`/photography/${p.slug}`} className="shot"
                 aria-label={`Open ${p.t}`}>
-                <Suspense fallback={<img data-par src={img(p.photos[0], 1200, 900)} alt={p.t} />}>
-                  <DistortImage src={img(p.photos[0], 1200, 900)} alt={p.t} />
-                </Suspense>
+                {heavy ? (
+                  <Suspense fallback={
+                    <img data-par src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
+                      sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
+                  }>
+                    <DistortImage src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
+                      sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
+                  </Suspense>
+                ) : (
+                  <img data-par src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
+                    sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
+                )}
                 <span className="open">{p.photos.length} frames →</span>
               </TLink>
               <div className="cap">
@@ -163,7 +173,8 @@ export default function Photography() {
         <div className="strip-track">
           {[...SHEET, ...SHEET].map((s, n) => (
             <figure className="strip-fr" key={n}>
-              <img src={img(s, 400, 264)} alt="" />
+              <img src={img(s, 400, 264)} srcSet={srcSet(s)}
+                sizes="(max-width: 640px) 160px, 210px" alt="" />
             </figure>
           ))}
         </div>

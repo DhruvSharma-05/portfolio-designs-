@@ -7,6 +7,7 @@ import Lenis from "lenis";
 import { CSS, THEME, P, prefersReduced } from "./data.js";
 import { AppProvider } from "./context.js";
 import { TLink, Logo } from "./ui.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 import Home from "./pages/Home.jsx";
 import WorkDetail from "./pages/WorkDetail.jsx";
 import About from "./pages/About.jsx";
@@ -14,6 +15,7 @@ import Photography from "./pages/Photography.jsx";
 import PhotoProject from "./pages/PhotoProject.jsx";
 import Design from "./pages/Design.jsx";
 import DesignProject from "./pages/DesignProject.jsx";
+import NotFound from "./pages/NotFound.jsx";
 
 /* The admin is code-split: none of it ships to normal visitors. */
 const Admin = lazy(() => import("./pages/Admin.jsx"));
@@ -152,30 +154,33 @@ export default function App() {
           </button>
         )}
 
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/work/:seed" element={<WorkDetail />} />
-          <Route path="/photography" element={<Photography />} />
-          <Route path="/photography/:slug" element={<PhotoProject />} />
-          <Route path="/design" element={<Design />} />
-          <Route path="/design/:slug" element={<DesignProject />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/client" element={
-            <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
-              <Client />
-            </Suspense>
-          } />
-          <Route path="/client/:code" element={
-            <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
-              <Client />
-            </Suspense>
-          } />
-          <Route path="/admin" element={
-            <Suspense fallback={<main className="admin wrap"><p className="mono">Loading…</p></main>}>
-              <Admin />
-            </Suspense>
-          } />
-        </Routes>
+        <ErrorBoundary key={location.pathname}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/work/:seed" element={<WorkDetail />} />
+            <Route path="/photography" element={<Photography />} />
+            <Route path="/photography/:slug" element={<PhotoProject />} />
+            <Route path="/design" element={<Design />} />
+            <Route path="/design/:slug" element={<DesignProject />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/client" element={
+              <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
+                <Client />
+              </Suspense>
+            } />
+            <Route path="/client/:code" element={
+              <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
+                <Client />
+              </Suspense>
+            } />
+            <Route path="/admin" element={
+              <Suspense fallback={<main className="admin wrap"><p className="mono">Loading…</p></main>}>
+                <Admin />
+              </Suspense>
+            } />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ErrorBoundary>
       </div>
     </AppProvider>
   );

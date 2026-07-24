@@ -56,7 +56,7 @@ let store = {
       client: {
         on: true, name: "North Café", folderId: "mock-folder-1",
         code: "after-hours-7q4m2x", note: "Full set, edited. Shout if you need a different crop.",
-        revoked: false,
+        email: "hello@northcafe.example", revoked: false,
       },
     },
     {
@@ -66,7 +66,7 @@ let store = {
       note: "Twelve people, one afternoon, one light moved twice.",
       intro: "One light, moved twice. Everything else is the person.",
       photos: FOLDER_PHOTOS["f-faces"].slice(0, 5), hidden: false,
-      client: { on: false, name: "", folderId: "", code: "", note: "", revoked: false },
+      client: { on: false, name: "", folderId: "", code: "", note: "", email: "", revoked: false },
     },
   ],
   webProjects: [
@@ -105,9 +105,23 @@ export async function mockApi(url, options = {}) {
   }
 
   if (url.startsWith("/api/library")) {
+    if (method === "POST") {
+      const { name } = options.body || {};
+      const clean = String(name || "").trim();
+      if (!clean) throw new Error("Name the folder first");
+      const folder = { id: `mock-folder-${FOLDERS.length + 1}`, name: clean };
+      FOLDERS.push(folder);
+      return { folder };
+    }
     const folder = new URL(url, location.origin).searchParams.get("folder");
     if (!folder) return { folders: FOLDERS, photos: [] };
     return { folders: [], photos: asPhotos(FOLDER_PHOTOS[folder] || []) };
+  }
+
+  if (url.startsWith("/api/mail")) {
+    const { to } = options.body || {};
+    if (!/\S+@\S+\.\S+/.test(to || "")) throw new Error("Enter a valid email address");
+    return { sent: true };
   }
 
   if (url.startsWith("/api/content")) {

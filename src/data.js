@@ -13,6 +13,17 @@ export const prefersReduced = () =>
   typeof matchMedia !== "undefined" &&
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/* Gate for the two three.js-backed effects (HeroCanvas, DistortImage) —
+   checked BEFORE the lazy import() is triggered, not after, so touch
+   devices, reduced-motion, and narrow viewports never fetch the chunk
+   (881KB/234KB gzip, the single largest chunk in the app) at all, rather
+   than fetching it and then declining to render. */
+export const heavyVisualsAllowed = () =>
+  typeof matchMedia !== "undefined" &&
+  matchMedia("(pointer: fine)").matches &&
+  !matchMedia("(prefers-reduced-motion: reduce)").matches &&
+  matchMedia("(min-width: 768px)").matches;
+
 export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
   photographer: "Viraj Mehta",  // the person the home page is about
@@ -92,6 +103,17 @@ export const img = (s, w = 1200, h = 800) => {
   return `https://picsum.photos/seed/${s}/${w}/${h}`;
 };
 
+/* srcSet(seed): the sm+lg pair as a srcset descriptor, so <img> can ship
+   the resolution that actually matches the viewport instead of always
+   whatever fixed width img() was called with. Falls back to two picsum
+   widths for not-yet-synced placeholder seeds so the attribute stays
+   valid (only ever hit before real content is published). */
+export const srcSet = (s) => {
+  const p = PHOTOS.get(s);
+  if (p) return `${p.sm} 640w, ${p.lg} 2000w`;
+  return `https://picsum.photos/seed/${s}/640/640 640w, https://picsum.photos/seed/${s}/2000/2000 2000w`;
+};
+
 /* ratio(seed, fw, fh): CSS aspect-ratio for a seed — the synced photo's
    real dimensions when the manifest has them, the placeholder's requested
    size otherwise. Lets free-flowing grids reserve space before the image
@@ -143,7 +165,6 @@ export const FRAMES = manifest.work?.length ? manifest.work : FRAMES_FALLBACK;
 export const SHEET = manifest.gallery?.length
   ? manifest.gallery.map((p) => p.seed)
   : SHEET_FALLBACK;
-export const TICKER = ["Editorial", "Events", "Portraits", "Art direction", "Colour grading", "Design & build", "Booking 2026"];
 
 /* ==================================================================
    GALLERY — the simple, captionless grid on the Work page.
@@ -390,9 +411,9 @@ export const ABOUT = {
   ],
 };
 
+/* Inter + IBM Plex Mono are self-hosted via @fontsource (see main.jsx) —
+   no render-blocking request to fonts.googleapis.com. */
 export const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
-
 .pf, .pf *, .pf *::before, .pf *::after { box-sizing: border-box; margin: 0; }
 .pf { background: var(--bg); color: var(--ink);
   font-family: 'Inter', system-ui, sans-serif; font-weight: 400;
@@ -500,17 +521,7 @@ export const CSS = `
 @media (max-width: 640px) { .strip-fr { width: 160px; height: 160px; } }
 @keyframes roll { to { transform: translateX(-50%); } }
 
-/* --- ticker --- */
-.tick { border-bottom: 1px solid var(--rule); overflow: hidden; padding: 16px 0; display: flex;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-          mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.tick-in { display: flex; width: max-content; animation: roll 34s linear infinite; }
-.tick-in em { font-style: normal; font-weight: 500; font-size: 15px; white-space: nowrap;
-  padding: 0 20px; display: flex; align-items: center; gap: 20px; }
-.tick-in em::after { content: "·"; color: var(--accent); }
-
 /* --- thesis --- */
-.thesis { padding: 15vh 0 12vh; }
 .thesis-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 56px; align-items: end; }
 @media (max-width: 860px) { .thesis-grid { grid-template-columns: 1fr; align-items: start; gap: 32px; } }
 .lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(24px, 3.6vw, 44px);
@@ -546,26 +557,6 @@ export const CSS = `
 .cap p { color: var(--dim); line-height: 1.68; font-size: 15px; margin-top: 14px; }
 .cap .meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   padding-top: 16px; border-top: 1px solid var(--rule); }
-
-/* --- auto-playing horizontal gallery (marquee) --- */
-.gallery { overflow: hidden; border-top: 1px solid var(--rule); background: var(--bg);
-  padding: 12vh 0; }
-.gallery-head { padding-bottom: 6vh; }
-.gallery-head h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
-  font-size: clamp(30px, 4.4vw, 60px); text-wrap: balance; }
-.gallery-head p { color: var(--dim); font-size: 15px; line-height: 1.7; margin-top: 20px; max-width: 34ch; }
-.gallery-view { overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
-          mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); }
-.gallery.reduced .gallery-view { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-/* duplicated track (items rendered twice) drifts -50% for a seamless loop.
-   margin-right (not gap) keeps a trailing gap so the wrap point is exact. */
-.gallery-track { display: flex; align-items: center; width: max-content;
-  animation: roll 80s linear infinite; }
-.gallery:hover .gallery-track { animation-play-state: paused; }
-.gal-fr { flex: 0 0 auto; width: min(40vw, 420px); aspect-ratio: 3/4; overflow: hidden;
-  border-radius: 4px; border: 1px solid var(--rule); margin-right: 24px; }
-@media (max-width: 700px) { .gal-fr { width: 70vw; } }
 
 /* --- brand logo in the bar ---
    Drop the real file at public/logo.svg (or .png / .webp) and it is
@@ -932,8 +923,10 @@ export const CSS = `
   text-transform: uppercase; color: var(--dim); transition: border-color .3s ease, color .3s ease; }
 .pill:hover { border-color: var(--accent); color: var(--accent); }
 
-/* external link button */
-.extlink { display: inline-flex; align-items: center; gap: 12px; border-radius: 100px;
+/* external link button — .pf-scoped (not bare .extlink) so its border
+   survives the .pf button { border: none; ... } reset when it's used
+   on a <button> (NotFound/ErrorBoundary), not just an <a>. */
+.pf .extlink { display: inline-flex; align-items: center; gap: 12px; border-radius: 100px;
   border: 1px solid var(--accent); color: var(--accent); padding: 13px 24px;
   font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
   text-transform: uppercase; transition: background-color .35s ease, color .35s ease; }
@@ -1110,6 +1103,17 @@ export const CSS = `
   color: var(--bg); border-radius: 100px; min-width: 22px; height: 22px; display: grid;
   place-items: center; padding: 0 6px; font-size: 10px; }
 
+/* --- Drive folder picker/creator (client-delivery folder field) --- */
+.admin-folder-body { padding: 16px 20px; overflow-y: auto; }
+.admin-crumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 14px; }
+.crumb { font-size: 11px; letter-spacing: .08em; color: var(--dim); }
+.crumb:hover { color: var(--accent); }
+.crumb::after { content: "/"; margin-left: 6px; color: var(--rule); }
+.crumb:last-child::after { content: none; }
+.admin-folder-new { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid var(--rule); }
+.admin-folder-new input { flex: 1; }
+
 /* ==================================================================
    CLIENT AREA — /client. The plainest page on the site: a client here
    wants their photos, not an experience.
@@ -1117,6 +1121,10 @@ export const CSS = `
 .client { min-height: 100vh; display: flex; flex-direction: column;
   justify-content: center; align-items: center; padding: 12vh 0 8vh; text-align: center; }
 .client-kicker { margin-bottom: 40px; }
+
+/* --- 404 --- */
+.notfound { min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; padding: 12vh 0 8vh; text-align: center; }
 .client-card { width: min(560px, 100%); border: 1px solid var(--rule); border-radius: 6px;
   background: var(--panel); padding: 44px 38px; }
 @media (max-width: 560px) { .client-card { padding: 32px 22px; } }
@@ -1147,6 +1155,20 @@ export const CSS = `
 .client-dl .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
 .client-dl:hover .arrow { transform: translate(2px, -2px); }
 
+/* secondary action shown alongside (or instead of) the ZIP button */
+.client-alt { display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; margin-top: 12px; padding: 15px 26px; border-radius: 4px;
+  border: 1px solid var(--rule); color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .16em;
+  text-transform: uppercase; transition: border-color .25s ease, color .25s ease; }
+.client-alt:hover { border-color: var(--accent); color: var(--accent); }
+.client-alt .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.client-alt:hover .arrow { transform: translate(2px, -2px); }
+
+/* shown instead of the ZIP button when a shoot is over the download cap */
+.client-cap { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--rule);
+  border-radius: 4px; color: var(--dim); font-size: 13px; line-height: 1.7; }
+
 .client-facts { display: flex; justify-content: center; gap: 34px; margin-top: 28px;
   padding-top: 20px; border-top: 1px solid var(--rule); }
 .client-facts dd { margin: 6px 0 0; font-size: 19px; font-variant-numeric: tabular-nums; }
@@ -1168,6 +1190,11 @@ export const CSS = `
   padding: 16px 18px; margin: 12px 0 14px; white-space: pre-wrap; word-break: break-word;
   font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.7; color: var(--dim); }
 .deliver-hint { margin-top: 12px; text-transform: none; letter-spacing: .04em; }
+.admin-folder-manual { margin-top: 10px; }
+.admin-folder-manual summary { cursor: pointer; font-size: 11px; letter-spacing: .08em;
+  color: var(--dim); }
+.admin-folder-manual summary:hover { color: var(--accent); }
+.admin-folder-manual input { margin-top: 8px; }
 
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }

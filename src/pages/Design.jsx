@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
-import { P, img, WEB_PROJECTS, prefersReduced } from "../data.js";
+import { P, img, srcSet, WEB_PROJECTS, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 
 const page = {
@@ -75,7 +75,8 @@ export default function Design() {
                     <span className="mono" style={{ opacity: 0.5 }}>{w.year}</span>
                   </div>
                   <div className="browser-view">
-                    <img src={img(w.cover, 1200, reduced ? 825 : 2100)} alt={`${w.t} — full page`} loading="lazy" />
+                    <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
+                      sizes="(max-width: 760px) 100vw, 50vw" alt={`${w.t} — full page`} loading="lazy" />
                   </div>
                 </div>
                 <div className="wcard-cap">

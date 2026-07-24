@@ -2,6 +2,7 @@ import { useRef, useMemo, useState, Suspense, Component } from "react";
 import { Canvas, useThree, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import gsap from "gsap";
+import { heavyVisualsAllowed } from "./data.js";
 
 /* ==================================================================
    DISTORT IMAGE — a WebGL hover-ripple on a work photo.
@@ -12,7 +13,12 @@ import gsap from "gsap";
    and the real photo shows through — no blank card, ever.
 
    Only mounts on a fine pointer with motion allowed (hover is the whole
-   point); touch / reduced-motion get the plain image.
+   point); touch / reduced-motion get the plain image. This module is
+   itself only ever lazy-imported when heavyVisualsAllowed() already
+   passed at the call site (see Home.jsx/Photography.jsx) — the check
+   here is a second, cheap confirmation, not the first gate (that
+   would be too late: the chunk is already fetched by the time code
+   inside it can run).
    ================================================================== */
 
 const VERT = /* glsl */ `
@@ -99,17 +105,12 @@ class CanvasGuard extends Component {
   render() { return this.state.failed ? null : this.props.children; }
 }
 
-const canHover =
-  typeof matchMedia !== "undefined" &&
-  matchMedia("(pointer: fine)").matches &&
-  !matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-export default function DistortImage({ src, alt }) {
-  const [use3d] = useState(canHover);
-  if (!use3d) return <img data-par src={src} alt={alt} />;
+export default function DistortImage({ src, srcSet, sizes, alt }) {
+  const [use3d] = useState(heavyVisualsAllowed);
+  if (!use3d) return <img data-par src={src} srcSet={srcSet} sizes={sizes} alt={alt} />;
   return (
     <>
-      <img className="distort-fallback" src={src} alt={alt} />
+      <img className="distort-fallback" src={src} srcSet={srcSet} sizes={sizes} alt={alt} />
       <CanvasGuard>
         <Canvas
           className="distort-canvas"

@@ -52,7 +52,7 @@ export async function listImages(drive, folder) {
   do {
     const res = await drive.files.list({
       q: `'${folder}' in parents and mimeType contains 'image/' and trashed = false`,
-      fields: "nextPageToken, files(id, name, mimeType, md5Checksum, imageMediaMetadata(width,height))",
+      fields: "nextPageToken, files(id, name, mimeType, md5Checksum, size, imageMediaMetadata(width,height))",
       orderBy: "name",
       pageSize: 200,
       pageToken,
@@ -65,6 +65,7 @@ export async function listImages(drive, folder) {
     name: f.name,
     w: f.imageMediaMetadata?.width ?? null,
     h: f.imageMediaMetadata?.height ?? null,
+    size: Number(f.size) || 0,
   }));
 }
 
@@ -74,6 +75,30 @@ export async function fileBytes(drive, fileId) {
     { responseType: "arraybuffer" },
   );
   return Buffer.from(res.data);
+}
+
+/* Same download as fileBytes, but as a stream — for zipping many full-res
+   photos, where buffering every file into memory first would blow the
+   function's memory. Only api/download.js should use this; everything
+   else (thumbnails, content.json) is small enough that fileBytes is fine. */
+export async function fileStream(drive, fileId) {
+  const res = await drive.files.get(
+    { fileId, alt: "media" },
+    { responseType: "stream" },
+  );
+  return res.data;
+}
+
+/* A new, empty folder has 0 bytes, so — unlike file content — a
+   quota-less service account can create one inside a folder it has
+   Editor access to (see the note above). This is admin-only: callers
+   validate the parent with folderMeta() first. */
+export async function createFolder(drive, parentId, name) {
+  const res = await drive.files.create({
+    requestBody: { name, mimeType: "application/vnd.google-apps.folder", parents: [parentId] },
+    fields: "id, name",
+  });
+  return res.data;
 }
 
 /* ---- client delivery sharing --------------------------------------

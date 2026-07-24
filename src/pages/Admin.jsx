@@ -59,7 +59,7 @@ const slugify = (s) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
 
-const blankClient = () => ({ on: false, name: "", folderId: "", code: "", note: "", revoked: false });
+const blankClient = () => ({ on: false, name: "", folderId: "", code: "", note: "", email: "", revoked: false });
 
 /* Codes are read aloud and typed on phones, so the alphabet leaves out
    0/O/1/I/L. Six random characters on top of the project name is about
@@ -633,9 +633,121 @@ function Picker({ selected, multiple, onClose, onDone }) {
   );
 }
 
+/* Drive folder browser + creator, for picking (or making) the ONE folder
+   a client delivery points at. Deliberately its own component rather
+   than a variant of Picker above — the interaction is breadcrumb
+   drill-down plus an inline create form, not a multi-select photo grid.
+   "Use this folder" always refers to whatever level is currently open,
+   so picking an existing folder and picking one just created both end
+   the same way. */
+function FolderPicker({ onClose, onDone }) {
+  const [path, setPath] = useState([]); // [{id, name}, ...] — empty = root
+  const [folders, setFolders] = useState([]);
+  const [busy, setBusy] = useState(true);
+  const [err, setErr] = useState("");
+  const [newName, setNewName] = useState("");
+  const [creating, setCreating] = useState(false);
+  const boxRef = useRef(null);
+
+  const current = path[path.length - 1] || null;
+
+  useEffect(() => {
+    setBusy(true);
+    const url = current ? `/api/library?folder=${encodeURIComponent(current.id)}` : "/api/library";
+    api(url)
+      .then((d) => { setFolders(d.folders); setErr(""); })
+      .catch((e) => setErr(e.message))
+      .finally(() => setBusy(false));
+  }, [current]);
+
+  useEffect(() => {
+    const esc = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", esc);
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", esc);
+      document.documentElement.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  const create = async () => {
+    const name = newName.trim();
+    if (!name) return;
+    setCreating(true); setErr("");
+    try {
+      const { folder } = await api("/api/library", {
+        method: "POST",
+        body: { parentId: current?.id, name },
+      });
+      setFolders((f) => [...f, folder]);
+      setNewName("");
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <div className="admin-picker" role="dialog" aria-modal="true" aria-label="Choose or create a Drive folder">
+      <div className="admin-picker-in" ref={boxRef}>
+        <div className="admin-picker-top">
+          <div>
+            <strong>Choose or create a folder</strong>
+          </div>
+          <div className="admin-row-acts">
+            <button className="btn ghost" onClick={onClose}>Cancel</button>
+            <button className="btn primary" disabled={!current}
+              onClick={() => onDone({ id: current.id, name: current.name })}>
+              Use this folder
+            </button>
+          </div>
+        </div>
+
+        <div className="admin-folder-body">
+          <div className="admin-crumbs mono">
+            <button className="crumb" onClick={() => setPath([])}>Root</button>
+            {path.map((p, i) => (
+              <button key={p.id} className="crumb" onClick={() => setPath(path.slice(0, i + 1))}>
+                {p.name}
+              </button>
+            ))}
+          </div>
+
+          {busy && <p className="mono">Reading Drive…</p>}
+          {err && <p className="admin-msg bad mono">{err}</p>}
+          {!busy && !err && !folders.length && (
+            <p className="admin-empty mono">No subfolders here yet.</p>
+          )}
+
+          {!busy && folders.map((f) => (
+            <div className="admin-row" key={f.id}>
+              <div className="admin-row-main"><strong>{f.name}</strong></div>
+              <div className="admin-row-acts">
+                <button className="btn small" onClick={() => setPath([...path, f])}>Open</button>
+              </div>
+            </div>
+          ))}
+
+          <div className="admin-folder-new">
+            <input value={newName} placeholder="New folder name"
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") create(); }} />
+            <button className="btn small" onClick={create} disabled={creating || !newName.trim()}>
+              {creating ? "Creating…" : "Create"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- client delivery ----------------
    Everything Viraj needs to hand a finished shoot over: which Drive
-   folder, the code, and the message to paste into WhatsApp.
+   folder, the code, the message to paste into WhatsApp, or an email
+   sent straight from here.
 
    Sharing is done here rather than in Drive's own dialog, because that
    dialog is where the dangerous mistake lives — sharing a PARENT
@@ -646,6 +758,9 @@ function Delivery({ client, title, onChange }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState("");
+  const [picking, setPicking] = useState(false);
+  const [mailing, setMailing] = useState(false);
+  const [mailed, setMailed] = useState(false);
 
   const link = `${location.origin}/client/${client.code}`;
   const message =
@@ -686,6 +801,22 @@ function Delivery({ client, title, onChange }) {
     }
   };
 
+  const sendEmail = async () => {
+    setMailing(true); setErr("");
+    try {
+      await api("/api/mail", {
+        method: "POST",
+        body: { to: client.email, subject: `Your photos — ${title || "the shoot"}`, text: message },
+      });
+      setMailed(true);
+      setTimeout(() => setMailed(false), 2400);
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setMailing(false);
+    }
+  };
+
   return (
     <section className="admin-sec deliver">
       <div className="admin-sec-head">
@@ -707,6 +838,11 @@ function Delivery({ client, title, onChange }) {
           <input value={client.name} onChange={(e) => onChange({ name: e.target.value })} />
         </Field>
 
+        <Field label="Client email" hint="Optional — lets you email the code instead of just copying it">
+          <input type="email" value={client.email} placeholder="client@example.com"
+            onChange={(e) => onChange({ email: e.target.value.trim() })} />
+        </Field>
+
         <Field label="Access code" hint="They type this. Works until you revoke it.">
           <div className="admin-inline">
             <input value={client.code}
@@ -715,10 +851,19 @@ function Delivery({ client, title, onChange }) {
           </div>
         </Field>
 
-        <Field label="Delivery folder (Drive folder ID)" wide
-          hint="The folder holding the finished photos — NOT a parent folder. Open it in Drive; the ID is the part of the URL after /folders/.">
-          <input value={client.folderId} placeholder="1a2b3c…"
-            onChange={(e) => onChange({ folderId: e.target.value.trim() })} />
+        <Field label="Delivery folder" wide
+          hint="The folder holding the finished photos — NOT a parent folder.">
+          <div className="admin-inline">
+            <span className="mono">
+              {state?.name || client.folderId || "No folder chosen yet"}
+            </span>
+            <button className="btn small" onClick={() => setPicking(true)}>Choose / create folder</button>
+          </div>
+          <details className="admin-folder-manual">
+            <summary className="mono">Paste a folder ID directly instead</summary>
+            <input value={client.folderId} placeholder="1a2b3c…"
+              onChange={(e) => onChange({ folderId: e.target.value.trim() })} />
+          </details>
         </Field>
 
         <Field label="Note to the client" hint="One line, shown above the download button" wide>
@@ -739,11 +884,21 @@ function Delivery({ client, title, onChange }) {
           <button className="btn ghost" onClick={() => copy(link, "link")}>
             {copied === "link" ? "Copied ✓" : "Copy link only"}
           </button>
+          <button className="btn ghost" onClick={sendEmail} disabled={!client.email || mailing}>
+            {mailed ? "Sent ✓" : mailing ? "Sending…" : "Email this to them"}
+          </button>
         </div>
         <p className="mono deliver-hint">
           Save the project after sharing, or the code won't be live.
         </p>
       </div>
+
+      {picking && (
+        <FolderPicker
+          onClose={() => setPicking(false)}
+          onDone={({ id }) => { onChange({ folderId: id }); setPicking(false); }}
+        />
+      )}
     </section>
   );
 }

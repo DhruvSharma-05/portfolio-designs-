@@ -43,6 +43,7 @@ export default function Client() {
             client: "North Café", title: "Autumn menu shoot",
             note: "Full set, edited. Shout if you need any in a different crop.",
             count: 24, url: "https://drive.google.com/drive/folders/preview",
+            zip: { available: true, count: 24, sizeMB: 210, maxFiles: 400, maxMB: 1500 },
             preview: true,
           });
           return;
@@ -92,14 +93,33 @@ export default function Client() {
               <div><dt className="mono">Format</dt><dd>Full resolution</dd></div>
             </dl>
 
-            <a className="client-dl" href={gallery.url} target="_blank" rel="noreferrer noopener">
-              Download your photos <span className="arrow">↗</span>
-            </a>
-
-            <p className="client-help mono">
-              Opens Google Drive. Use the Download button there to save them all at once —
-              easiest on a computer. No account needed.
-            </p>
+            {gallery.zip?.available ? (
+              <>
+                <a className="client-dl"
+                  href={gallery.preview ? undefined : `/api/download?code=${encodeURIComponent(code)}`}
+                  download>
+                  Download ZIP <span className="arrow">↓</span>
+                </a>
+                <a className="client-alt" href={gallery.url} target="_blank" rel="noreferrer noopener">
+                  Open in Google Drive <span className="arrow">↗</span>
+                </a>
+                <p className="client-help mono">
+                  The ZIP downloads straight from this page. Prefer Drive? Use the link above —
+                  no account needed either way.
+                </p>
+              </>
+            ) : (
+              <>
+                <a className="client-dl" href={gallery.url} target="_blank" rel="noreferrer noopener">
+                  Open in Google Drive <span className="arrow">↗</span>
+                </a>
+                <p className="client-cap">
+                  This shoot ({gallery.zip?.count ?? gallery.count} photos) is too large to zip
+                  here — open it in Google Drive above and use the Download button there to save
+                  everything at once.
+                </p>
+              </>
+            )}
           </motion.section>
         ) : (
           <motion.section key="ask" className="client-card"

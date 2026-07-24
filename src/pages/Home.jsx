@@ -4,8 +4,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, ratio, INTRO, FRAMES, SHEET,
-  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, prefersReduced,
+  P, img, srcSet, ratio, INTRO, FRAMES, SHEET,
+  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
@@ -34,6 +34,7 @@ export default function Home() {
   const { theme } = useApp();
   const [heroActive, setHeroActive] = useState(true);
   const [reduced] = useState(prefersReduced);
+  const [heavy] = useState(heavyVisualsAllowed);
   const root = useRef(null);
   const heroRef = useRef(null);
 
@@ -69,9 +70,11 @@ export default function Home() {
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
       {/* masthead */}
       <header className="mast" id="main" ref={heroRef}>
-        <Suspense fallback={null}>
-          <HeroCanvas accent={theme.accent} active={heroActive} reduced={reduced} />
-        </Suspense>
+        {heavy && (
+          <Suspense fallback={null}>
+            <HeroCanvas accent={theme.accent} active={heroActive} reduced={reduced} />
+          </Suspense>
+        )}
         <div className="wrap">
           <div className="mono" style={{ marginBottom: 26 }}>
             {P.photographer} — {P.role} — {P.city} — Booking 2026
@@ -118,7 +121,8 @@ export default function Home() {
         <div className="strip-track">
           {[...SHEET, ...SHEET].map((s, i) => (
             <figure className="strip-fr" key={i}>
-              <img src={img(s, 400, 264)} alt="" />
+              <img src={img(s, 400, 264)} srcSet={srcSet(s)}
+                sizes="(max-width: 640px) 160px, 210px" alt="" />
             </figure>
           ))}
         </div>
@@ -136,9 +140,18 @@ export default function Home() {
           <Reveal className="card" key={f.seed} style={{ top: `${92 + i * 12}px`, zIndex: i + 1 }}>
             <div className="card-in">
               <TLink to={`/work/${f.seed}`} className="shot" aria-label={`Open ${f.t}`}>
-                <Suspense fallback={<img data-par src={img(f.seed, 1200, 900)} alt={f.t} />}>
-                  <DistortImage src={img(f.seed, 1200, 900)} alt={f.t} />
-                </Suspense>
+                {heavy ? (
+                  <Suspense fallback={
+                    <img data-par src={img(f.seed, 1200, 900)} srcSet={srcSet(f.seed)}
+                      sizes="(max-width: 860px) 100vw, 55vw" alt={f.t} />
+                  }>
+                    <DistortImage src={img(f.seed, 1200, 900)} srcSet={srcSet(f.seed)}
+                      sizes="(max-width: 860px) 100vw, 55vw" alt={f.t} />
+                  </Suspense>
+                ) : (
+                  <img data-par src={img(f.seed, 1200, 900)} srcSet={srcSet(f.seed)}
+                    sizes="(max-width: 860px) 100vw, 55vw" alt={f.t} />
+                )}
                 <span className="open">View project →</span>
               </TLink>
               <div className="cap">
@@ -177,7 +190,8 @@ export default function Home() {
                             <span className="mono" style={{ opacity: 0.5 }}>{w.year}</span>
                           </div>
                           <div className="browser-view">
-                            <img src={img(w.cover, 1200, reduced ? 825 : 2100)}
+                            <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
+                              sizes="(max-width: 760px) 100vw, 50vw"
                               alt={`${w.t} — full page`} loading="lazy" />
                           </div>
                         </div>
@@ -300,8 +314,9 @@ function Gallery() {
           <div className="pgrid" key={cat}>
             {shots.map((g) => (
               <figure key={g.seed}>
-                <img src={img(g.seed, 640)} alt="" loading="lazy"
-                  style={{ aspectRatio: ratio(g.seed, 3, 4) }} />
+                <img src={img(g.seed, 640)} srcSet={srcSet(g.seed)}
+                  sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
+                  alt="" loading="lazy" style={{ aspectRatio: ratio(g.seed, 3, 4) }} />
               </figure>
             ))}
           </div>

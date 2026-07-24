@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
-import { WEB_PROJECTS, img, ratio, prefersReduced } from "../data.js";
+import { WEB_PROJECTS, img, srcSet, ratio, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
@@ -74,7 +74,8 @@ export default function DesignProject() {
           <span className="mono" style={{ opacity: 0.5 }}>{w.tool}</span>
         </div>
         <div className="browser-view">
-          <img src={img(w.cover, 1600, reduced ? 1100 : 2800)} alt={`${w.t} — full page`} />
+          <img src={img(w.cover, 1600, reduced ? 1100 : 2800)} srcSet={srcSet(w.cover)}
+            sizes="(max-width: 1180px) 100vw, 1180px" alt={`${w.t} — full page`} />
         </div>
       </div>
 
@@ -118,7 +119,8 @@ export default function DesignProject() {
           {w.shots.map((s, n) => (
             <Reveal className="screen" key={s + n} delay={0.04}
               style={{ aspectRatio: ratio(s, 1600, 1000) }}>
-              <img src={img(s, 1600, 1000)} alt={`${w.t}, screen ${n + 1}`} loading="lazy" />
+              <img src={img(s, 1600, 1000)} srcSet={srcSet(s)} sizes="(max-width: 1180px) 100vw, 1180px"
+                alt={`${w.t}, screen ${n + 1}`} loading="lazy" />
             </Reveal>
           ))}
         </div>

@@ -24,6 +24,9 @@ const cleanClient = (c) => {
     folderId: str(c.folderId, 100),
     code: str(c.code, 60).toLowerCase().replace(/[^a-z0-9-]/g, ""),
     note: str(c.note, 600),
+    // not format-checked here — a typo shouldn't block Save, only sending
+    // mail; api/mail.js validates the address at send time.
+    email: str(c.email, 200),
     revoked: Boolean(c.revoked),
   };
 };

@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
-import { PHOTO_PROJECTS, img, ratio, prefersReduced } from "../data.js";
+import { PHOTO_PROJECTS, img, srcSet, ratio, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
@@ -68,7 +68,8 @@ export default function PhotoProject() {
         </div>
 
         <figure className="pj-hero">
-          <img ref={heroImg} src={img(p.photos[0], 2000, 1125)} alt={p.t} />
+          <img ref={heroImg} src={img(p.photos[0], 2000, 1125)} srcSet={srcSet(p.photos[0])}
+            sizes="(max-width: 1180px) 100vw, 1180px" alt={p.t} />
         </figure>
 
         <div className="detail-grid">
@@ -103,7 +104,9 @@ export default function PhotoProject() {
                 style={{ aspectRatio: ratio(s, 900, n % 3 === 1 ? 1200 : 700) }}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLb(n); } }}>
                 <span className="idx mono">{String(n + 1).padStart(2, "0")}</span>
-                <img src={img(s, 900, n % 3 === 1 ? 1200 : 700)} alt={`${p.t}, frame ${n + 1}`} loading="lazy" />
+                <img src={img(s, 900, n % 3 === 1 ? 1200 : 700)} srcSet={srcSet(s)}
+                  sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
+                  alt={`${p.t}, frame ${n + 1}`} loading="lazy" />
               </figure>
             ))}
           </div>
@@ -169,7 +172,8 @@ function Roll({ photos, title, onOpen }) {
         {photos.map((s, n) => (
           <figure className="roll-fr" key={s + n}
             onClick={() => { if (drag.current.moved < 6) onOpen(n); }}>
-            <img src={img(s, 1400, 933)} alt={`${title}, frame ${n + 1}`} loading="lazy" />
+            <img src={img(s, 1400, 933)} srcSet={srcSet(s)} sizes="(max-width: 700px) 84vw, 62vw"
+              alt={`${title}, frame ${n + 1}`} loading="lazy" />
           </figure>
         ))}
       </div>
@@ -234,6 +238,7 @@ function Lightbox({ photos, title, index, setIndex, reduced }) {
         <button className="lb-arrow prev" onClick={() => shift(-1)} aria-label="Previous frame">←</button>
         <AnimatePresence mode="wait">
           <motion.img key={photos[index]} src={img(photos[index], 2000, 1400)}
+            srcSet={srcSet(photos[index])} sizes="100vw"
             alt={`${title}, frame ${index + 1}`}
             initial={{ opacity: 0, scale: reduced ? 1 : 0.985 }}
             animate={{ opacity: 1, scale: 1 }}

@@ -131,7 +131,7 @@ export function Metrics({ items }) {
 /* Counts 0 → `to` once `run` flips true. The suffix (%, wks) is its own
    span so it can fly in as the number lands, rather than sitting there
    through the whole count. */
-export function Counter({ to, suf, run = true, delay = 0 }) {
+function Counter({ to, suf, run = true, delay = 0 }) {
   const [n, setN] = useState(0);
   const sufRef = useRef(null);
   const ref = useRef(null);

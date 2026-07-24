@@ -1,46 +1,70 @@
 # Production Readiness & Scaling Notes
 
-Status of the portfolio (React 19 + Vite, static on Vercel, build-time Google
-Drive photo sync). Two parts: **scaling under high traffic** (technical) and
-**pre-launch gaps** (content/SEO/ops). Mirrors the working todo list.
+Status of the portfolio (React 19 + Vite, static on Vercel). Public
+Work/Gallery/Portrait photos sync from **Contentful** at build time
+(`scripts/sync-contentful.mjs`); Google Drive is used only for `/admin`-authored
+project metadata and the private client-delivery folders (`scripts/sync-drive.mjs`,
+`api/`). Two parts: **scaling under high traffic** (technical) and **pre-launch
+gaps** (content/SEO/ops). Mirrors the working todo list.
 
 ---
 
 ## High-traffic / scalability (technical)
 
 **Headline: the architecture already scales.** It's a static site on Vercel's
-CDN — no server, no database, no per-request compute. Traffic hits cached edge
-files; the Drive sync runs at build time, never in the request path. So high
-traffic is about **per-visitor weight, bandwidth cost, and external deps** — not
-server capacity. Ranked by impact:
+CDN — no server, no database, no per-request compute (the one exception is
+`/api/download`, the client-delivery ZIP endpoint, which is genuinely
+per-request — see its own section below). Traffic hits cached edge files; the
+Contentful/Drive syncs run at build time, never in the page request path.
 
-1. **Responsive images (`srcset`/`sizes` + AVIF).** Every `<img>` ships a single
-   `src` (no `srcset`), so phones download desktop-sized files. We already emit
-   `sm`/`lg` WebP variants — wire them into `srcset`/`sizes` (or use Vercel Image
-   Optimization + AVIF). Biggest bandwidth win at scale.
-2. **Trim/gate the three.js bundle.** `react-three-fiber` is ~881 KB (234 KB
-   gzip) + a ~535 KB main bundle, downloaded and parsed by every visitor. Drop or
-   disable the 3D hero + per-card WebGL on mobile/low-end; lazy-load harder.
-3. **Remove `picsum.photos` from the production hot path.** Any seed that doesn't
-   resolve to a synced photo falls back to picsum (`src/data.js` `img()`) — e.g.
-   the About portrait (Portrait folder empty) and likely design/web covers. A
-   third-party host can rate-limit under load. All prod images must be local.
-4. **Self-host Google Fonts.** `src/data.js` loads fonts via a render-blocking
-   CSS `@import` to `fonts.googleapis.com` — an external request on every visit.
-   Self-host for speed + reliability.
-5. **Error boundary + chunk-load retry + 404 catch-all.** A CDN hiccup that fails
-   a lazy chunk, or an unknown URL, currently blanks the whole SPA (`App.jsx` has
-   no `*` route). Add a boundary + retry.
-6. **Cache-Control for `/photos`.** Hashed JS/CSS get immutable long-cache
-   automatically; the image files don't have an explicit header. Add a long-TTL
-   `Cache-Control` in `vercel.json` to maximize CDN hit rate.
+Done:
+
+1. **Responsive images.** Every real `<img src={img(...)}>` call site now also
+   ships `srcSet`/`sizes` (`src/data.js`'s `srcSet(seed)` sits next to `img()`),
+   so phones fetch the `sm` WebP variant instead of always the desktop size.
+2. **Three.js chunk gated before fetch, not after.** `HeroCanvas` and
+   `DistortImage` were already code-split, but were fetched for every visitor
+   regardless of device and only decided *after* loading whether to render.
+   `heavyVisualsAllowed()` (`src/data.js`, next to `prefersReduced`) is now
+   checked at the call site in `Home.jsx`/`Photography.jsx` *before* the lazy
+   `import()` runs — touch devices, `prefers-reduced-motion`, and viewports
+   under 768px never request the chunk (881 KB / 234 KB gzip, the largest in
+   the app) at all.
+3. **Self-hosted fonts.** Inter + IBM Plex Mono are `@fontsource` packages
+   imported in `src/main.jsx`, not a render-blocking `@import` to
+   `fonts.googleapis.com`.
+4. **Cache-Control for `/photos`.** `vercel.json` sets
+   `public, max-age=86400, stale-while-revalidate=604800` — same-day repeat
+   visits are instant. Not a full year + `immutable`: filenames are seed-keyed,
+   not content-hashed, so a photo swapped under the same seed needs to become
+   visible again within a day, not a year.
+5. **404 route + app-level error boundary.** `App.jsx` has a catch-all
+   `path="*"` → `src/pages/NotFound.jsx`, and `src/ErrorBoundary.jsx` wraps the
+   routed content — a render error or a failed lazy-chunk load (e.g. a stale
+   chunk URL after a redeploy) now shows a "reload" screen instead of a blank
+   page. Keyed on the route so navigating away also recovers it.
+
+Not done / narrower than it looks:
+
+6. **`picsum.photos` is mostly gone from the hot path, but not entirely.**
+   Work, Gallery, Photography, and the About portrait are all real synced
+   photos now. The one remaining live picsum path is `/design` and
+   `/design/:slug` — their placeholder cover/screenshot images
+   (`WEB_PROJECTS_FALLBACK` in `src/data.js`), because no real web projects
+   have been published from `/admin` yet. Resolves itself once real projects
+   are published; not worth building throwaway local placeholder assets for
+   content that's explicitly temporary.
 7. **Vercel plan / bandwidth.** Hobby (free) caps ~100 GB/month; unoptimized
-   images + high traffic will throttle or bill. High traffic ⇒ Pro plan, or put
-   Cloudflare in front.
+   images + high traffic will throttle or bill. High traffic ⇒ Pro plan, or
+   put Cloudflare in front. `api/download.js`'s `maxDuration: 60` in
+   `vercel.json` also needs a plan that actually allows 60s functions — check
+   this before relying on it for a large real-world shoot.
 
-> Where scale *would* actually hurt: the deferred **client photo-delivery +
-> download** feature (real backend, storage, ZIP downloads). That needs genuine
-> capacity planning; the portfolio itself does not.
+> Where scale *would* actually add real capacity-planning work: the
+> client-delivery ZIP endpoint (`api/download.js`) is a genuine per-request
+> serverless function, not a static file — see its own caps
+> (`DOWNLOAD_MAX_FILES`/`DOWNLOAD_MAX_MB` in `.env.example`) and the risks
+> noted in `README.md`'s "Client downloads" section.
 
 ---
 
@@ -53,20 +77,17 @@ server capacity. Ranked by impact:
   enquiry form (Formspree or a Vercel serverless endpoint).
 - **Social preview broken** — `public/og.svg` is SVG; social platforms need a
   1200×630 **PNG/JPG**. OG/title tags still generic.
-- **No 404 page** — `App.jsx` has no catch-all `*` route.
-- **Viraj's portrait** missing (Portrait Drive folder empty → placeholder).
 
 ### 🟠 Important (discoverability + trust)
 - **Per-route SEO meta** — one static `<title>` in `index.html`; all routes share
   it. Add dynamic `<title>`/description + canonical + JSON-LD (Photographer).
 - **`robots.txt` + `sitemap.xml`** — none in `public/`.
 - **Analytics** — none (Vercel Analytics or Plausible).
-- **Auto-update** — set up the Vercel Deploy Hook (+ prod env vars:
-  `GOOGLE_API_KEY` and the 3 `DRIVE_*_FOLDER_ID`s) so the client can refresh
-  photos and the deployed build actually pulls from Drive.
+- **Auto-update** — the Vercel Deploy Hook (`VERCEL_DEPLOY_HOOK_URL`) triggers a
+  rebuild; wiring a Contentful webhook straight to it makes photo publishing
+  fully automatic (see `CLAUDE.md`).
 
 ### 🟡 Polish / later
-- Bundle-size trimming (see scaling #2).
+- Real web design projects published from `/admin` (closes gap #6 above).
 - Privacy policy / cookie notice — required once analytics or a form is added.
 - Accessibility pass (gallery images are decorative `alt=""`; run Lighthouse).
-- Client photo-delivery + download feature (deferred business requirement).
