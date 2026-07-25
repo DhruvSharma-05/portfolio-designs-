@@ -70,14 +70,14 @@ export default function About() {
         ))}
       </section>
 
-      {/* what a client walks away with — moved here from the Work page,
-          which now stays about the work itself */}
+      {/* what a client walks away with — an offset, number-led card grid
+          (moved here from the Work page, which now stays about the work) */}
       <section style={{ marginTop: "10vh" }}>
         <div className="mono" style={{ marginBottom: 24 }}>What you get</div>
-        <div>
+        <div className="get-grid">
           {INTRO.offer.map((o, i) => (
-            <Reveal className="sl-row" key={o.k} delay={i * 0.04}>
-              <span className="mono">{String(i + 1).padStart(2, "0")}</span>
+            <Reveal className="get-card" key={o.k} delay={i * 0.06}>
+              <span className="get-num">{String(i + 1).padStart(2, "0")}</span>
               <h3>{o.k}</h3>
               <p>{o.v}</p>
             </Reveal>
@@ -85,17 +85,10 @@ export default function About() {
         </div>
       </section>
 
+      {/* the services — an interactive pill cloud with a live caption */}
       <section style={{ marginTop: "10vh" }}>
         <div className="mono" style={{ marginBottom: 24 }}>What I'm hired for</div>
-        <div>
-          {SHOTLIST.map((s, i) => (
-            <Reveal className="sl-row" key={s.k} delay={i * 0.04}>
-              <span className="mono">{String(i + 1).padStart(2, "0")}</span>
-              <h3>{s.k}</h3>
-              <p>{s.v}</p>
-            </Reveal>
-          ))}
-        </div>
+        <HiredFor />
       </section>
 
       <section style={{ marginTop: "10vh" }}>
@@ -118,6 +111,40 @@ export default function About() {
         </div>
       </section>
     </motion.main>
+  );
+}
+
+/* HiredFor — the services as a wrapping pill cloud. Hovering or tapping a
+   pill selects it and swaps the large caption below to that service's
+   description (crossfaded). Defaults to the first service so the caption
+   is never empty on load. */
+function HiredFor() {
+  const [active, setActive] = useState(0);
+  return (
+    <div className="hire">
+      <div className="hire-tags" role="tablist" aria-label="Services">
+        {SHOTLIST.map((s, i) => (
+          <button key={s.k} role="tab" aria-selected={i === active}
+            className={`hire-tag ${i === active ? "on" : ""}`}
+            onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)}
+            onClick={() => setActive(i)}>
+            <span className="mono">{String(i + 1).padStart(2, "0")}</span>
+            {s.k}
+          </button>
+        ))}
+      </div>
+      <div className="hire-desc">
+        <AnimatePresence mode="wait">
+          <motion.p key={active}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}>
+            <b>{SHOTLIST[active].k}.</b> {SHOTLIST[active].v}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+    </div>
   );
 }
 

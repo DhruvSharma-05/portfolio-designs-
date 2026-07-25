@@ -760,23 +760,45 @@ export const CSS = `
 /* the % / wks rides in as the number lands, so it needs its own box */
 .metric b .suf { display: inline-block; margin-top: 0; will-change: transform, opacity; }
 
-/* --- services / shot list ---
-   Hover sweeps the current accent across the whole row and flips the
-   text to the page background — so the row reads as a solid block in
-   the row simply nudges right on hover and its heading warms to the
-   accent — quiet, matching the timeline (.tl-row) below it. */
-.sl-row { position: relative; display: grid; grid-template-columns: 42px 1fr 1.1fr;
-  gap: 20px; align-items: baseline; padding: 22px 0;
-  border-bottom: 1px solid var(--rule);
-  transition: padding-left .35s cubic-bezier(.2,.8,.2,1); }
-.sl-row:first-child { border-top: 1px solid var(--rule); }
-.sl-row:hover { padding-left: 10px; }
-.sl-row .mono { color: var(--accent); font-variant-numeric: tabular-nums; }
-.sl-row h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(18px, 2.1vw, 25px);
-  transition: color .3s ease; }
-.sl-row:hover h3 { color: var(--accent); }
-.sl-row p { color: var(--dim); font-size: 14.5px; line-height: 1.58; }
-@media (max-width: 700px) { .sl-row { grid-template-columns: 30px 1fr; } .sl-row p { grid-column: 2; } }
+/* --- "What you get" — offset card grid ------------------------------
+   Two columns, the even column dropped 44px so the pairs stagger up and
+   down (asymmetry reads premium). Each card is number-led: an oversized
+   outlined Anton index as a graphic element, which fills to the accent
+   on hover as the card lifts. Deliberately unlike the timeline rows. */
+.get-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.get-card { position: relative; border: 1px solid var(--rule); border-radius: 7px;
+  padding: 32px 30px 30px; background: var(--bg); overflow: hidden;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), border-color .4s ease, box-shadow .45s ease; }
+.get-card:nth-child(even) { margin-top: 44px; }
+.get-card:hover { transform: translateY(-5px); border-color: var(--accent);
+  box-shadow: 0 22px 44px -28px rgba(30,20,10,.4); }
+.get-num { display: block; font-family: 'Anton', sans-serif; font-size: 64px; line-height: 1;
+  color: transparent; -webkit-text-stroke: 1px var(--rule); margin-bottom: 16px;
+  transition: -webkit-text-stroke-color .4s ease; }
+.get-card:hover .get-num { -webkit-text-stroke-color: var(--accent); }
+.get-card h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(20px, 2.4vw, 28px);
+  margin-bottom: 10px; }
+.get-card p { color: var(--dim); font-size: 14.5px; line-height: 1.6; max-width: 42ch; }
+@media (max-width: 720px) { .get-grid { grid-template-columns: 1fr; gap: 14px; }
+  .get-card:nth-child(even) { margin-top: 0; } }
+
+/* --- "What I'm hired for" — capability pills + live caption ----------
+   The services are pills that wrap like a keyword cloud; hovering (or
+   tapping) one fills it with the accent and swaps the large caption
+   below to that service's description. Interactive, and nothing like
+   the card grid above or the timeline rows. */
+.hire-tags { display: flex; flex-wrap: wrap; gap: 12px; }
+.hire-tag { display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px;
+  border: 1px solid var(--rule); border-radius: 100px; letter-spacing: -0.01em;
+  font-size: clamp(16px, 1.8vw, 22px);
+  transition: color .35s ease, background-color .35s ease, border-color .35s ease; }
+.hire-tag .mono { color: var(--accent); font-size: 11px; transition: color .35s ease; }
+.hire-tag:hover, .hire-tag.on { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.hire-tag:hover .mono, .hire-tag.on .mono { color: var(--bg); }
+.hire-desc { margin-top: 28px; min-height: 3em; }
+.hire-desc p { font-weight: 300; letter-spacing: -0.02em; color: var(--dim);
+  font-size: clamp(18px, 2.3vw, 27px); line-height: 1.4; max-width: 40ch; }
+.hire-desc b { font-weight: 400; color: var(--ink); font-style: normal; }
 
 /* --- quotes slideshow --- */
 .slide { position: relative; min-height: 200px; }
