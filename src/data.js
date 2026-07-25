@@ -15,15 +15,15 @@ export const prefersReduced = () =>
 
 export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
-  photographer: "Viraj",        // the person the home page is about
+  photographer: "Viraj Mehta",  // the person the home page is about
   photoBrand: "Lensofviraj",    // the photography practice — /photography
   designBrand: "Design & Build",// the web practice — /design
-  role: "Photographer & Web Designer",
+  role: "Photographer & Designer",
   email: "hello@yourstudio.com",
   email2: "studio@yourstudio.com",
   phone: "+1 000 000 0000",
-  city: "Your City",
-  region: "Your Region",
+  city: "Vancouver",
+  region: "Canada",
   /* footer "Elsewhere" list — swap for real handles */
   socials: [
     { k: "Instagram", v: "@lensofviraj", href: "https://instagram.com" },
@@ -43,10 +43,10 @@ export const P = {
    PLACEHOLDER COPY: replace with Viraj's own words.
    ================================================================== */
 export const INTRO = {
-  lead: "Viraj makes the pictures, then builds the place they live.",
+  lead: "Viraj Mehta makes the pictures, then designs and builds the place they live.",
   body: [
-    "Two practices, one pair of hands. Under Lensofviraj he shoots editorial, portraits and events; under design & build he draws and ships the sites those pictures end up on.",
-    "Most people hire one or the other. Hiring both means the shoot is planned around the layout and the layout is drawn around the shoot — so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
+    "A designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, Viraj blends technology, creativity and storytelling — designing intuitive digital products and capturing moments through photography.",
+    "Two crafts, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws and ships the sites and apps those pictures end up living on. Hire one or hire both — when the same person shoots and builds, nothing gets lost in the handover.",
   ],
   /* the two doors, mirrored in the hero strip */
   does: [
@@ -54,7 +54,7 @@ export const INTRO = {
       k: "Photography",
       brand: "Lensofviraj",
       to: "/photography",
-      v: "Editorial, portrait, event and landscape sets. Shot, selected and graded as one body of work.",
+      v: "Portraits, events and visual stories. Shot, selected and graded as one body of work.",
     },
     {
       k: "Web design & build",
@@ -471,10 +471,10 @@ export const WEB_PROJECTS = manifest.webProjects?.length
   : WEB_PROJECTS_FALLBACK;
 
 export const METRICS = [
-  { v: 68, s: "", k: "Projects delivered" },
-  { v: 92, s: "%", k: "Clients who returned" },
-  { v: 11, s: "", k: "Years behind a lens" },
-  { v: 4, s: "wks", k: "Shoot to live site" },
+  { v: 10, s: "+", k: "Years of experience" },
+  { v: 2014, s: "", k: "Behind a lens since" },
+  { v: 2, s: "", k: "Crafts, one pair of hands" },
+  { v: 100, s: "%", k: "Shot & built in-house" },
 ];
 
 export const QUOTES = [
@@ -484,33 +484,33 @@ export const QUOTES = [
 ];
 
 export const SHOTLIST = [
-  { k: "Editorial & campaign", v: "Shoot, select, grade, deliver. Usually two weeks." },
-  { k: "Events & nightlife", v: "Available light. No flash unless you ask twice." },
-  { k: "Portraits", v: "Studio or location. One light, mostly." },
-  { k: "Art direction", v: "For when the pictures exist but nothing holds them together." },
-  { k: "Design & build", v: "Framer, Webflow, or React. I ship what I design." },
-  { k: "Colour grading", v: "Yours or mine. Consistent across a set, not just pretty alone." },
+  { k: "Portraits", v: "Studio or location — natural, unforced, and true to the person." },
+  { k: "Events", v: "Moments as they happen, told as one visual story from start to finish." },
+  { k: "Visual storytelling", v: "A series with a thread running through it, not just a folder of good frames." },
+  { k: "UI/UX design", v: "Web and mobile products designed around how people actually use them." },
+  { k: "Design & build", v: "Figma or Canva through to a live, fast, editable site — I ship what I design." },
+  { k: "Colour grading", v: "Consistent across a whole set, so the work reads as one body, not stray shots." },
 ];
 
-/* PLACEHOLDER — replace with the client's real bio, approach and history. */
 export const ABOUT = {
   portrait: manifest.portrait?.seed ?? "pf-about",
-  lead: "I make pictures for a living and build the places they live online. Same eye, two crafts.",
+  lead: "I'm Viraj Mehta — a designer and photographer passionate about creating meaningful visual experiences.",
   body: [
-    "This is where the biography goes. Two or three short paragraphs — how you started, what you care about, the kind of work you say yes to. Keep it plain and specific; let the pictures carry the rest.",
-    "Mention the way you work: available light, small kits, quick turnarounds. Then the second craft — that you design and build the sites, so a shoot doesn't end at a folder of files.",
-    "Close with what you're after now — the briefs you want, who you'd like to hear from, and that you're booking for the year ahead.",
+    "My creative journey started with technology. While studying Computer Engineering I built a strong foundation in programming and problem-solving, working as a developer and shipping solutions through code. But I was always drawn to the creative side — not just how things work, but how they look, feel and connect with people.",
+    "That curiosity led me into UI/UX and Web & Mobile Application design, where I began building applications and websites that pair real functionality with meaningful user experience. Alongside it, photography has always been my other language. I picked up my first point-and-shoot in 2014; in 2018 I bought my first DSLR, went deeper, and eventually began teaching others — and from 2019 to 2020 I led a photography group in college, organising shoots and helping fellow creators find their own perspective.",
+    "Today, based in Vancouver, I bring engineering, design and photography together — creating digital experiences and capturing visual stories that connect technology with human emotion.",
   ],
   approach: [
-    { k: "One decision", v: "Shot, graded and built by the same person, so nothing gets lost in the handover." },
-    { k: "Available light", v: "Natural first. Flash only when the picture actually needs it." },
-    { k: "Ship end to end", v: "The photograph sets the grid; the site is built around it, not the reverse." },
+    { k: "Logic meets craft", v: "An engineer's problem-solving behind every frame and every layout — analytical where it helps, human where it matters." },
+    { k: "One pair of hands", v: "Shot, designed and built by the same person, so nothing gets lost in a handover." },
+    { k: "Built to connect", v: "Whether it's a site or a photograph, the goal is the same — experiences that communicate emotion, not just information." },
   ],
   timeline: [
-    { y: "2015", t: "Picked up a camera properly. First paid editorial." },
-    { y: "2018", t: "Went full-time. Started grading for other shooters." },
-    { y: "2021", t: "Added design & build — began shipping clients' sites." },
-    { y: "2026", t: "Booking campaigns, portraits and editorial builds." },
+    { y: "2014", t: "First point-and-shoot camera — curiosity grows into a love of visual storytelling." },
+    { y: "2018", t: "Bought my first DSLR, went deeper into photography, and began teaching others." },
+    { y: "2019", t: "Led a photography group in college — organising shoots and mentoring creators." },
+    { y: "2021", t: "Studied Web & Mobile Application Design; started building products end to end." },
+    { y: "2026", t: "Based in Vancouver, bringing engineering, design and photography together." },
   ],
 };
 
@@ -763,30 +763,19 @@ export const CSS = `
 /* --- services / shot list ---
    Hover sweeps the current accent across the whole row and flips the
    text to the page background — so the row reads as a solid block in
-   whichever colour the visitor picked in the bar. The fill wipes in
-   from the left and out to the right (transform-origin swaps on
-   hover), and bleeds 18px past the text so nothing sits flush to the
-   edge. Children are lifted above it with z-index. */
+   the row simply nudges right on hover and its heading warms to the
+   accent — quiet, matching the timeline (.tl-row) below it. */
 .sl-row { position: relative; display: grid; grid-template-columns: 42px 1fr 1.1fr;
   gap: 20px; align-items: baseline; padding: 22px 0;
   border-bottom: 1px solid var(--rule);
   transition: padding-left .35s cubic-bezier(.2,.8,.2,1); }
-.sl-row::before { content: ""; position: absolute; inset: 0 -18px; z-index: 0;
-  background: var(--accent); border-radius: 3px; transform: scaleX(0);
-  transform-origin: right; transition: transform .55s cubic-bezier(.76,0,.24,1); }
-.sl-row:hover::before { transform: scaleX(1); transform-origin: left; }
-.sl-row > * { position: relative; z-index: 1; }
 .sl-row:first-child { border-top: 1px solid var(--rule); }
 .sl-row:hover { padding-left: 10px; }
+.sl-row .mono { color: var(--accent); font-variant-numeric: tabular-nums; }
 .sl-row h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(18px, 2.1vw, 25px);
-  transition: color .35s ease .06s; }
-.sl-row p { color: var(--dim); font-size: 14.5px; line-height: 1.58;
-  transition: color .35s ease .06s; }
-.sl-row .mono { transition: color .35s ease .06s; }
-/* on the filled row every layer switches to the background colour —
-   the body copy at reduced opacity so the hierarchy survives */
-.sl-row:hover h3, .sl-row:hover .mono { color: var(--bg); }
-.sl-row:hover p { color: color-mix(in srgb, var(--bg) 72%, transparent); }
+  transition: color .3s ease; }
+.sl-row:hover h3 { color: var(--accent); }
+.sl-row p { color: var(--dim); font-size: 14.5px; line-height: 1.58; }
 @media (max-width: 700px) { .sl-row { grid-template-columns: 30px 1fr; } .sl-row p { grid-column: 2; } }
 
 /* --- quotes slideshow --- */
@@ -876,7 +865,8 @@ export const CSS = `
 .about { padding: 12vh 0 8vh; }
 .about-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
 @media (max-width: 820px) { .about-hero { grid-template-columns: 1fr; gap: 36px; } }
-.about-hero h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .98;
+.about-hero h1 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase;
+  letter-spacing: -0.015em; line-height: .9;
   font-size: clamp(44px, 8vw, 104px); text-wrap: balance; }
 .about-lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.6vw, 30px);
   line-height: 1.35; margin-top: 28px; max-width: 22ch; }
@@ -967,7 +957,8 @@ export const CSS = `
 
 /* --- project intro band --- */
 .band { padding: 12vh 0 2vh; }
-.band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
+.band h2 { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase;
+  letter-spacing: -0.015em; line-height: .92;
   font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
 .band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
 

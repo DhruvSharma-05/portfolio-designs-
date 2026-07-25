@@ -68,9 +68,10 @@ export default function Home() {
               (HEADLINE_DONE) so the primary hero text resolves before the
               secondary copy and CTAs do, not after */}
           <p className="standfirst hero-reveal" style={{ "--rd": `${HEADLINE_DONE}s` }}>
-            Two practices, one pair of hands. Photographs made as{" "}
+            Photographer and designer based in Vancouver — a Computer Engineering
+            mind with a decade behind the camera. Pictures made as{" "}
             <strong>{P.photoBrand}</strong>, and the sites they live on designed
-            and built by the same person.
+            and built by the same hands.
             <i> Hire either. Hiring both is the point.</i>
           </p>
 
