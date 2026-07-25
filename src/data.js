@@ -544,6 +544,19 @@ export const CSS = `
   text-transform: uppercase; color: var(--dim); }
 .rule { height: 1px; background: var(--rule); border: 0; }
 
+/* --- dark sections ---
+   Redefines the theme variables to a warm near-black for any block tagged
+   .invert, so the whole subtree repaints itself (ink → cream, hairlines →
+   light) while the orange accent stays put. Mixes black bands into the
+   cream site for rhythm. .invert-band additionally breaks a block out to
+   full viewport width — for dark bands that sit inside a centred .wrap
+   column (e.g. on /about); put a plain .wrap inside to re-centre content. */
+.invert { --bg: hsl(30 8% 8%); --panel: hsl(30 8% 13%); --ink: hsl(40 33% 96%);
+  --dim: hsl(38 9% 64%); --rule: hsl(40 33% 96% / 0.15);
+  background: var(--bg); color: var(--ink); }
+.invert-band { width: 100vw; margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw); padding: 11vh 0; }
+
 /* --- aperture page transition ---
    A single accent circle scaled up to cover the screen (shutter closing)
    then back down (opening), revealing the next page from the edges in.
@@ -824,6 +837,16 @@ export const CSS = `
 .colophon { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 28px;
   margin-top: 13vh; padding-top: 22px; border-top: 1px solid var(--rule); }
 .colophon dd { margin: 8px 0 0; font-size: 14px; line-height: 1.72; color: var(--dim); }
+.colophon dd a { transition: color .3s ease; }
+.colophon dd a:hover { color: var(--accent); }
+
+/* --- shared site footer (always dark, every public page) --- */
+.site-foot { padding: 9vh 0 46px; }
+.site-foot .colophon { margin-top: 0; }
+.foot-nav a { display: block; width: fit-content; }
+.foot-nav a + a { margin-top: 4px; }
+.foot-base { display: flex; justify-content: space-between; flex-wrap: wrap;
+  gap: 10px; padding-top: 18px; }
 
 /* --- work detail page --- */
 .detail { padding: 12vh 0 10vh; }
@@ -896,8 +919,16 @@ export const CSS = `
 .about-portrait { position: relative; overflow: hidden; border-radius: 4px;
   border: 1px solid var(--rule); aspect-ratio: 4/5; }
 .about-portrait img { will-change: transform; }
-.about-body { max-width: 62ch; margin: 12vh 0; color: var(--dim); line-height: 1.8; font-size: 16px; }
-.about-body p + p { margin-top: 20px; }
+/* bio: copy on the left (capped for readability), particle sphere on the right */
+.about-body { display: grid; grid-template-columns: 1fr minmax(0, 60ch); gap: 40px;
+  align-items: center; margin: 12vh 0; }
+.about-body-text { color: var(--dim); line-height: 1.8; font-size: 16px; }
+.about-body-text p + p { margin-top: 20px; }
+.about-body-viz { position: relative; height: 460px; }
+.psphere { position: absolute; inset: 0; cursor: grab; }
+.psphere:active { cursor: grabbing; }
+@media (max-width: 820px) { .about-body { grid-template-columns: 1fr; }
+  .about-body-viz { display: none; } }
 .approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
   background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
 /* panels are plain <div> on the about page and <a> on the home page,

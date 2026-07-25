@@ -7,6 +7,7 @@ import Lenis from "lenis";
 import { CSS, THEME, P, prefersReduced } from "./data.js";
 import { AppProvider } from "./context.js";
 import { TLink, Logo } from "./ui.jsx";
+import SiteFooter from "./Footer.jsx";
 import Home from "./pages/Home.jsx";
 import WorkDetail from "./pages/WorkDetail.jsx";
 import About from "./pages/About.jsx";
@@ -173,6 +174,9 @@ export default function App() {
             </Suspense>
           } />
         </Routes>
+
+        {/* one shared footer on every public page (not the admin) */}
+        {!isAdmin && <SiteFooter />}
       </div>
     </AppProvider>
   );

@@ -5,6 +5,7 @@ import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import { P, img, focus, ABOUT, INTRO, SHOTLIST, METRICS, QUOTES, prefersReduced } from "../data.js";
 import { Reveal, TLink, Metrics } from "../ui.jsx";
+import ParticleSphere from "../ParticleSphere.jsx";
 
 const page = {
   initial: { opacity: 0, y: 12 },
@@ -44,20 +45,27 @@ export default function About() {
         </figure>
       </div>
 
-      <Reveal as="div" className="about-body">
-        {ABOUT.body.map((p, i) => <p key={i}>{p}</p>)}
-      </Reveal>
-
-      <section>
-        <div className="mono" style={{ marginBottom: 24 }}>How I work</div>
-        <Reveal className="approach">
-          {ABOUT.approach.map((a) => (
-            <div key={a.k}>
-              <h3>{a.k}</h3>
-              <p>{a.v}</p>
-            </div>
-          ))}
+      <div className="about-body">
+        <div className="about-body-viz">
+          <ParticleSphere />
+        </div>
+        <Reveal as="div" className="about-body-text">
+          {ABOUT.body.map((p, i) => <p key={i}>{p}</p>)}
         </Reveal>
+      </div>
+
+      <section className="invert invert-band">
+        <div className="wrap">
+          <div className="mono" style={{ marginBottom: 24 }}>How I work</div>
+          <Reveal className="approach">
+            {ABOUT.approach.map((a) => (
+              <div key={a.k}>
+                <h3>{a.k}</h3>
+                <p>{a.v}</p>
+              </div>
+            ))}
+          </Reveal>
+        </div>
       </section>
 
       <section className="timeline">
@@ -91,9 +99,11 @@ export default function About() {
         <HiredFor />
       </section>
 
-      <section style={{ marginTop: "10vh" }}>
-        <div className="mono" style={{ marginBottom: 24 }}>The numbers</div>
-        <Metrics items={METRICS} />
+      <section className="invert invert-band" style={{ marginTop: "10vh" }}>
+        <div className="wrap">
+          <div className="mono" style={{ marginBottom: 24 }}>The numbers</div>
+          <Metrics items={METRICS} />
+        </div>
       </section>
 
       <section style={{ marginTop: "10vh" }}>

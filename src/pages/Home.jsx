@@ -145,8 +145,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* end */}
-      <section className="end" id="contact">
+      {/* end — the closing CTA; the shared SiteFooter follows (shell-owned) */}
+      <section className="end invert" id="contact">
         <div className="wrap">
           <Reveal>
             <h2 className="display">Bring me<br />the difficult one.</h2>
@@ -155,45 +155,6 @@ export default function Home() {
               {P.phone} — {P.city}, {P.region}
             </div>
           </Reveal>
-
-          <Reveal as="dl" className="colophon">
-            <div>
-              <dt className="mono">Contact</dt>
-              <dd>
-                <a href={`mailto:${P.email}`}>{P.email}</a><br />
-                <a href={`mailto:${P.email2}`}>{P.email2}</a><br />
-                <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
-              </dd>
-            </div>
-            <div>
-              <dt className="mono">Built with</dt>
-              <dd>Figma · React · Framer<br />Capture One · DaVinci</dd>
-            </div>
-            <div>
-              <dt className="mono">Elsewhere</dt>
-              <dd>
-                {P.socials.map((s) => (
-                  <span key={s.href} style={{ display: "block" }}>
-                    <a href={s.href} target="_blank" rel="noreferrer">
-                      {s.k} — {s.v}
-                    </a>
-                  </span>
-                ))}
-              </dd>
-            </div>
-            <div>
-              <dt className="mono">Colophon</dt>
-              <dd>Dark, minimal, type-led. Built so the pictures are the only bright thing on the page.</dd>
-            </div>
-          </Reveal>
-
-          <hr className="rule" style={{ marginTop: 44 }} />
-          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, paddingTop: 18 }}>
-            <span className="mono">© 2026 {P.name}</span>
-            <span className="mono">
-              <TLink to="/client">Client area</TLink> — collect a finished shoot
-            </span>
-          </div>
         </div>
       </section>
     </motion.div>
@@ -256,7 +217,7 @@ function Gallery() {
   const rows = justifyRows(shots, width, targetH, GAP);
 
   return (
-    <section className="gwork" id="gallery" aria-label="Gallery">
+    <section className="gwork invert" id="gallery" aria-label="Gallery">
       <div className="wrap">
         <div className="gwork-head">
           <div className="mono">Gallery</div>
