@@ -514,7 +514,10 @@ export const CSS = `
 .pf { background: var(--bg); color: var(--ink);
   font-family: 'Inter', system-ui, sans-serif; font-weight: 400;
   -webkit-font-smoothing: antialiased; letter-spacing: -0.01em;
-  transition: color .5s ease; overflow-x: hidden; position: relative; min-height: 100vh; }
+  /* clip (not hidden) so horizontal overflow is still contained WITHOUT
+     turning .pf into a scroll container — hidden would force overflow-y to
+     'auto' and break every position:sticky inside (nav bar, stacking cards). */
+  transition: color .5s ease; overflow-x: clip; position: relative; min-height: 100vh; }
 .pf a { color: inherit; text-decoration: none; }
 .pf button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 .pf img { display: block; width: 100%; height: 100%; object-fit: cover;
@@ -947,6 +950,47 @@ export const CSS = `
 .band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
   font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
 .band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
+
+/* --- coverflow reel (3D slideshow) --- */
+.cflow-sec { height: clamp(360px, 54vh, 560px); margin: clamp(48px, 8vh, 110px) 0 0;
+  padding: 0 12px; }
+
+/* --- sticky stacking project cards ---
+   Each card sticks near the top with a small extra offset per card, so
+   the next one rides up and overlaps it; a scroll-linked scale (set in
+   the component) shrinks the covered cards so they recede. */
+.pstack { position: relative; padding-top: 4vh; padding-bottom: 3vh; }
+.pcard-wrap { position: sticky; margin-bottom: clamp(48px, 7vw, 108px); }
+.pcard { width: 100%; background: var(--bg); transform-origin: top center;
+  border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  border-radius: clamp(24px, 3.6vw, 50px); padding: clamp(16px, 2.2vw, 30px);
+  box-shadow: 0 36px 90px -50px rgba(20, 20, 26, .45); }
+.pcard-head { display: flex; align-items: center; gap: clamp(10px, 1.6vw, 22px); flex-wrap: wrap;
+  border-bottom: 1px solid var(--rule); padding-bottom: clamp(14px, 1.8vw, 22px);
+  margin-bottom: clamp(16px, 2vw, 26px); }
+.pcard-num { font-family: 'Anton', sans-serif; font-weight: 400; color: var(--ink);
+  line-height: .8; font-size: clamp(32px, 5.5vw, 72px); }
+.pcard-badge { border: 1px solid var(--rule); border-radius: 100px; padding: 5px 13px;
+  color: var(--dim); }
+.pcard-name { flex: 1 1 auto; font-weight: 500; text-transform: uppercase; letter-spacing: -0.01em;
+  font-size: clamp(17px, 2.6vw, 34px); color: var(--ink); }
+.pcard-open { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--ink); border-radius: 100px; padding: 9px 18px; color: var(--ink);
+  transition: background-color .3s ease, color .3s ease; }
+.pcard-open:hover { background: var(--ink); color: var(--bg); }
+.pcard-open .arrow { transition: transform .3s ease; }
+.pcard-open:hover .arrow { transform: translateX(4px); }
+.pcard-media { display: grid; grid-template-columns: 1fr; gap: clamp(12px, 1.5vw, 20px); }
+@media (min-width: 720px) { .pcard-media { grid-template-columns: 5fr 7fr; } }
+.pcard-col { display: flex; flex-direction: column; gap: clamp(12px, 1.5vw, 20px); }
+.pcard-img { position: relative; display: block; overflow: hidden; background: var(--panel);
+  border-radius: clamp(14px, 2.2vw, 30px); }
+.pcard-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  transition: transform 1.1s cubic-bezier(.2, .8, .2, 1); }
+.pcard-media:hover .pcard-img img { transform: scale(1.04); }
+.pcard-img.sm { height: clamp(110px, 13vw, 178px); }
+.pcard-img.md { height: clamp(140px, 17vw, 262px); }
+@media (max-width: 719px) { .pcard-img.big { height: 62vw; } }
 
 /* --- photo project detail --- */
 .pj-hero { position: relative; overflow: hidden; border-radius: 4px;

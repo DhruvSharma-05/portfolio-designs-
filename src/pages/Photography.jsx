@@ -1,12 +1,8 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import { P, img, FEATURED, PHOTO_PROJECTS, SHEET, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
-
-const DistortImage = lazy(() => import("../DistortImage.jsx"));
+import Coverflow from "../Coverflow.jsx";
 
 const page = {
   initial: { opacity: 0 },
@@ -15,12 +11,52 @@ const page = {
 
 const HOLD = 5400; // ms per hero slide — matches the tick-fill keyframe
 
+/* One stacking project card: it sticks near the top while the next card
+   rides up and overlaps it, scaling down a touch as it recedes behind.
+   Shows three frames from the set — two stacked on the left, one large
+   on the right. */
+function PhotoCard({ p, n, total, reduced }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "start start"] });
+  const targetScale = 1 - (total - 1 - n) * 0.04;
+  const scale = useTransform(scrollYProgress, [0, 1], [1, reduced ? 1 : targetScale]);
+
+  const big = p.photos[0];
+  const a = p.photos[1] || p.photos[0];
+  const b = p.photos[2] || p.photos[1] || p.photos[0];
+
+  return (
+    <div ref={ref} className="pcard-wrap" style={{ top: `calc(84px + ${n * 20}px)`, zIndex: n + 1 }}>
+      <motion.article className="pcard" style={{ scale }}>
+        <div className="pcard-head">
+          <span className="pcard-num">{String(n + 1).padStart(2, "0")}</span>
+          <span className="pcard-badge mono">{p.kind}</span>
+          <h3 className="pcard-name">{p.t}</h3>
+          <TLink to={`/photography/${p.slug}`} className="pcard-open mono" data-cursor="Open"
+            aria-label={`Open ${p.t}`}>
+            View set <span className="arrow">→</span>
+          </TLink>
+        </div>
+
+        <TLink to={`/photography/${p.slug}`} className="pcard-media" data-cursor="Open"
+          aria-label={`Open ${p.t}`}>
+          <span className="pcard-col">
+            <span className="pcard-img sm"><img src={img(a, 900, 620)} alt="" loading="lazy" /></span>
+            <span className="pcard-img md"><img src={img(b, 900, 900)} alt="" loading="lazy" /></span>
+          </span>
+          <span className="pcard-img big"><img src={img(big, 1500, 1050)} alt={p.t} loading="lazy" /></span>
+        </TLink>
+      </motion.article>
+    </div>
+  );
+}
+
 /* ==================================================================
    PHOTOGRAPHY — the photo half of the portfolio.
 
    Hero: a crossfading slideshow of each project's opening frame, so it
-   doubles as a table of contents. Below: the same sticky stacking
-   cards the home page uses, one per project, opening /photography/:slug.
+   doubles as a table of contents. Below: sticky stacking project cards
+   — each overlaps the previous as you scroll — opening /photography/:slug.
    ================================================================== */
 export default function Photography() {
   const [i, setI] = useState(0);
@@ -35,24 +71,9 @@ export default function Photography() {
     return () => clearTimeout(t);
   }, [i, reduced]);
 
-  /* parallax + hover zoom on the project cards, same as the home stack */
-  useGSAP(() => {
-    if (reduced) return;
-    gsap.utils.toArray("[data-par]").forEach((el) => {
-      const shot = el.closest(".shot") || el;
-      gsap.set(el, { scale: 1.14, transformOrigin: "50% 50%" });
-      gsap.fromTo(el, { yPercent: -6 }, {
-        yPercent: 6, ease: "none",
-        scrollTrigger: { trigger: shot, start: "top bottom", end: "bottom top", scrub: true },
-      });
-      const zoom = gsap.quickTo(el, "scale", { duration: 0.6, ease: "power2.out" });
-      shot.addEventListener("pointerenter", () => zoom(1.19));
-      shot.addEventListener("pointerleave", () => zoom(1.14));
-    });
-    ScrollTrigger.refresh();
-  }, { scope: root, dependencies: [reduced] });
-
   const f = FEATURED[i];
+  /* highlight reel for the coverflow — the gallery frames */
+  const reel = SHEET.slice(0, 12).map((s) => ({ image: { src: img(s, 900) } }));
 
   return (
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
@@ -130,43 +151,23 @@ export default function Photography() {
         </Reveal>
       </section>
 
-      {/* ---------- project stack ---------- */}
-      <section className="wrap stack" style={{ paddingTop: "6vh" }}>
-        {PHOTO_PROJECTS.map((p, n) => (
-          <Reveal className="card" key={p.slug} style={{ top: `${92 + n * 12}px`, zIndex: n + 1 }}>
-            <div className="card-in">
-              <TLink to={`/photography/${p.slug}`} className="shot"
-                aria-label={`Open ${p.t}`}>
-                <Suspense fallback={<img data-par src={img(p.photos[0], 1200, 900)} alt={p.t} />}>
-                  <DistortImage src={img(p.photos[0], 1200, 900)} alt={p.t} />
-                </Suspense>
-                <span className="open">{p.photos.length} frames →</span>
-              </TLink>
-              <div className="cap">
-                <div>
-                  <span className="kind mono">{p.kind}</span>
-                  <h2>{p.t}</h2>
-                  <p>{p.note}</p>
-                </div>
-                <div className="meta">
-                  <span className="mono">{p.loc} — {p.year}</span>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        ))}
+      {/* ---------- coverflow reel ---------- */}
+      <section className="cflow-sec" aria-label="Selected frames">
+        <Coverflow slides={reel} autoplay={!reduced} />
       </section>
 
-      {/* ---------- contact strip ---------- */}
-      <div className="strip">
-        <div className="strip-track">
-          {[...SHEET, ...SHEET].map((s, n) => (
-            <figure className="strip-fr" key={n}>
-              <img src={img(s, 400, 264)} alt="" />
-            </figure>
-          ))}
-        </div>
-      </div>
+      {/* ---------- projects heading ---------- */}
+      <section className="wrap" style={{ paddingTop: "6vh" }}>
+        <span className="mono" style={{ color: "var(--accent)" }}>[ Selected sets ]</span>
+        <h2 className="display" style={{ marginTop: 12, fontSize: "clamp(46px, 9vw, 128px)" }}>Projects</h2>
+      </section>
+
+      {/* ---------- project stack (sticky, overlapping cards) ---------- */}
+      <section className="wrap pstack">
+        {PHOTO_PROJECTS.map((p, n) => (
+          <PhotoCard key={p.slug} p={p} n={n} total={PHOTO_PROJECTS.length} reduced={reduced} />
+        ))}
+      </section>
 
       {/* ---------- end ---------- */}
       <section className="end">
