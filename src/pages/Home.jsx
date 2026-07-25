@@ -1,18 +1,13 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, ratio, INTRO, FRAMES, SHEET,
-  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, prefersReduced,
+  P, img, INTRO, SHEET,
+  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, prefersReduced,
 } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
-import { useApp } from "../context.js";
-
-/* Three.js is code-split so the hero text (the LCP) paints first. */
-const HeroCanvas = lazy(() => import("../HeroCanvas.jsx"));
-const DistortImage = lazy(() => import("../DistortImage.jsx"));
 
 const page = {
   initial: { opacity: 0 },
@@ -31,11 +26,8 @@ const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
    design work. Everything about the person lives on /about.
    ================================================================== */
 export default function Home() {
-  const { theme } = useApp();
-  const [heroActive, setHeroActive] = useState(true);
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
-  const heroRef = useRef(null);
 
   /* image parallax + hover zoom, owned by GSAP and scoped to this page
      so the ScrollTriggers are torn down when we navigate away. */
@@ -56,22 +48,10 @@ export default function Home() {
     ScrollTrigger.refresh();
   }, { scope: root, dependencies: [reduced] });
 
-  /* pause the hero canvas render loop once it scrolls off-screen */
-  useEffect(() => {
-    const el = heroRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => setHeroActive(e.isIntersecting), { threshold: 0 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
   return (
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
       {/* masthead */}
-      <header className="mast" id="main" ref={heroRef}>
-        <Suspense fallback={null}>
-          <HeroCanvas accent={theme.accent} active={heroActive} reduced={reduced} />
-        </Suspense>
+      <header className="mast" id="main">
         <div className="wrap">
           <div className="mono" style={{ marginBottom: 26 }}>
             {P.photographer} — {P.role} — {P.city} — Booking 2026
@@ -127,92 +107,40 @@ export default function Home() {
       {/* gallery — four categories, no captions */}
       <Gallery />
 
-      {/* photography — the selected projects, each opening a detail page */}
-      <section className="wrap stack" id="work">
-        <div className="mono" style={{ padding: "0 0 34px" }}>
-          Photography — selected work
-        </div>
-        {FRAMES.map((f, i) => (
-          <Reveal className="card" key={f.seed} style={{ top: `${92 + i * 12}px`, zIndex: i + 1 }}>
-            <div className="card-in">
-              <TLink to={`/work/${f.seed}`} className="shot" aria-label={`Open ${f.t}`}>
-                <Suspense fallback={<img data-par src={img(f.seed, 1200, 900)} alt={f.t} />}>
-                  <DistortImage src={img(f.seed, 1200, 900)} alt={f.t} />
-                </Suspense>
-                <span className="open">View project →</span>
-              </TLink>
-              <div className="cap">
-                <div>
-                  <span className="kind mono">{f.kind}</span>
-                  <h2>{f.t}</h2>
-                  <p>{f.note}</p>
-                </div>
-                <div className="meta">
-                  <span className="mono">{f.loc}</span>
-                  <span className="mono" style={{ color: "var(--accent)" }}>{f.exif}</span>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        ))}
-      </section>
-
-      {/* design — real projects once they're published; until then the
-          space is visibly held for them */}
-      <section className="sec" id="design">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">Design</div>
+      {/* web design — a short teaser (a distinct, flat 3-up), so the full
+          staggered archive on /design still feels like a reveal, not a repeat */}
+      <section className="wrap hweb" id="design">
+        <div className="hweb-head">
           <div>
-            {HAS_REAL_WEB ? (
-              <>
-                <div className="wgrid">
-                  {WEB_PROJECTS.slice(0, 2).map((w, i) => (
-                    <Reveal key={w.slug} delay={i * 0.06}>
-                      <TLink to={`/design/${w.slug}`} className="wcard"
-                        aria-label={`Open ${w.t}`}>
-                        <div className="browser">
-                          <div className="browser-bar">
-                            <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
-                            <span className="browser-url mono">{w.slug}.com</span>
-                            <span className="mono" style={{ opacity: 0.5 }}>{w.year}</span>
-                          </div>
-                          <div className="browser-view">
-                            <img src={img(w.cover, 1200, reduced ? 825 : 2100)}
-                              alt={`${w.t} — full page`} loading="lazy" />
-                          </div>
-                        </div>
-                        <div className="wcard-cap">
-                          <div>
-                            <h3>{w.t}</h3>
-                            <p>{w.intro}</p>
-                          </div>
-                          <span className="tool-badge mono">{w.tool}</span>
-                        </div>
-                      </TLink>
-                    </Reveal>
-                  ))}
-                </div>
-                <div style={{ marginTop: 34 }}>
-                  <TLink to="/design" className="extlink">
-                    All design work <span className="arrow">→</span>
-                  </TLink>
-                </div>
-              </>
-            ) : (
-              <Reveal className="reserved">
-                <span className="mono">Reserved</span>
-                <h3>The design work is on its way.</h3>
-                <p>
-                  This space is held for the design &amp; build side — identities,
-                  layouts and shipped sites. Projects appear here as they are
-                  published.
-                </p>
-                <TLink to="/design" className="extlink">
-                  Design &amp; build <span className="arrow">→</span>
-                </TLink>
-              </Reveal>
-            )}
+            <span className="mono" style={{ color: "var(--accent)" }}>[ Web design ]</span>
+            <h2 className="display hweb-title">Sites &amp; apps,<br />built to ship.</h2>
           </div>
+          <p className="hweb-sub">
+            Client sites, product UI and Figma concepts — designed and built by
+            the same hands behind the camera. A taste; the full archive is one click on.
+          </p>
+        </div>
+
+        <div className="hweb-grid">
+          {WEB_PROJECTS.slice(0, 3).map((w, i) => (
+            <Reveal key={w.slug} delay={i * 0.06}>
+              <TLink to={`/design/${w.slug}`} className="hweb-card" aria-label={`Open ${w.t}`}>
+                <div className="hweb-shot">
+                  <img src={img(w.cover, 900, 1100)} alt={w.t} loading="lazy" />
+                </div>
+                <div className="hweb-cap">
+                  <h3>{w.t}</h3>
+                  <span className="mono">{w.tool}</span>
+                </div>
+              </TLink>
+            </Reveal>
+          ))}
+        </div>
+
+        <div className="hweb-foot">
+          <TLink to="/design" className="extlink">
+            See all design work <span className="arrow">→</span>
+          </TLink>
         </div>
       </section>
 
@@ -276,11 +204,55 @@ export default function Home() {
    Simple on purpose: the frames are the content, nothing explains
    them. Starts on the first category that actually has photos.
    ================================================================== */
+/* Greedy justified-rows layout (Flickr / Google Photos style): scale each
+   photo to a target row height, pack a row until it overflows the
+   container width, then scale that row down so it sits flush left-to-right
+   — every photo keeps its exact aspect ratio, nothing is ever cropped.
+   The last, partial row keeps the target height and stays left-aligned. */
+function justifyRows(items, containerW, targetH, gap) {
+  if (!containerW) return [];
+  const rows = [];
+  let row = [];
+  let sumAr = 0;
+  for (const it of items) {
+    row.push(it);
+    sumAr += it.ar;
+    const gaps = gap * (row.length - 1);
+    if (sumAr * targetH + gaps >= containerW) {
+      const h = (containerW - gaps) / sumAr;
+      rows.push({ h, items: row.map((r) => ({ ...r, w: r.ar * h })) });
+      row = [];
+      sumAr = 0;
+    }
+  }
+  if (row.length) {
+    rows.push({ h: targetH, items: row.map((r) => ({ ...r, w: r.ar * targetH })) });
+  }
+  return rows;
+}
+
 function Gallery() {
   const [cat, setCat] = useState(
     () => GALLERY_CATS.find((c) => GALLERY_ITEMS.some((g) => g.cat === c)) ?? GALLERY_CATS[0],
   );
   const shots = GALLERY_ITEMS.filter((g) => g.cat === cat);
+
+  /* measure the container so the rows can be laid out to its real width */
+  const wrapRef = useRef(null);
+  const [width, setWidth] = useState(0);
+  useLayoutEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const measure = () => setWidth(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const GAP = 16;
+  const targetH = width && width < 640 ? 280 : 460;
+  const rows = justifyRows(shots, width, targetH, GAP);
 
   return (
     <section className="gwork" id="gallery" aria-label="Gallery">
@@ -297,12 +269,15 @@ function Gallery() {
         </div>
 
         {shots.length ? (
-          <div className="pgrid" key={cat}>
-            {shots.map((g) => (
-              <figure key={g.seed}>
-                <img src={img(g.seed, 640)} alt="" loading="lazy"
-                  style={{ aspectRatio: ratio(g.seed, 3, 4) }} />
-              </figure>
+          <div className="jgal" ref={wrapRef}>
+            {rows.map((r, ri) => (
+              <div className="jrow" key={ri} style={{ height: r.h, gap: GAP }}>
+                {r.items.map((it) => (
+                  <figure className="jfig" key={it.seed} style={{ width: it.w }}>
+                    <img src={img(it.seed, 900)} alt="" loading="lazy" />
+                  </figure>
+                ))}
+              </div>
             ))}
           </div>
         ) : (

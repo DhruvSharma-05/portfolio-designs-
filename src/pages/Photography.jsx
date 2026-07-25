@@ -150,7 +150,6 @@ export default function Photography() {
                 </div>
                 <div className="meta">
                   <span className="mono">{p.loc} — {p.year}</span>
-                  <span className="mono" style={{ color: "var(--accent)" }}>{p.exif}</span>
                 </div>
               </div>
             </div>

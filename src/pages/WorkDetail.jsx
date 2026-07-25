@@ -55,7 +55,6 @@ export default function WorkDetail() {
           <div className="mono" style={{ marginBottom: 16 }}>{f.kind}</div>
           <h1>{f.t}</h1>
         </div>
-        <div className="mono" style={{ color: "var(--accent)" }}>{f.exif}</div>
       </div>
 
       <figure className="detail-fig">
@@ -68,7 +67,6 @@ export default function WorkDetail() {
         </Reveal>
         <Reveal as="dl" className="spec" delay={0.08}>
           <div><dt className="mono">Location</dt><dd>{f.loc}</dd></div>
-          <div><dt className="mono">Capture</dt><dd>{f.exif}</dd></div>
           <div><dt className="mono">Role</dt><dd>{f.role}</dd></div>
           <div><dt className="mono">Year</dt><dd>{f.year}</dd></div>
         </Reveal>

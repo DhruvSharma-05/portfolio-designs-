@@ -20,7 +20,16 @@ export const P = {
   designBrand: "Design & Build",// the web practice — /design
   role: "Photographer & Web Designer",
   email: "hello@yourstudio.com",
+  email2: "studio@yourstudio.com",
+  phone: "+1 000 000 0000",
   city: "Your City",
+  region: "Your Region",
+  /* footer "Elsewhere" list — swap for real handles */
+  socials: [
+    { k: "Instagram", v: "@lenzofviraj", href: "https://instagram.com" },
+    { k: "Behance", v: "viraj", href: "https://behance.net" },
+    { k: "LinkedIn", v: "viraj", href: "https://linkedin.com" },
+  ],
 };
 
 /* ==================================================================
@@ -162,26 +171,36 @@ export const TICKER = ["Editorial", "Events", "Portraits", "Art direction", "Col
 /* ==================================================================
    GALLERY — the simple, captionless grid on the Work page.
 
-   Four fixed categories. A synced photo's category comes from the
-   Drive subfolder it lives in (see scripts/sync-drive.mjs): make four
-   subfolders inside the Gallery folder named after the categories and
-   the sync sorts everything automatically. Photos left in the Gallery
-   folder root land in "Open". With no manifest at all, placeholder
-   seeds are dealt across the categories so the grid still renders.
+   Two fixed categories. A synced photo's category comes from the Drive
+   subfolder it lives in (see scripts/sync-drive.mjs): a "Wildlife"
+   subfolder lands in Wildlife; everything else falls into Portraits.
+   With no manifest at all, placeholder seeds are dealt across the
+   categories so the grid still renders.
    ================================================================== */
-export const GALLERY_CATS = ["Professional Photoshoot", "Wildlife", "Open", "Portraits"];
+export const GALLERY_CATS = ["Wildlife", "Portraits"];
 
-const normCat = (raw = "") => {
-  const s = String(raw).toLowerCase();
-  if (s.includes("professional") || s.includes("shoot")) return "Professional Photoshoot";
-  if (s.includes("wild")) return "Wildlife";
-  if (s.includes("portrait")) return "Portraits";
-  return "Open";
-};
+/* Gallery photos carry no sub-category in Contentful, so we sort them:
+   an explicit "wild" folder/tag OR a wildlife-animal cue in the name
+   lands in Wildlife; everything else (people, events) is Portraits. */
+const WILD_RE = /wild|cheetah|lion|tiger|leopard|deer|buck|stag|elephant|bird|safari|antelope|zebra|giraffe|fox|bear|animal/i;
+const normCat = (raw = "") => (WILD_RE.test(String(raw)) ? "Wildlife" : "Portraits");
 
+/* `ar` (aspect ratio = w/h) rides along so the justified gallery can lay
+   photos out at their true proportions without ever cropping. Fallback
+   seeds have no real dimensions, so they get a varied, natural-looking
+   spread instead. */
+const FALLBACK_AR = [1.5, 0.72, 1.33, 0.8, 1.6, 0.75, 1.2];
 export const GALLERY_ITEMS = manifest.gallery?.length
-  ? manifest.gallery.map((p) => ({ seed: p.seed, cat: normCat(p.cat) }))
-  : SHEET_FALLBACK.map((s, i) => ({ seed: s, cat: GALLERY_CATS[i % GALLERY_CATS.length] }));
+  ? manifest.gallery.map((p) => ({
+      seed: p.seed,
+      cat: normCat(p.cat || p.seed),
+      ar: p.w && p.h ? p.w / p.h : 1.4,
+    }))
+  : SHEET_FALLBACK.map((s, i) => ({
+      seed: s,
+      cat: GALLERY_CATS[i % GALLERY_CATS.length],
+      ar: FALLBACK_AR[i % FALLBACK_AR.length],
+    }));
 
 /* True once real design projects exist (published from /admin). Until
    then the Work page shows the reserved-room panel instead of the
@@ -540,7 +559,7 @@ export const CSS = `
   transition: transform .42s cubic-bezier(.2,.8,.2,1); }
 .bar.hide { transform: translateY(-101%); }
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
+  padding: 9px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
 /* sits where the accent switcher used to be */
 .barmeta { text-align: right; }
@@ -549,23 +568,18 @@ export const CSS = `
   transition: width .1s linear; }
 
 /* --- masthead --- */
-.mast { padding: 17vh 0 10vh; position: relative; }
+.mast { padding: 5vh 0 8vh; position: relative; }
 .mast .wrap { position: relative; z-index: 1; }
 .hero-canvas { position: absolute !important; inset: 0; z-index: 0;
   pointer-events: none;
   -webkit-mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%);
           mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%); }
-<<<<<<< Updated upstream
-.display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
-  font-size: clamp(52px, 12vw, 168px); text-wrap: balance; }
-.display .ch { display: inline-block; opacity: 0; transform: translateY(0.4em) rotate(3deg);
-  filter: blur(12px); animation: charUp 1s cubic-bezier(.16,1,.3,1) both; }
-@keyframes charUp { to { opacity: 1; transform: none; filter: blur(0); } }
-=======
 .display { font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase;
   letter-spacing: -0.015em; line-height: .88;
   font-size: clamp(52px, 11.5vw, 150px); text-wrap: balance; }
->>>>>>> Stashed changes
+.display .ch { display: inline-block; opacity: 0; transform: translateY(0.4em) rotate(3deg);
+  filter: blur(12px); animation: charUp 1s cubic-bezier(.16,1,.3,1) both; }
+@keyframes charUp { to { opacity: 1; transform: none; filter: blur(0); } }
 .mast .drawline { height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left;
   margin-top: 40px; animation: draw 1.1s .85s cubic-bezier(.76,0,.24,1) forwards; }
 @keyframes draw { to { transform: scaleX(1); } }
@@ -653,9 +667,20 @@ export const CSS = `
    Drop the real file at public/logo.svg (or .png / .webp) and it is
    picked up automatically; until then the wordmark text shows. The
    .pf img reset (width/height 100% + filter) must not apply here. */
-.pf .logo-img { width: auto; height: 34px; object-fit: contain; filter: none; display: block; }
-.brand { display: inline-flex; align-items: center; min-height: 34px; }
-@media (max-width: 720px) { .pf .logo-img { height: 28px; } }
+.pf .logo-img { width: auto; height: 26px; object-fit: contain; filter: none; display: block; }
+.brand { display: inline-flex; align-items: center; min-height: 26px; }
+@media (max-width: 720px) { .pf .logo-img { height: 24px; } }
+
+/* Inline brand mark (shown when no logo file is present): the C&
+   monogram + a compact Anton wordmark. Explicitly sized so the SVG
+   never inflates the bar. */
+.logo { display: inline-flex; align-items: center; gap: 9px; line-height: 1; }
+.logo-mark { height: 22px; width: auto; display: block; }
+.logo-mark path { fill: var(--ink); }
+.logo-word { font-family: 'Anton', sans-serif; text-transform: uppercase; white-space: pre;
+  font-size: 14px; letter-spacing: .02em; color: var(--ink); }
+.logo-word b { font-weight: 400; }
+@media (max-width: 620px) { .logo-word { display: none; } }
 
 /* --- categorised gallery (Work page) ---
    Deliberately mute: four category tabs and a masonry of frames.
@@ -672,6 +697,17 @@ export const CSS = `
 .gtab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .gempty { padding: 9vh 24px; text-align: center; border: 1px dashed var(--rule);
   border-radius: 6px; }
+
+/* justified gallery: rows fill the width edge-to-edge, every photo at its
+   true aspect ratio (width + row-height are computed in JS to match), so
+   nothing is cropped and the rows still line up cleanly. */
+.jgal { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
+.jrow { display: flex; }
+.jfig { margin: 0; flex: 0 0 auto; overflow: hidden; border-radius: 5px;
+  border: 1px solid var(--rule); background: var(--panel); }
+.jfig img { width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 1.1s cubic-bezier(.2,.8,.2,1); }
+.jfig:hover img { transform: scale(1.04); }
 
 /* --- reserved room (design work not published yet) --- */
 .reserved { border: 1px dashed var(--rule); border-radius: 6px; padding: 8vh 36px;
@@ -860,11 +896,13 @@ export const CSS = `
 .phero-stage { position: absolute; inset: 0; }
 .phero-fr { position: absolute; inset: 0; }
 .phero-fr img { will-change: transform; }
-.phero-fr::after { content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg,
-    color-mix(in srgb, var(--bg) 62%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 12%, transparent) 38%,
-    color-mix(in srgb, var(--bg) 88%, transparent) 100%); }
+/* No full-frame wash — the photo shows at full strength. Only a soft
+   scrim at the very top and bottom edges, purely so the white caption
+   and ticks stay legible; the middle of the frame is untouched. */
+.phero-fr::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(12,14,18,0.42) 0%, rgba(12,14,18,0) 22%),
+    linear-gradient(0deg, rgba(12,14,18,0.55) 0%, rgba(12,14,18,0) 32%); }
 .phero-in { position: relative; z-index: 2; height: 100%; display: flex;
   flex-direction: column; justify-content: space-between; padding: 8vh 0 34px; }
 .phero-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
@@ -895,6 +933,14 @@ export const CSS = `
 .phero-count { font-variant-numeric: tabular-nums; }
 .phero-count b { font-weight: 400; color: var(--accent); }
 @media (max-width: 640px) { .phero { height: 78vh; } .tick-btn { width: 32px; } }
+/* hero text sits in white over the full-bleed photo (accent stays orange
+   via inline styles), with a light shadow so it reads on any frame */
+.phero-in { color: #fff; }
+.phero-in .mono { color: rgba(255,255,255,0.82); }
+.phero-cap h1 { color: #fff; text-shadow: 0 2px 34px rgba(0,0,0,0.4); }
+.phero-open { border-color: rgba(255,255,255,0.42); color: #fff;
+  background: rgba(10,12,16,0.28); }
+.tick-btn::before { background: rgba(255,255,255,0.4); }
 
 /* --- project intro band --- */
 .band { padding: 12vh 0 2vh; }
@@ -908,6 +954,25 @@ export const CSS = `
 .pj-hero img { will-change: transform; }
 .pj-intro { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.8vw, 34px);
   line-height: 1.32; max-width: 26ch; }
+
+/* professional editorial header + meta (no technical/EXIF details) */
+.pj.detail { padding-top: 12vh; }
+.pj-head { max-width: 900px; margin-bottom: clamp(34px, 5vw, 58px); }
+.pj-kicker { color: var(--accent); font-size: 10px; }
+.pj-title { font-size: clamp(42px, 9vw, 116px); line-height: .9; margin-top: 16px; }
+.pj-lede { margin-top: 24px; max-width: 52ch; color: var(--dim);
+  font-size: clamp(16px, 1.8vw, 20px); line-height: 1.6; }
+.pj .pj-hero { aspect-ratio: 16 / 9; border-radius: 14px; }
+.pj-meta { display: grid; grid-template-columns: repeat(2, 1fr);
+  margin-top: clamp(40px, 5vw, 64px); border-top: 1px solid var(--rule); }
+@media (min-width: 760px) { .pj-meta { grid-template-columns: repeat(4, 1fr); } }
+.pj-meta > div { display: flex; flex-direction: column; gap: 8px;
+  padding: 22px 0; border-bottom: 1px solid var(--rule); }
+@media (min-width: 760px) { .pj-meta > div { padding: 24px 24px 24px 0; } }
+.pj-meta .mono { color: var(--dim); }
+.pj-meta span:last-child { font-size: clamp(15px, 1.6vw, 18px); letter-spacing: -0.01em; }
+.pj-note { margin-top: clamp(40px, 6vw, 72px); max-width: 40ch; font-weight: 300;
+  letter-spacing: -0.01em; font-size: clamp(20px, 2.6vw, 30px); line-height: 1.4; }
 
 /* masonry-ish grid: CSS columns keep the frames' own aspect ratios */
 .pgrid { columns: 3; column-gap: 18px; margin-top: 18px; }
@@ -1046,7 +1111,17 @@ export const CSS = `
 .dlx-card.is-portrait { aspect-ratio: 4 / 5; }
 .dlx-card.is-wide { aspect-ratio: 16 / 10; }
 /* covers are full-page screenshots — anchor the crop to the top */
-.dlx-card img { object-position: top; }
+.dlx-card img { object-position: top; transition: transform 1.1s cubic-bezier(.2,.8,.2,1); }
+/* hover: the screenshot eases in and a "View project" cue rises up */
+.dlx-proj:hover .dlx-card img { transform: scale(1.05); }
+.dlx-card-hint { position: absolute; left: 14px; bottom: 14px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 8px; padding: 9px 15px; border-radius: 100px;
+  background: color-mix(in srgb, var(--ink) 90%, transparent); color: var(--bg);
+  font-size: 10px; opacity: 0; transform: translateY(10px);
+  transition: opacity .4s ease, transform .45s cubic-bezier(.2,.8,.2,1); }
+.dlx-proj:hover .dlx-card-hint { opacity: 1; transform: none; }
+.dlx-card-hint .arrow { transition: transform .3s ease; }
+.dlx-proj:hover .dlx-card-hint .arrow { transform: translateX(4px); }
 .dlx-proj:hover .dlx-card { box-shadow: 0 34px 60px -34px hsl(210 25% 12% / 0.4); }
 .dlx-cap { display: flex; align-items: baseline; justify-content: space-between;
   gap: 18px; margin-top: 22px; }
@@ -1106,6 +1181,30 @@ export const CSS = `
 .dlx-back a { display: inline-flex; align-items: center; gap: 8px; color: var(--dim);
   transition: color .3s ease; }
 .dlx-back a:hover { color: var(--ink); }
+
+/* --- Home: web-design teaser (flat 3-up, deliberately distinct from the
+   /design archive so the full page still reads as a reveal) --- */
+.hweb { padding: clamp(90px, 14vw, 180px) 0 clamp(60px, 9vw, 120px); }
+.hweb-head { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: end;
+  border-bottom: 1px solid var(--rule); padding-bottom: 30px; }
+@media (min-width: 860px) { .hweb-head { grid-template-columns: 1.3fr 1fr; gap: 48px; } }
+.hweb-title { font-size: clamp(34px, 6vw, 74px); line-height: .9; margin-top: 14px; }
+.hweb-sub { color: var(--dim); font-size: 15px; line-height: 1.7; max-width: 42ch; }
+.hweb-grid { display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: clamp(40px, 6vw, 72px); }
+@media (min-width: 680px) { .hweb-grid { grid-template-columns: repeat(3, 1fr); gap: 22px; } }
+.hweb-card { display: block; }
+.hweb-shot { overflow: hidden; border-radius: 10px; border: 1px solid var(--rule);
+  background: var(--panel); aspect-ratio: 4 / 5; transition: border-color .35s ease; }
+.hweb-shot img { object-position: top; transition: transform 1.1s cubic-bezier(.2,.8,.2,1); }
+.hweb-card:hover .hweb-shot { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
+.hweb-card:hover .hweb-shot img { transform: scale(1.05); }
+.hweb-cap { display: flex; align-items: baseline; justify-content: space-between;
+  gap: 14px; margin-top: 16px; }
+.hweb-cap h3 { font-weight: 500; letter-spacing: -0.01em; font-size: clamp(18px, 2vw, 22px);
+  transition: color .3s ease; }
+.hweb-card:hover .hweb-cap h3 { color: var(--accent); }
+.hweb-cap .mono { color: var(--dim); }
+.hweb-foot { margin-top: clamp(40px, 6vw, 64px); display: flex; justify-content: flex-end; }
 
 /* stack pills */
 .stack-pills { display: flex; flex-wrap: wrap; gap: 8px; }

@@ -63,10 +63,7 @@ export default function App() {
       start: 0, end: "max",
       onUpdate: (self) => {
         if (progRef.current) progRef.current.style.width = `${self.progress * 100}%`;
-        /* Bar hides while scrolling down and comes straight back on the
-           way up. Always shown near the top so it never starts hidden. */
-        const bar = barRef.current;
-        if (bar) bar.classList.toggle("hide", self.scroll() > 140 && self.direction === 1);
+        /* The bar stays pinned and visible the whole way down the page. */
         topRef.current?.classList.toggle("show", self.scroll() > 600);
       },
     });

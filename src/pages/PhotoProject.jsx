@@ -53,39 +53,30 @@ export default function PhotoProject() {
 
   return (
     <>
-      <motion.main ref={root} id="main" className="detail wrap"
+      <motion.main ref={root} id="main" className="detail wrap pj"
         variants={page} initial="initial" animate="animate">
         <TLink to="/photography" className="mono back">
           <span className="arrow">←</span> All photography
         </TLink>
 
-        <div className="detail-head">
-          <div>
-            <div className="mono" style={{ marginBottom: 16 }}>{p.kind} — {p.year}</div>
-            <h1>{p.t}</h1>
-          </div>
-          <div className="mono" style={{ color: "var(--accent)" }}>{p.exif}</div>
-        </div>
+        <header className="pj-head">
+          <span className="pj-kicker mono">[ {p.kind} · {p.year} ]</span>
+          <h1 className="display pj-title">{p.t}</h1>
+          <p className="pj-lede">{p.intro}</p>
+        </header>
 
         <figure className="pj-hero">
           <img ref={heroImg} src={img(p.photos[0], 2000, 1125)} alt={p.t} />
         </figure>
 
-        <div className="detail-grid">
-          <Reveal>
-            <p className="pj-intro">{p.intro}</p>
-          </Reveal>
-          <Reveal as="dl" className="spec" delay={0.08}>
-            <div><dt className="mono">Location</dt><dd>{p.loc}</dd></div>
-            <div><dt className="mono">Capture</dt><dd>{p.exif}</dd></div>
-            <div><dt className="mono">Role</dt><dd>{p.role}</dd></div>
-            <div><dt className="mono">Frames</dt><dd>{p.photos.length}</dd></div>
-          </Reveal>
-        </div>
+        <Reveal as="div" className="pj-meta">
+          <div><span className="mono">Location</span><span>{p.loc}</span></div>
+          <div><span className="mono">Role</span><span>{p.role}</span></div>
+          <div><span className="mono">Frames</span><span>{String(p.photos.length).padStart(2, "0")}</span></div>
+          <div><span className="mono">Year</span><span>{p.year}</span></div>
+        </Reveal>
 
-        <p className="detail-note" style={{ marginTop: "6vh", color: "var(--dim)", fontSize: 16 }}>
-          {p.note}
-        </p>
+        <Reveal as="p" className="pj-note">{p.note}</Reveal>
 
         {/* ---------- carousel roll ---------- */}
         <section className="sec" style={{ marginTop: "6vh" }}>

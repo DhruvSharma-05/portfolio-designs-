@@ -1,9 +1,5 @@
 {
-<<<<<<< Updated upstream
-  "generatedAt": "2026-07-23T11:54:38.067Z",
-=======
-  "generatedAt": "2026-07-24T20:16:08.334Z",
->>>>>>> Stashed changes
+  "generatedAt": "2026-07-25T07:17:33.592Z",
   "work": [
     {
       "seed": "fountain-portrait",
@@ -302,7 +298,13 @@
       "h": 1126
     }
   ],
-  "portrait": null,
+  "portrait": {
+    "seed": "viraj-portrait",
+    "sm": "/photos/portrait/viraj-portrait-sm.webp",
+    "lg": "/photos/portrait/viraj-portrait-lg.webp",
+    "w": 2000,
+    "h": 2667
+  },
   "projectPhotos": [],
   "photoProjects": [],
   "webProjects": []
