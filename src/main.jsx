@@ -11,6 +11,8 @@ import '@fontsource/ibm-plex-mono/400.css'
 import '@fontsource/ibm-plex-mono/500.css'
 // Anton — heavy condensed display for the light "editorial" theme.
 import '@fontsource/anton/400.css'
+// Dancing Script — the cursive "Selected Works" accent on the design page.
+import '@fontsource/dancing-script/400.css'
 import './index.css'
 import App from './App.jsx'
 

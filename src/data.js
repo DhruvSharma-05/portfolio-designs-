@@ -1068,11 +1068,35 @@ export const CSS = `
    and generous spacing. Projects still come from WEB_PROJECTS
    (Contentful / Drive) — only the presentation is bespoke here.
    ================================================================== */
-.dlx {
-  min-height: 100vh; padding: clamp(72px, 12vh, 132px) 0 0;
-  position: relative; z-index: 1;
-}
-.dlx-wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+.dlx { min-height: 100vh; position: relative; z-index: 1; }
+.dlx-wrap { max-width: 1240px; margin: 0 auto; padding: clamp(64px, 10vh, 120px) 24px 0; }
+
+/* --- cinematic "Projects" scroll intro --- */
+.dprojhero { position: relative; }
+.dph-stage { position: relative; width: 100%; height: 100vh; overflow: hidden;
+  display: grid; place-items: center; }
+.dprojhero.is-static .dph-stage { height: auto; padding: 20vh 24px 8vh; }
+.dph-title { position: relative; z-index: 2; text-align: center; pointer-events: none; }
+.dph-h { font-family: 'Anton', sans-serif; text-transform: uppercase; font-weight: 400;
+  letter-spacing: -0.02em; line-height: .86; font-size: clamp(64px, 17vw, 260px); color: var(--ink); }
+.dph-sub { display: block; margin-top: 2px; font-family: 'Dancing Script', cursive;
+  font-weight: 400; font-size: clamp(26px, 4.4vw, 58px); color: var(--dim); }
+.dph-card { position: absolute; left: 50%; top: 50%; z-index: 3;
+  width: clamp(230px, 24vw, 340px); background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 10px; padding: 12px 12px 8px; text-decoration: none; color: var(--ink);
+  box-shadow: 0 40px 80px -40px rgba(20,20,26,.45); will-change: transform;
+  transition: border-color .3s ease; }
+.dph-card:hover { border-color: var(--accent); }
+.dph-card-img { overflow: hidden; border-radius: 5px; aspect-ratio: 4 / 5; background: var(--bg); }
+.dph-card-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.dph-card-cap { padding: 10px 3px 4px; }
+.dph-card-cap strong { display: block; font-weight: 600; font-size: 11.5px;
+  text-transform: uppercase; letter-spacing: .05em; line-height: 1.28; }
+.dph-card-cap .mono { display: block; margin-top: 5px; font-size: 9px; color: var(--dim); }
+.dph-cue { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 4;
+  color: var(--dim); display: inline-flex; gap: 8px; align-items: center; }
+.dph-cue i { font-style: normal; animation: dphBob 1.6s ease-in-out infinite; }
+@keyframes dphBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
 
 /* --- masthead + filter tabs --- */
 .dlx-head { display: flex; flex-direction: column; gap: 26px;
@@ -1091,13 +1115,14 @@ export const CSS = `
 .dlx-tab:hover { border-color: var(--ink); color: var(--ink); }
 .dlx-tab.on { background: var(--ink); border-color: var(--ink); color: var(--bg); }
 
-/* --- staggered archive --- */
-.dlx-archive { padding-top: clamp(64px, 9vw, 120px); }
-.dlx-grid { display: grid; grid-template-columns: 1fr; gap: clamp(52px, 8vw, 92px) 48px; }
-@media (min-width: 820px) {
-  .dlx-grid { grid-template-columns: 1fr 1fr; }
-  /* the diagonal: the right column drops so nothing lines up in rows */
-  .dlx-grid > .dlx-cell:nth-child(even) { margin-top: clamp(48px, 10vw, 128px); }
+/* --- archive: an asymmetric grid — the right column rides lower for a
+   clean up-and-down rhythm rather than flat, symmetric rows --- */
+.dlx-archive { padding-top: clamp(56px, 8vw, 104px); }
+.dlx-grid { display: grid; grid-template-columns: 1fr;
+  gap: clamp(40px, 5vw, 64px) clamp(24px, 3vw, 48px); align-items: start; }
+@media (min-width: 760px) {
+  .dlx-grid { grid-template-columns: 1fr 1fr; column-gap: clamp(32px, 4vw, 64px); }
+  .dlx-grid > .dlx-cell:nth-child(even) { margin-top: clamp(64px, 9vw, 132px); }
 }
 .dlx-proj { display: block; }
 .dlx-proj-head { display: flex; align-items: baseline; justify-content: space-between;
@@ -1106,10 +1131,8 @@ export const CSS = `
 .dlx-proj:hover .dlx-proj-head { color: var(--ink); }
 .dlx-proj-head .idx { color: var(--ink); }
 .dlx-card { overflow: hidden; border-radius: 12px; background: var(--panel);
-  border: 1px solid var(--rule); will-change: transform;
+  border: 1px solid var(--rule); will-change: transform; aspect-ratio: 3 / 2;
   transition: transform .28s ease-out, box-shadow .5s ease; }
-.dlx-card.is-portrait { aspect-ratio: 4 / 5; }
-.dlx-card.is-wide { aspect-ratio: 16 / 10; }
 /* covers are full-page screenshots — anchor the crop to the top */
 .dlx-card img { object-position: top; transition: transform 1.1s cubic-bezier(.2,.8,.2,1); }
 /* hover: the screenshot eases in and a "View project" cue rises up */
