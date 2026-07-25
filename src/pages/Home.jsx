@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, INTRO, SHEET,
+  P, img, focus, INTRO, SHEET,
   GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, prefersReduced,
 } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
@@ -98,7 +98,7 @@ export default function Home() {
         <div className="strip-track">
           {[...SHEET, ...SHEET].map((s, i) => (
             <figure className="strip-fr" key={i}>
-              <img src={img(s, 400, 264)} alt="" />
+              <img src={img(s, 400, 264)} alt="" style={{ objectPosition: focus(s) }} />
             </figure>
           ))}
         </div>
@@ -274,7 +274,7 @@ function Gallery() {
               <div className="jrow" key={ri} style={{ height: r.h, gap: GAP }}>
                 {r.items.map((it) => (
                   <figure className="jfig" key={it.seed} style={{ width: it.w }}>
-                    <img src={img(it.seed, 900)} alt="" loading="lazy" />
+                    <img src={img(it.seed, 900)} alt="" loading="lazy" style={{ objectPosition: focus(it.seed) }} />
                   </figure>
                 ))}
               </div>

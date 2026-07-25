@@ -22,6 +22,7 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import exifr from "exifr";
 import "dotenv/config";
+import { computeFocus } from "./focus.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -129,7 +130,8 @@ async function renderVariants(buffer, role, seed) {
       h = info.height;
     }
   }
-  return { ...out, w, h };
+  const focus = await computeFocus(buffer);
+  return { ...out, w, h, focus };
 }
 
 /* -------------------------------------------------------------- main */
@@ -207,6 +209,17 @@ async function main() {
         variants = await renderVariants(buffer, role, seed);
       }
 
+      // backfill focal point for photos cached before subject-framing
+      // existed — computed from the local render, so no re-download.
+      if (!variants.focus) {
+        try {
+          const lgAbs = path.join(ROOT, "public", variants.lg.replace(/^\//, ""));
+          variants = { ...variants, focus: await computeFocus(await readFile(lgAbs)) };
+        } catch {
+          variants = { ...variants, focus: "50% 40%" };
+        }
+      }
+
       nextCache[cacheKey] = { seed, stamp, variants, exif };
 
       if (role === "work") {
@@ -223,6 +236,7 @@ async function main() {
           lg: variants.lg,
           w: variants.w,
           h: variants.h,
+          focus: variants.focus,
         });
       } else {
         buckets[role].push({
@@ -231,7 +245,7 @@ async function main() {
           // entry ("Professional Photoshoot" | "Open"). Missing/unknown
           // values land in "Open" on the site — see normCat() in src/data.js.
           ...(role === "gallery" && entry.fields.category ? { cat: entry.fields.category } : {}),
-          sm: variants.sm, lg: variants.lg, w: variants.w, h: variants.h,
+          sm: variants.sm, lg: variants.lg, w: variants.w, h: variants.h, focus: variants.focus,
         });
       }
     }

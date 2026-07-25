@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
-import { P, img, FEATURED, PHOTO_PROJECTS, SHEET, prefersReduced } from "../data.js";
+import { P, img, focus, FEATURED, PHOTO_PROJECTS, SHEET, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 import Coverflow from "../Coverflow.jsx";
 
@@ -41,10 +41,10 @@ function PhotoCard({ p, n, total, reduced }) {
         <TLink to={`/photography/${p.slug}`} className="pcard-media" data-cursor="Open"
           aria-label={`Open ${p.t}`}>
           <span className="pcard-col">
-            <span className="pcard-img sm"><img src={img(a, 900, 620)} alt="" loading="lazy" /></span>
-            <span className="pcard-img md"><img src={img(b, 900, 900)} alt="" loading="lazy" /></span>
+            <span className="pcard-img sm"><img src={img(a, 900, 620)} alt="" loading="lazy" style={{ objectPosition: focus(a) }} /></span>
+            <span className="pcard-img md"><img src={img(b, 900, 900)} alt="" loading="lazy" style={{ objectPosition: focus(b) }} /></span>
           </span>
-          <span className="pcard-img big"><img src={img(big, 1500, 1050)} alt={p.t} loading="lazy" /></span>
+          <span className="pcard-img big"><img src={img(big, 1500, 1050)} alt={p.t} loading="lazy" style={{ objectPosition: focus(big) }} /></span>
         </TLink>
       </motion.article>
     </div>
@@ -72,8 +72,8 @@ export default function Photography() {
   }, [i, reduced]);
 
   const f = FEATURED[i];
-  /* highlight reel for the coverflow — the gallery frames */
-  const reel = SHEET.slice(0, 12).map((s) => ({ image: { src: img(s, 900) } }));
+  /* highlight reel for the coverflow — the gallery frames, subject-framed */
+  const reel = SHEET.slice(0, 12).map((s) => ({ image: { src: img(s, 900), position: focus(s) } }));
 
   return (
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
@@ -87,6 +87,7 @@ export default function Photography() {
               exit={{ opacity: 0 }}
               transition={{ duration: reduced ? 0 : 1.1, ease: "easeInOut" }}>
               <motion.img src={img(f.seed, 2000, 1200)} alt=""
+                style={{ objectPosition: focus(f.seed) }}
                 initial={{ scale: 1.12 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: reduced ? 0 : 8, ease: "linear" }} />

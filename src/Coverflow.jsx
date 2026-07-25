@@ -140,7 +140,7 @@ export default function Coverflow({
                   alt={slide.image?.alt || slide.title || ""}
                   draggable={false}
                   loading="lazy"
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block", userSelect: "none" }}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: slide.image?.position || "center", display: "block", userSelect: "none" }}
                 />
               ) : null}
               {/* dim overlay darkens the off-centre cards to spotlight the middle */}

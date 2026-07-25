@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
-import { P, img, ABOUT, INTRO, SHOTLIST, METRICS, QUOTES, prefersReduced } from "../data.js";
+import { P, img, focus, ABOUT, INTRO, SHOTLIST, METRICS, QUOTES, prefersReduced } from "../data.js";
 import { Reveal, TLink, Metrics } from "../ui.jsx";
 
 const page = {
@@ -40,7 +40,7 @@ export default function About() {
           </p>
         </div>
         <figure className="about-portrait">
-          <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} alt={`${P.photographer}, portrait`} />
+          <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} alt={`${P.photographer}, portrait`} style={{ objectPosition: focus(ABOUT.portrait) }} />
         </figure>
       </div>
 

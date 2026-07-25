@@ -24,6 +24,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { google } from "googleapis";
 import sharp from "sharp";
+import { computeFocus } from "./focus.mjs";
 import "dotenv/config";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -122,7 +123,8 @@ async function renderVariants(buffer, role, seed) {
       h = info.height;
     }
   }
-  return { ...out, w, h };
+  const focus = await computeFocus(buffer);
+  return { ...out, w, h, focus };
 }
 
 /* -------------------------------------------------------------- main */
@@ -244,6 +246,16 @@ async function syncProjects(drive, cache, nextCache, usedSeeds, manifest) {
       }
     }
 
+    // backfill focal point for photos cached before subject-framing existed
+    if (!variants.focus) {
+      try {
+        const lgAbs = path.join(ROOT, "public", variants.lg.replace(/^\//, ""));
+        variants = { ...variants, focus: await computeFocus(await readFile(lgAbs)) };
+      } catch {
+        variants = { ...variants, focus: "50% 40%" };
+      }
+    }
+
     nextCache[cacheKey] = { seed, stamp, variants };
     resolved.set(id, { seed, ...variants });
   }
@@ -251,7 +263,7 @@ async function syncProjects(drive, cache, nextCache, usedSeeds, manifest) {
   const keep = (arr) => (arr || []).filter((id) => resolved.has(id)).map((id) => `p-${id}`);
 
   manifest.projectPhotos = [...resolved.values()].map((v) => ({
-    seed: v.seed, sm: v.sm, lg: v.lg, w: v.w, h: v.h,
+    seed: v.seed, sm: v.sm, lg: v.lg, w: v.w, h: v.h, focus: v.focus,
   }));
 
   // A project with no usable photos would render as an empty page, so

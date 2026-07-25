@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
-import { PHOTO_PROJECTS, img, ratio, prefersReduced } from "../data.js";
+import { PHOTO_PROJECTS, img, focus, ratio, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
@@ -66,7 +66,7 @@ export default function PhotoProject() {
         </header>
 
         <figure className="pj-hero">
-          <img ref={heroImg} src={img(p.photos[0], 2000, 1125)} alt={p.t} />
+          <img ref={heroImg} src={img(p.photos[0], 2000, 1125)} alt={p.t} style={{ objectPosition: focus(p.photos[0]) }} />
         </figure>
 
         <Reveal as="div" className="pj-meta">
@@ -94,7 +94,7 @@ export default function PhotoProject() {
                 style={{ aspectRatio: ratio(s, 900, n % 3 === 1 ? 1200 : 700) }}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLb(n); } }}>
                 <span className="idx mono">{String(n + 1).padStart(2, "0")}</span>
-                <img src={img(s, 900, n % 3 === 1 ? 1200 : 700)} alt={`${p.t}, frame ${n + 1}`} loading="lazy" />
+                <img src={img(s, 900, n % 3 === 1 ? 1200 : 700)} alt={`${p.t}, frame ${n + 1}`} loading="lazy" style={{ objectPosition: focus(s) }} />
               </figure>
             ))}
           </div>
@@ -160,7 +160,7 @@ function Roll({ photos, title, onOpen }) {
         {photos.map((s, n) => (
           <figure className="roll-fr" key={s + n}
             onClick={() => { if (drag.current.moved < 6) onOpen(n); }}>
-            <img src={img(s, 1400, 933)} alt={`${title}, frame ${n + 1}`} loading="lazy" />
+            <img src={img(s, 1400, 933)} alt={`${title}, frame ${n + 1}`} loading="lazy" style={{ objectPosition: focus(s) }} />
           </figure>
         ))}
       </div>

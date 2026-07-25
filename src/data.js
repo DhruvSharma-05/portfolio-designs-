@@ -16,7 +16,7 @@ export const prefersReduced = () =>
 export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
   photographer: "Viraj",        // the person the home page is about
-  photoBrand: "Lenzofviraj",    // the photography practice — /photography
+  photoBrand: "Lensofviraj",    // the photography practice — /photography
   designBrand: "Design & Build",// the web practice — /design
   role: "Photographer & Web Designer",
   email: "hello@yourstudio.com",
@@ -26,7 +26,7 @@ export const P = {
   region: "Your Region",
   /* footer "Elsewhere" list — swap for real handles */
   socials: [
-    { k: "Instagram", v: "@lenzofviraj", href: "https://instagram.com" },
+    { k: "Instagram", v: "@lensofviraj", href: "https://instagram.com" },
     { k: "Behance", v: "viraj", href: "https://behance.net" },
     { k: "LinkedIn", v: "viraj", href: "https://linkedin.com" },
   ],
@@ -35,7 +35,7 @@ export const P = {
 /* ==================================================================
    INTRO — the home page introduces the person, not one of the crafts.
 
-   Viraj runs two practices in parallel: photography as Lenzofviraj,
+   Viraj runs two practices in parallel: photography as Lensofviraj,
    and web design & build. A visitor landing cold should learn who he
    is, what he does, and what they walk away with — then choose a
    door. Each craft keeps its own page.
@@ -45,14 +45,14 @@ export const P = {
 export const INTRO = {
   lead: "Viraj makes the pictures, then builds the place they live.",
   body: [
-    "Two practices, one pair of hands. Under Lenzofviraj he shoots editorial, portraits and events; under design & build he draws and ships the sites those pictures end up on.",
+    "Two practices, one pair of hands. Under Lensofviraj he shoots editorial, portraits and events; under design & build he draws and ships the sites those pictures end up on.",
     "Most people hire one or the other. Hiring both means the shoot is planned around the layout and the layout is drawn around the shoot — so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
   ],
   /* the two doors, mirrored in the hero strip */
   does: [
     {
       k: "Photography",
-      brand: "Lenzofviraj",
+      brand: "Lensofviraj",
       to: "/photography",
       v: "Editorial, portrait, event and landscape sets. Shot, selected and graded as one body of work.",
     },
@@ -110,6 +110,13 @@ export const img = (s, w = 1200, h = 800) => {
   if (p) return w <= 640 ? p.sm : p.lg;
   return `https://picsum.photos/seed/${s}/${w}/${h}`;
 };
+
+/* focus(seed): subject-aware CSS object-position ("50% 30%") detected at
+   build time (see scripts/focus.mjs) and stored in the manifest, so an
+   object-fit:cover crop keeps the main subject — a face, usually — in
+   frame. Falls back to a gentle upper-centre bias for placeholders and
+   any photo synced before framing existed. */
+export const focus = (s) => PHOTOS.get(s)?.focus || "50% 40%";
 
 /* ratio(seed, fw, fh): CSS aspect-ratio for a seed — the synced photo's
    real dimensions when the manifest has them, the placeholder's requested
@@ -676,13 +683,26 @@ export const CSS = `
 
 /* Inline brand mark (shown when no logo file is present): the C&
    monogram + a compact Anton wordmark. Explicitly sized so the SVG
-   never inflates the bar. */
+   never inflates the bar. On load (and every 15s, via a remount in the
+   Logo component) the outline draws itself, the fill develops in, and the
+   wordmark letters cascade after it; hovering gives a small lens twist. */
 .logo { display: inline-flex; align-items: center; gap: 9px; line-height: 1; }
-.logo-mark { height: 22px; width: auto; display: block; }
-.logo-mark path { fill: var(--ink); }
+.logo-mark { height: 22px; width: auto; display: block;
+  transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+.logo:hover .logo-mark { transform: rotate(-7deg) scale(1.08); }
+/* pathLength="1" on the <path> normalises the outline to 1, so the dash
+   draw is resolution-independent; the fill then fades in over it. */
+.logo-mark path { fill: var(--ink); fill-opacity: 0;
+  stroke: var(--ink); stroke-width: 230; stroke-dasharray: 1; stroke-dashoffset: 1;
+  animation: logoDraw 1s cubic-bezier(.65,0,.35,1) forwards, logoFill .6s ease .82s forwards; }
+@keyframes logoDraw { to { stroke-dashoffset: 0; } }
+@keyframes logoFill { to { fill-opacity: 1; } }
 .logo-word { font-family: 'Anton', sans-serif; text-transform: uppercase; white-space: pre;
   font-size: 14px; letter-spacing: .02em; color: var(--ink); }
-.logo-word b { font-weight: 400; }
+.logo-word b { font-weight: 400; display: inline-block; opacity: 0;
+  transform: translateY(0.25em);
+  animation: logoLetter .5s cubic-bezier(.16,1,.3,1) both; }
+@keyframes logoLetter { to { opacity: 1; transform: none; } }
 @media (max-width: 620px) { .logo-word { display: none; } }
 
 /* --- categorised gallery (Work page) ---
@@ -1521,6 +1541,9 @@ export const CSS = `
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1 !important; transform: none !important; }
   .display .ch { opacity: 1 !important; transform: none !important; filter: none !important; }
+  /* with animation off, show the brand mark fully drawn/filled, not blank */
+  .logo-mark path { fill-opacity: 1 !important; stroke-dashoffset: 0 !important; }
+  .logo-word b { opacity: 1 !important; transform: none !important; }
   .mast .drawline, .metrics::after { transform: scaleX(1) !important; }
   .shot img, .detail-fig img, .about-portrait img { transform: none !important; }
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }

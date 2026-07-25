@@ -6,7 +6,8 @@
       "sm": "/photos/work/fountain-portrait-sm.webp",
       "lg": "/photos/work/fountain-portrait-lg.webp",
       "w": 2000,
-      "h": 3553
+      "h": 3553,
+      "focus": "50.0% 35.2%"
     },
     "exif": ""
   },
@@ -17,7 +18,8 @@
       "sm": "/photos/work/evening-elegance-sm.webp",
       "lg": "/photos/work/evening-elegance-lg.webp",
       "w": 2000,
-      "h": 3554
+      "h": 3554,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -28,7 +30,8 @@
       "sm": "/photos/work/between-takes-sm.webp",
       "lg": "/photos/work/between-takes-lg.webp",
       "w": 2000,
-      "h": 1126
+      "h": 1126,
+      "focus": "45.7% 50.0%"
     },
     "exif": ""
   },
@@ -39,7 +42,8 @@
       "sm": "/photos/work/the-gathering-sm.webp",
       "lg": "/photos/work/the-gathering-lg.webp",
       "w": 2000,
-      "h": 1190
+      "h": 1190,
+      "focus": "68.8% 50.0%"
     },
     "exif": ""
   },
@@ -50,7 +54,8 @@
       "sm": "/photos/work/bighorn-sm.webp",
       "lg": "/photos/work/bighorn-lg.webp",
       "w": 2000,
-      "h": 1126
+      "h": 1126,
+      "focus": "38.7% 50.0%"
     },
     "exif": "191mm · f/4 · 1/200 · ISO 100"
   },
@@ -61,7 +66,8 @@
       "sm": "/photos/work/venus-sm.webp",
       "lg": "/photos/work/venus-lg.webp",
       "w": 2000,
-      "h": 2858
+      "h": 2858,
+      "focus": "50.0% 42.0%"
     },
     "exif": "50mm · f/2 · 1/60 · ISO 1000"
   },
@@ -72,7 +78,8 @@
       "sm": "/photos/work/green-machine-sm.webp",
       "lg": "/photos/work/green-machine-lg.webp",
       "w": 2000,
-      "h": 3081
+      "h": 3081,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -83,7 +90,8 @@
       "sm": "/photos/work/after-hours-sm.webp",
       "lg": "/photos/work/after-hours-lg.webp",
       "w": 2000,
-      "h": 3555
+      "h": 3555,
+      "focus": "50.0% 29.9%"
     },
     "exif": ""
   },
@@ -94,7 +102,8 @@
       "sm": "/photos/gallery/cream-gold-sm.webp",
       "lg": "/photos/gallery/cream-gold-lg.webp",
       "w": 1365,
-      "h": 2048
+      "h": 2048,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -105,7 +114,8 @@
       "sm": "/photos/gallery/blue-traditional-sm.webp",
       "lg": "/photos/gallery/blue-traditional-lg.webp",
       "w": 2000,
-      "h": 3563
+      "h": 3563,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -116,7 +126,8 @@
       "sm": "/photos/gallery/maroon-sm.webp",
       "lg": "/photos/gallery/maroon-lg.webp",
       "w": 1150,
-      "h": 2048
+      "h": 2048,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -127,7 +138,8 @@
       "sm": "/photos/gallery/green-traditional-sm.webp",
       "lg": "/photos/gallery/green-traditional-lg.webp",
       "w": 1150,
-      "h": 2048
+      "h": 2048,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -138,7 +150,8 @@
       "sm": "/photos/gallery/white-a-sm.webp",
       "lg": "/photos/gallery/white-a-lg.webp",
       "w": 1150,
-      "h": 2048
+      "h": 2048,
+      "focus": "50.0% 28.1%"
     },
     "exif": ""
   },
@@ -149,7 +162,8 @@
       "sm": "/photos/gallery/white-b-sm.webp",
       "lg": "/photos/gallery/white-b-lg.webp",
       "w": 1365,
-      "h": 2048
+      "h": 2048,
+      "focus": "50.0% 33.3%"
     },
     "exif": ""
   },
@@ -160,7 +174,8 @@
       "sm": "/photos/gallery/white-fence-sm.webp",
       "lg": "/photos/gallery/white-fence-lg.webp",
       "w": 2000,
-      "h": 3563
+      "h": 3563,
+      "focus": "50.0% 31.6%"
     },
     "exif": ""
   },
@@ -171,7 +186,8 @@
       "sm": "/photos/gallery/pink-field-sm.webp",
       "lg": "/photos/gallery/pink-field-lg.webp",
       "w": 2000,
-      "h": 3555
+      "h": 3555,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -182,7 +198,8 @@
       "sm": "/photos/gallery/motion-sm.webp",
       "lg": "/photos/gallery/motion-lg.webp",
       "w": 2000,
-      "h": 3563
+      "h": 3563,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -193,7 +210,8 @@
       "sm": "/photos/gallery/two-men-car-sm.webp",
       "lg": "/photos/gallery/two-men-car-lg.webp",
       "w": 2000,
-      "h": 3563
+      "h": 3563,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -204,7 +222,8 @@
       "sm": "/photos/gallery/green-car-sm.webp",
       "lg": "/photos/gallery/green-car-lg.webp",
       "w": 2000,
-      "h": 3062
+      "h": 3062,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -215,7 +234,8 @@
       "sm": "/photos/gallery/sherwani-sm.webp",
       "lg": "/photos/gallery/sherwani-lg.webp",
       "w": 2000,
-      "h": 3877
+      "h": 3877,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -226,7 +246,8 @@
       "sm": "/photos/gallery/black-fountain-sm.webp",
       "lg": "/photos/gallery/black-fountain-lg.webp",
       "w": 2000,
-      "h": 3554
+      "h": 3554,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -237,7 +258,8 @@
       "sm": "/photos/gallery/floral-seated-sm.webp",
       "lg": "/photos/gallery/floral-seated-lg.webp",
       "w": 2000,
-      "h": 3178
+      "h": 3178,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -248,7 +270,8 @@
       "sm": "/photos/gallery/dusk-sm.webp",
       "lg": "/photos/gallery/dusk-lg.webp",
       "w": 2000,
-      "h": 3553
+      "h": 3553,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -259,7 +282,8 @@
       "sm": "/photos/gallery/group-women-sm.webp",
       "lg": "/photos/gallery/group-women-lg.webp",
       "w": 2000,
-      "h": 3554
+      "h": 3554,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   },
@@ -270,7 +294,8 @@
       "sm": "/photos/gallery/large-group-sm.webp",
       "lg": "/photos/gallery/large-group-lg.webp",
       "w": 2000,
-      "h": 1444
+      "h": 1444,
+      "focus": "54.1% 50.0%"
     },
     "exif": ""
   },
@@ -281,7 +306,8 @@
       "sm": "/photos/gallery/event-seated-sm.webp",
       "lg": "/photos/gallery/event-seated-lg.webp",
       "w": 2000,
-      "h": 1137
+      "h": 1137,
+      "focus": "30.2% 50.0%"
     },
     "exif": ""
   },
@@ -292,7 +318,8 @@
       "sm": "/photos/gallery/friends-sm.webp",
       "lg": "/photos/gallery/friends-lg.webp",
       "w": 2000,
-      "h": 1123
+      "h": 1123,
+      "focus": "57.9% 50.0%"
     },
     "exif": ""
   },
@@ -303,7 +330,8 @@
       "sm": "/photos/gallery/lionesses-sm.webp",
       "lg": "/photos/gallery/lionesses-lg.webp",
       "w": 2000,
-      "h": 1126
+      "h": 1126,
+      "focus": "59.8% 50.0%"
     },
     "exif": ""
   },
@@ -314,7 +342,8 @@
       "sm": "/photos/gallery/cheetah-rest-sm.webp",
       "lg": "/photos/gallery/cheetah-rest-lg.webp",
       "w": 2000,
-      "h": 1126
+      "h": 1126,
+      "focus": "56.3% 50.0%"
     },
     "exif": ""
   },
@@ -325,7 +354,8 @@
       "sm": "/photos/gallery/cheetah-sm.webp",
       "lg": "/photos/gallery/cheetah-lg.webp",
       "w": 2000,
-      "h": 1153
+      "h": 1153,
+      "focus": "61.2% 50.0%"
     },
     "exif": ""
   },
@@ -336,7 +366,8 @@
       "sm": "/photos/gallery/cheetahs-sm.webp",
       "lg": "/photos/gallery/cheetahs-lg.webp",
       "w": 2000,
-      "h": 1126
+      "h": 1126,
+      "focus": "44.0% 50.0%"
     },
     "exif": ""
   },
@@ -347,7 +378,8 @@
       "sm": "/photos/gallery/deer-pair-sm.webp",
       "lg": "/photos/gallery/deer-pair-lg.webp",
       "w": 2000,
-      "h": 1126
+      "h": 1126,
+      "focus": "44.0% 50.0%"
     },
     "exif": ""
   },
@@ -358,7 +390,8 @@
       "sm": "/photos/gallery/buck-sm.webp",
       "lg": "/photos/gallery/buck-lg.webp",
       "w": 2000,
-      "h": 1126
+      "h": 1126,
+      "focus": "42.2% 50.0%"
     },
     "exif": ""
   },
@@ -369,7 +402,8 @@
       "sm": "/photos/gallery/stags-sm.webp",
       "lg": "/photos/gallery/stags-lg.webp",
       "w": 2000,
-      "h": 1126
+      "h": 1126,
+      "focus": "63.3% 50.0%"
     },
     "exif": ""
   },
@@ -380,7 +414,8 @@
       "sm": "/photos/portrait/viraj-portrait-sm.webp",
       "lg": "/photos/portrait/viraj-portrait-lg.webp",
       "w": 2000,
-      "h": 2667
+      "h": 2667,
+      "focus": "50.0% 42.0%"
     },
     "exif": ""
   }
