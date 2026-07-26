@@ -41,6 +41,8 @@ export default function Coverflow({
   transition = { duration: 0.7, delay: 2.6, ease: [0.22, 1, 0.36, 1] },
   autoplay = true,
   autoplayDirection = "rightToLeft",
+  arrows = false,
+  dots = false,
   style,
 }) {
   const list = slides.length ? slides : [];
@@ -68,6 +70,13 @@ export default function Coverflow({
     lock();
     setActive((a) => (i === a ? (a + 1) % n : i));
   }, [autoplay, n, lock]);
+
+  // Jump straight to a slide (dots) — works even while autoplaying.
+  const go = useCallback((i) => {
+    if (lockRef.current) return;
+    lock();
+    setActive(i);
+  }, [lock]);
 
   // Autoplay — the transition's delay drives how long each card holds.
   const delay = typeof transition?.delay === "number" ? transition.delay : 2.5;
@@ -149,6 +158,25 @@ export default function Coverflow({
           );
         })}
       </div>
+
+      {arrows && n > 1 && (
+        <>
+          <button type="button" className="cflow-arrow prev" aria-label="Previous frame"
+            onClick={() => step(-1)}>‹</button>
+          <button type="button" className="cflow-arrow next" aria-label="Next frame"
+            onClick={() => step(1)}>›</button>
+        </>
+      )}
+
+      {dots && n > 1 && (
+        <div className="cflow-dots" role="tablist" aria-label="Frames">
+          {list.map((_, i) => (
+            <button key={i} type="button" className={`cflow-dot ${i === active ? "on" : ""}`}
+              aria-current={i === active || undefined} aria-label={`Frame ${i + 1}`}
+              onClick={() => go(i)} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

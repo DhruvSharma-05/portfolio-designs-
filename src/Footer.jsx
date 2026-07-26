@@ -58,9 +58,7 @@ export default function SiteFooter() {
         <hr className="rule" style={{ marginTop: 44 }} />
         <div className="foot-base">
           <span className="mono">© 2026 {P.name}</span>
-          <span className="mono">
-            <TLink to="/client">Client area</TLink> — collect a finished shoot
-          </span>
+          <span className="mono">Booking 2026 — {P.city}, {P.region}</span>
         </div>
       </div>
     </footer>

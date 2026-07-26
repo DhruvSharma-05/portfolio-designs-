@@ -6,6 +6,7 @@ import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import { PHOTO_PROJECTS, img, focus, ratio, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
+import CoverflowCarousel from "../CoverflowCarousel.jsx";
 import { useApp } from "../context.js";
 
 const page = {
@@ -51,6 +52,9 @@ export default function PhotoProject() {
   const prev = PHOTO_PROJECTS[(i - 1 + PHOTO_PROJECTS.length) % PHOTO_PROJECTS.length];
   const next = PHOTO_PROJECTS[(i + 1) % PHOTO_PROJECTS.length];
 
+  // the auto-playing coverflow for this set
+  const reel = p.photos.map((s, n) => ({ srcUrl: img(s, 1600), position: focus(s), alt: `${p.t}, frame ${n + 1}` }));
+
   return (
     <>
       <motion.main ref={root} id="main" className="detail wrap pj"
@@ -78,10 +82,10 @@ export default function PhotoProject() {
 
         <Reveal as="p" className="pj-note">{p.note}</Reveal>
 
-        {/* ---------- carousel roll ---------- */}
+        {/* ---------- coverflow reel (auto-playing) ---------- */}
         <section className="sec" style={{ marginTop: "6vh" }}>
-          <div className="mono" style={{ marginBottom: 24 }}>The roll — drag or scroll</div>
-          <Roll photos={p.photos} title={p.t} onOpen={setLb} />
+          <div className="mono" style={{ marginBottom: 24 }}>The set</div>
+          <CoverflowCarousel images={reel} autoplay showArrows dots />
         </section>
 
         {/* ---------- grid ---------- */}
@@ -118,57 +122,6 @@ export default function PhotoProject() {
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-/* ---------------- carousel roll ----------------
-   A snap-scrolling filmstrip with pointer drag and arrow buttons.
-   Drag translates pointer movement into scrollLeft; snapping is turned
-   off mid-drag so the strip doesn't fight the finger. */
-function Roll({ photos, title, onOpen }) {
-  const track = useRef(null);
-  const drag = useRef({ on: false, x: 0, left: 0, moved: 0 });
-
-  const down = (e) => {
-    const t = track.current;
-    drag.current = { on: true, x: e.clientX, left: t.scrollLeft, moved: 0 };
-    t.classList.add("dragging");
-    t.setPointerCapture?.(e.pointerId);
-  };
-  const move = (e) => {
-    const d = drag.current;
-    if (!d.on) return;
-    const dx = e.clientX - d.x;
-    d.moved = Math.abs(dx);
-    track.current.scrollLeft = d.left - dx;
-  };
-  const up = () => {
-    drag.current.on = false;
-    track.current?.classList.remove("dragging");
-  };
-
-  const step = (dir) => {
-    const t = track.current;
-    const w = t.firstElementChild?.getBoundingClientRect().width || t.clientWidth;
-    t.scrollBy({ left: dir * (w + 16), behavior: "smooth" });
-  };
-
-  return (
-    <div className="roll">
-      <div className="roll-track" ref={track}
-        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-        {photos.map((s, n) => (
-          <figure className="roll-fr" key={s + n}
-            onClick={() => { if (drag.current.moved < 6) onOpen(n); }}>
-            <img src={img(s, 1400, 933)} alt={`${title}, frame ${n + 1}`} loading="lazy" style={{ objectPosition: focus(s) }} />
-          </figure>
-        ))}
-      </div>
-      <div className="roll-nav">
-        <button className="roll-btn" onClick={() => step(-1)} aria-label="Previous frame">←</button>
-        <button className="roll-btn" onClick={() => step(1)} aria-label="Next frame">→</button>
-      </div>
-    </div>
   );
 }
 

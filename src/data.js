@@ -1021,6 +1021,42 @@ export const CSS = `
 .cflow-sec { height: clamp(360px, 54vh, 560px); margin: clamp(48px, 8vh, 110px) 0 0;
   padding: 0 12px; }
 
+/* --- flat-slat coverflow carousel (CoverflowCarousel.jsx) --- */
+.cfc { position: relative; width: 100vw; margin-left: calc(50% - 50vw); }
+.cfc-stage { position: relative; width: 100%; height: clamp(440px, 76vh, 780px);
+  overflow: hidden; touch-action: pan-y; isolation: isolate; outline: none; }
+/* arrows sit just inside each side slat (over the neighbouring frames),
+   positioned off the measured active-card half-width (--cfc-inner). */
+.cfc-arrow { position: absolute; top: 50%; z-index: 2000;
+  width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 24px; line-height: 1; color: var(--ink);
+  border: 1px solid var(--rule2, var(--rule)); background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: blur(8px); transition: border-color .3s ease, color .3s ease, background-color .3s ease; }
+.cfc-arrow:hover { border-color: var(--accent); color: var(--accent); }
+.cfc-arrow.prev { left: calc(50% - var(--cfc-inner, 34%) - 16px); transform: translate(-50%, -50%); }
+.cfc-arrow.next { left: calc(50% + var(--cfc-inner, 34%) + 16px); transform: translate(-50%, -50%); }
+.cfc-dots { display: flex; justify-content: center; gap: 9px; margin-top: 24px; }
+.cfc-dot { width: 22px; height: 20px; position: relative; }
+.cfc-dot::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; margin-top: -1px;
+  height: 2px; border-radius: 2px; background: var(--rule); transition: background-color .3s ease; }
+.cfc-dot.on::before { background: var(--accent); }
+
+/* optional coverflow controls (arrows + dots) — used on the project page */
+.cflow-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 6;
+  width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 22px; line-height: 1; color: var(--ink);
+  border: 1px solid var(--rule2, var(--rule)); background: color-mix(in srgb, var(--bg) 66%, transparent);
+  backdrop-filter: blur(8px); transition: border-color .3s ease, color .3s ease, background-color .3s ease; }
+.cflow-arrow:hover { border-color: var(--accent); color: var(--accent); }
+.cflow-arrow.prev { left: clamp(10px, 4vw, 46px); }
+.cflow-arrow.next { right: clamp(10px, 4vw, 46px); }
+.cflow-dots { position: absolute; left: 0; right: 0; bottom: 10px; z-index: 6;
+  display: flex; justify-content: center; gap: 9px; }
+.cflow-dot { width: 22px; height: 20px; position: relative; }
+.cflow-dot::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; margin-top: -1px;
+  height: 2px; border-radius: 2px; background: var(--rule2, var(--rule)); transition: background-color .3s ease; }
+.cflow-dot.on::before { background: var(--accent); }
+
 /* --- sticky stacking project cards ---
    Each card sticks near the top with a small extra offset per card, so
    the next one rides up and overlaps it; a scroll-linked scale (set in

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, lazy, Suspense } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -15,10 +15,6 @@ import Photography from "./pages/Photography.jsx";
 import PhotoProject from "./pages/PhotoProject.jsx";
 import Design from "./pages/Design.jsx";
 import DesignProject from "./pages/DesignProject.jsx";
-
-/* The admin is code-split: none of it ships to normal visitors. */
-const Admin = lazy(() => import("./pages/Admin.jsx"));
-const Client = lazy(() => import("./pages/Client.jsx"));
 
 /* Primary navigation. `/` matches exactly; the others also light up on
    their detail pages (/photography/:slug, /design/:slug). */
@@ -37,8 +33,6 @@ export default function App() {
   const [reduced] = useState(prefersReduced);
   const navigate = useNavigate();
   const location = useLocation();
-  /* The admin is a tool, not part of the portfolio: no public nav. */
-  const isAdmin = location.pathname.startsWith("/admin");
   const progRef = useRef(null);
   const barRef = useRef(null);
   const irisRef = useRef(null);
@@ -117,7 +111,7 @@ export default function App() {
         </div>
 
         {/* masthead bar */}
-        <div className="bar" ref={barRef} hidden={isAdmin}>
+        <div className="bar" ref={barRef}>
           <div className="bar-in">
             <TLink to="/" className="mono brand" aria-label={`${P.name} — home`}><Logo /></TLink>
             <nav className="nav mono" aria-label="Primary">
@@ -137,18 +131,16 @@ export default function App() {
         </div>
 
         {/* back to top — fades in once you're a scroll past the fold */}
-        {!isAdmin && (
-          <button type="button" className="totop" ref={topRef} aria-label="Back to top"
-            onClick={() => {
-              if (reduced || !lenisRef.current) {
-                window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
-                return;
-              }
-              lenisRef.current.scrollTo(0, { duration: 1 });
-            }}>
-            <span className="arrow" aria-hidden="true">↑</span>
-          </button>
-        )}
+        <button type="button" className="totop" ref={topRef} aria-label="Back to top"
+          onClick={() => {
+            if (reduced || !lenisRef.current) {
+              window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+              return;
+            }
+            lenisRef.current.scrollTo(0, { duration: 1 });
+          }}>
+          <span className="arrow" aria-hidden="true">↑</span>
+        </button>
 
         <Routes>
           <Route path="/" element={<Home />} />
@@ -158,25 +150,10 @@ export default function App() {
           <Route path="/design" element={<Design />} />
           <Route path="/design/:slug" element={<DesignProject />} />
           <Route path="/about" element={<About />} />
-          <Route path="/client" element={
-            <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
-              <Client />
-            </Suspense>
-          } />
-          <Route path="/client/:code" element={
-            <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
-              <Client />
-            </Suspense>
-          } />
-          <Route path="/admin" element={
-            <Suspense fallback={<main className="admin wrap"><p className="mono">Loading…</p></main>}>
-              <Admin />
-            </Suspense>
-          } />
         </Routes>
 
-        {/* one shared footer on every public page (not the admin) */}
-        {!isAdmin && <SiteFooter />}
+        {/* one shared footer on every page */}
+        <SiteFooter />
       </div>
     </AppProvider>
   );
