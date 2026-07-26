@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
-import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
+import { P, img, srcSet, WEB_PROJECTS, hasPhoto, figmaEmbed, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 
 const page = {
@@ -80,6 +80,15 @@ export default function Design() {
                     <div className="browser-view">
                       <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
                         sizes="(max-width: 760px) 100vw, 50vw" alt={`${w.t} — full page`} loading="lazy" />
+                    </div>
+                  ) : w.embed && w.href ? (
+                    <div className="figbox">
+                      <div className="browser-ph figbox-fallback">
+                        <span className="browser-ph-name">{w.t}</span>
+                        <span className="mono">{w.tag}</span>
+                      </div>
+                      <iframe className="figbox-frame" title={`${w.t} — Figma preview`}
+                        src={figmaEmbed(w.href)} loading="lazy" tabIndex={-1} />
                     </div>
                   ) : (
                     <div className="browser-ph">

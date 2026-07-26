@@ -945,6 +945,15 @@ export const CSS = `
   font-size: clamp(28px, 4vw, 46px); }
 .browser-ph .mono { opacity: 0.7; }
 
+/* in-card live Figma preview: the prototype's starting frame renders in
+   an iframe over the name/tag fallback (which shows while it loads).
+   pointer-events:none so the whole card stays a link to the detail page,
+   where the same prototype is fully interactive. */
+.figbox { position: relative; aspect-ratio: 16/11; overflow: hidden; background: var(--panel); }
+.figbox-fallback { position: absolute; inset: 0; aspect-ratio: auto; }
+.figbox-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+  pointer-events: none; }
+
 /* live Figma prototype embed on a design detail page */
 .figma-embed { position: relative; aspect-ratio: 16/10; background: var(--panel); }
 .figma-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }

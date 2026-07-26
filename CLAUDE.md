@@ -7,12 +7,15 @@ deployed on Vercel). Studio brand **Crafted & Captured**, photographer **Viraj**
 
 Real Work/Gallery/Portrait photos are pulled from **Contentful** at **build
 time** by [scripts/sync-contentful.mjs](scripts/sync-contentful.mjs) — runs
-automatically before `npm run build` (the `prebuild` script, alongside
-`sync-drive.mjs`) and on demand via `npm run sync`. The script optimizes
-images to WebP under `public/photos/` and writes `src/photos.manifest.json`,
-which `src/data.js` reads (falling back to `picsum.photos` placeholders when
-the manifest is empty). The live site is 100% static; nothing hits Contentful
-at runtime.
+automatically before `npm run build` (the `prebuild` script) and on demand
+via `npm run sync`. The script optimizes images to WebP under
+`public/photos/` and writes `src/photos.manifest.json`, which `src/data.js`
+reads (falling back to `picsum.photos` placeholders when the manifest is
+empty). The live site is 100% static; nothing hits Contentful at runtime.
+
+Gallery photos may carry an optional `category` field
+(`Professional Photoshoot` | `Open` | …, see `GALLERY_CATS` in `data.js`);
+anything unset lands in "Open".
 
 - **Content type:** `Photo` — fields `title`, `collection` (`work` | `gallery`
   | `portrait`), `order` (int, controls sort), `image` (media, one file).
@@ -27,14 +30,10 @@ at runtime.
   template. On Vercel, the same vars go in Project Settings → Environment
   Variables; the existing **Deploy Hook** URL still triggers a rebuild after
   changing photos.
-- **Drive is not gone** — it backs the private client-delivery system only:
-  `content.json`'s `clients` list + per-folder link sharing, via `api/` and
-  `/admin` ([src/pages/Admin.jsx](src/pages/Admin.jsx)). `/admin` is
-  **client-delivery only** now — it does not manage portfolio projects; the
-  public Work/Gallery/Portrait photo source moved fully off Drive onto
-  Contentful. `scripts/sync-drive.mjs` still reads `content.json`'s
-  `photoProjects`/`webProjects` keys for backward compatibility, but nothing
-  writes to them anymore — they're frozen at whatever they already were.
+- **Google Drive is fully removed.** The admin panel, the `/client`
+  delivery area, the entire `api/` serverless backend, and
+  `scripts/sync-drive.mjs` were all deleted — the site is now a pure static
+  portfolio. `googleapis` / `archiver` / `nodemailer` are gone from deps.
 
 ## Production readiness & scaling
 
@@ -43,21 +42,23 @@ See [PRODUCTION.md](PRODUCTION.md) for the high-traffic/scalability notes
 cache headers, Vercel plan) and the pre-launch gap list (content, SEO, contact
 form, 404, analytics, deploy hook).
 
-## Client delivery is built, not deferred
+## Design projects (Figma prototypes)
 
-Viraj uploads a finished shoot to Drive, then in `/admin` creates/picks the
-delivery folder, shares it, and sends the client a code (WhatsApp copy-paste
-or SMTP email). The client opens `/client/<code>` to download a ZIP or open
-the folder in Drive directly. Lookups (`api/client.js`, `api/download.js`)
-read Drive live at request time — no rebuild needed for any of this. See
-`README.md`'s "The admin panel" and "Client downloads" sections for the full
-flow and security model.
+`WEB_PROJECTS` in [src/data.js](src/data.js) holds the four design projects
+(TrackHer, WingWise, MOMents, ArtAsta). Each has `embed: true` + a Figma
+prototype `href`. The grid/home cards render a **live Figma preview** inside
+the card (an iframe, `pointer-events: none`, so the card stays a link), and
+the detail page (`/design/:slug`) embeds the **interactive** prototype via
+`figmaEmbed(href)` — see `.figbox` / `.figma-embed` CSS. No screenshots are
+stored; `intro`/`note`/`role`/`year` are placeholder copy awaiting the real
+brief. The prototypes must be link-shared "Anyone with the link → view" for
+the embeds to render.
 
 ## Commands
 
 ```bash
 npm run dev      # local dev server (HMR)
-npm run sync     # pull + optimize photos (Contentful) and admin projects (Drive) → manifest
+npm run sync     # pull + optimize Contentful photos → manifest
 npm run build    # prebuild sync, then vite build → dist/
 npm run preview  # preview the production build
 npm run lint     # oxlint

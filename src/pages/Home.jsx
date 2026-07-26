@@ -5,7 +5,7 @@ import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
   P, img, srcSet, ratio, INTRO, SHEET,
-  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
+  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, figmaEmbed, prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
@@ -156,6 +156,15 @@ export default function Home() {
                               <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
                                 sizes="(max-width: 760px) 100vw, 50vw"
                                 alt={`${w.t} — full page`} loading="lazy" />
+                            </div>
+                          ) : w.embed && w.href ? (
+                            <div className="figbox">
+                              <div className="browser-ph figbox-fallback">
+                                <span className="browser-ph-name">{w.t}</span>
+                                <span className="mono">{w.tag}</span>
+                              </div>
+                              <iframe className="figbox-frame" title={`${w.t} — Figma preview`}
+                                src={figmaEmbed(w.href)} loading="lazy" tabIndex={-1} />
                             </div>
                           ) : (
                             <div className="browser-ph">
