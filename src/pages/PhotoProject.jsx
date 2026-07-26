@@ -16,9 +16,9 @@ const page = {
 /* ==================================================================
    PHOTO PROJECT — the full edit for one shoot.
 
-   Three ways through the same set: a masonry grid, a snap-scrolling
-   carousel roll, and a lightbox slideshow (click any frame, then arrow
-   keys). Pager at the bottom walks to the neighbouring project.
+   The set shown as a masonry gallery grid; click any frame for the
+   lightbox slideshow (then arrow keys). Pager at the bottom walks to the
+   neighbouring project.
    ================================================================== */
 export default function PhotoProject() {
   const { slug } = useParams();
@@ -93,12 +93,6 @@ export default function PhotoProject() {
           </p>
         )}
 
-        {/* ---------- carousel roll ---------- */}
-        <section className="sec" style={{ marginTop: "6vh" }}>
-          <div className="mono" style={{ marginBottom: 24 }}>The roll — drag or scroll</div>
-          <Roll photos={p.photos} title={p.t} onOpen={setLb} />
-        </section>
-
         {/* ---------- grid ---------- */}
         <section className="sec">
           <div className="mono" style={{ marginBottom: 24 }}>Full set — click any frame</div>
@@ -138,55 +132,3 @@ export default function PhotoProject() {
   );
 }
 
-/* ---------------- carousel roll ----------------
-   A snap-scrolling filmstrip with pointer drag and arrow buttons.
-   Drag translates pointer movement into scrollLeft; snapping is turned
-   off mid-drag so the strip doesn't fight the finger. */
-function Roll({ photos, title, onOpen }) {
-  const track = useRef(null);
-  const drag = useRef({ on: false, x: 0, left: 0, moved: 0 });
-
-  const down = (e) => {
-    const t = track.current;
-    drag.current = { on: true, x: e.clientX, left: t.scrollLeft, moved: 0 };
-    t.classList.add("dragging");
-    t.setPointerCapture?.(e.pointerId);
-  };
-  const move = (e) => {
-    const d = drag.current;
-    if (!d.on) return;
-    const dx = e.clientX - d.x;
-    d.moved = Math.abs(dx);
-    track.current.scrollLeft = d.left - dx;
-  };
-  const up = () => {
-    drag.current.on = false;
-    track.current?.classList.remove("dragging");
-  };
-
-  const step = (dir) => {
-    const t = track.current;
-    const w = t.firstElementChild?.getBoundingClientRect().width || t.clientWidth;
-    t.scrollBy({ left: dir * (w + 16), behavior: "smooth" });
-  };
-
-  return (
-    <div className="roll">
-      <div className="roll-track" ref={track}
-        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-        {photos.map((s, n) => (
-          <figure className="roll-fr" key={s + n}
-            style={{ aspectRatio: ratio(s, 3, 2) }}
-            onClick={() => { if (drag.current.moved < 6) onOpen(n); }}>
-            <img src={img(s, 1400, 933)} srcSet={srcSet(s)} sizes="(max-width: 700px) 84vw, 62vw"
-              alt={`${title}, frame ${n + 1}`} loading="lazy" />
-          </figure>
-        ))}
-      </div>
-      <div className="roll-nav">
-        <button className="roll-btn" onClick={() => step(-1)} aria-label="Previous frame">←</button>
-        <button className="roll-btn" onClick={() => step(1)} aria-label="Next frame">→</button>
-      </div>
-    </div>
-  );
-}
