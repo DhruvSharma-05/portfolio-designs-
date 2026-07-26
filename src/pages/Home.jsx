@@ -28,24 +28,58 @@ const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
 export default function Home() {
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
+  const hsxRef = useRef(null);
+  const hsxTrack = useRef(null);
 
   /* image parallax + hover zoom, owned by GSAP and scoped to this page
      so the ScrollTriggers are torn down when we navigate away. */
   useGSAP(() => {
-    if (reduced) return;
-    gsap.utils.toArray("[data-par]").forEach((el) => {
-      const shot = el.closest(".shot") || el;
-      gsap.set(el, { scale: 1.14, transformOrigin: "50% 50%" });
-      gsap.fromTo(el, { yPercent: -6 }, {
-        yPercent: 6, ease: "none",
-        scrollTrigger: { trigger: shot, start: "top bottom", end: "bottom top", scrub: true },
+    // image parallax + hover zoom (skipped under reduced motion)
+    if (!reduced) {
+      gsap.utils.toArray("[data-par]").forEach((el) => {
+        const shot = el.closest(".shot") || el;
+        gsap.set(el, { scale: 1.14, transformOrigin: "50% 50%" });
+        gsap.fromTo(el, { yPercent: -6 }, {
+          yPercent: 6, ease: "none",
+          scrollTrigger: { trigger: shot, start: "top bottom", end: "bottom top", scrub: true },
+        });
+        const zoom = gsap.quickTo(el, "scale", { duration: 0.6, ease: "power2.out" });
+        shot.addEventListener("pointerenter", () => zoom(1.19));
+        shot.addEventListener("pointerleave", () => zoom(1.14));
       });
-      const zoom = gsap.quickTo(el, "scale", { duration: 0.6, ease: "power2.out" });
-      shot.addEventListener("pointerenter", () => zoom(1.19));
-      shot.addEventListener("pointerleave", () => zoom(1.14));
-    });
+    }
+
+    // design teaser: a sticky child scrubbed sideways as you scroll through
+    // the section. Uses CSS sticky (stable here) + GSAP scrub — NOT GSAP pin,
+    // which mis-fires inside the framer-motion wrapper. Desktop only (native
+    // swipe on mobile); runs regardless of reduced motion.
+    const track = hsxTrack.current;
+    const sec = hsxRef.current;
+    const mm = gsap.matchMedia();
+    if (track && sec) {
+      mm.add("(min-width: 820px)", () => {
+        const dist = () => Math.max(0, track.scrollWidth - window.innerWidth);
+        // tall enough that scrolling past the section drives the full slide
+        const setH = () => { sec.style.height = `${window.innerHeight + dist()}px`; };
+        setH();
+        ScrollTrigger.addEventListener("refreshInit", setH);
+        const tw = gsap.to(track, {
+          x: () => -dist(), ease: "none",
+          scrollTrigger: {
+            trigger: sec, start: "top top", end: "bottom bottom",
+            scrub: 0.6, invalidateOnRefresh: true,
+          },
+        });
+        return () => {
+          tw.kill();
+          ScrollTrigger.removeEventListener("refreshInit", setH);
+          sec.style.height = "";
+        };
+      });
+    }
 
     ScrollTrigger.refresh();
+    return () => mm.revert();
   }, { scope: root, dependencies: [reduced] });
 
   return (
@@ -108,40 +142,44 @@ export default function Home() {
       {/* gallery — four categories, no captions */}
       <Gallery />
 
-      {/* web design — a short teaser (a distinct, flat 3-up), so the full
-          staggered archive on /design still feels like a reveal, not a repeat */}
-      <section className="wrap hweb" id="design">
-        <div className="hweb-head">
-          <div>
+      {/* web design — a pinned horizontal scroll: an intro panel, then the
+          project cards glide sideways as you scroll down */}
+      <section className="hsx" id="design" ref={hsxRef}>
+        <div className="hsx-sticky">
+        <div className="hsx-track" ref={hsxTrack}>
+          <div className="hsx-intro">
             <span className="mono" style={{ color: "var(--accent)" }}>[ Web design ]</span>
-            <h2 className="display hweb-title">Sites &amp; apps,<br />built to ship.</h2>
+            <h2 className="display hsx-title">Sites &amp; apps,<br />built to ship.</h2>
+            <p className="hsx-sub">
+              Client sites, product UI and Figma concepts — designed and built by
+              the same hands behind the camera.
+            </p>
+            <span className="mono hsx-scroll">Scroll <span className="arrow">→</span></span>
           </div>
-          <p className="hweb-sub">
-            Client sites, product UI and Figma concepts — designed and built by
-            the same hands behind the camera. A taste; the full archive is one click on.
-          </p>
-        </div>
 
-        <div className="hweb-grid">
-          {WEB_PROJECTS.slice(0, 3).map((w, i) => (
-            <Reveal key={w.slug} delay={i * 0.06}>
-              <TLink to={`/design/${w.slug}`} className="hweb-card" aria-label={`Open ${w.t}`}>
-                <div className="hweb-shot">
-                  <img src={img(w.cover, 900, 1100)} alt={w.t} loading="lazy" />
+          {WEB_PROJECTS.map((w) => (
+            <TLink key={w.slug} to={`/design/${w.slug}`} className="hsx-card" aria-label={`Open ${w.t}`}>
+              <div className="hsx-shot">
+                <img src={img(w.cover, 1200, 750)} alt={w.t} loading="lazy" />
+              </div>
+              <div className="hsx-cap">
+                <h3>{w.t}</h3>
+                <p>{w.note}</p>
+                <div className="hsx-tags">
+                  {w.tag && <span className="hsx-tag">{w.tag}</span>}
+                  {w.tool && <span className="hsx-tag">{w.tool}</span>}
+                  {w.status && <span className="hsx-tag">{w.status}</span>}
                 </div>
-                <div className="hweb-cap">
-                  <h3>{w.t}</h3>
-                  <span className="mono">{w.tool}</span>
-                </div>
-              </TLink>
-            </Reveal>
+              </div>
+            </TLink>
           ))}
-        </div>
 
-        <div className="hweb-foot">
-          <TLink to="/design" className="extlink">
-            See all design work <span className="arrow">→</span>
-          </TLink>
+          <div className="hsx-more">
+            <TLink to="/design" className="extlink">
+              See all design work <span className="arrow">→</span>
+            </TLink>
+          </div>
+        </div>
         </div>
       </section>
 

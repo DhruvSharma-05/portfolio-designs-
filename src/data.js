@@ -1353,27 +1353,48 @@ export const CSS = `
 
 /* --- Home: web-design teaser (flat 3-up, deliberately distinct from the
    /design archive so the full page still reads as a reveal) --- */
-.hweb { padding: clamp(90px, 14vw, 180px) 0 clamp(60px, 9vw, 120px); }
-.hweb-head { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: end;
-  border-bottom: 1px solid var(--rule); padding-bottom: 30px; }
-@media (min-width: 860px) { .hweb-head { grid-template-columns: 1.3fr 1fr; gap: 48px; } }
-.hweb-title { font-size: clamp(34px, 6vw, 74px); line-height: .9; margin-top: 14px; }
-.hweb-sub { color: var(--dim); font-size: 15px; line-height: 1.7; max-width: 42ch; }
-.hweb-grid { display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: clamp(40px, 6vw, 72px); }
-@media (min-width: 680px) { .hweb-grid { grid-template-columns: repeat(3, 1fr); gap: 22px; } }
-.hweb-card { display: block; }
-.hweb-shot { overflow: hidden; border-radius: 10px; border: 1px solid var(--rule);
-  background: var(--panel); aspect-ratio: 4 / 5; transition: border-color .35s ease; }
-.hweb-shot img { object-position: top; transition: transform 1.1s cubic-bezier(.2,.8,.2,1); }
-.hweb-card:hover .hweb-shot { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
-.hweb-card:hover .hweb-shot img { transform: scale(1.05); }
-.hweb-cap { display: flex; align-items: baseline; justify-content: space-between;
-  gap: 14px; margin-top: 16px; }
-.hweb-cap h3 { font-weight: 500; letter-spacing: -0.01em; font-size: clamp(18px, 2vw, 22px);
+/* --- home design teaser: pinned horizontal scroll --------------------
+   Desktop: the section pins and the track slides left as you scroll
+   (wired in Home.jsx via GSAP). Mobile: native horizontal swipe. */
+/* .hsx height is set from JS (viewport + track overflow) so the sticky
+   child can scrub sideways; sticky (not GSAP pin) keeps the page stable. */
+.hsx { position: relative; }
+.hsx-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: flex; align-items: center; background: var(--bg); }
+.hsx-track { display: flex; align-items: center; gap: clamp(26px, 3vw, 60px);
+  padding: 0 clamp(24px, 6vw, 90px); will-change: transform; }
+.hsx-intro { flex: 0 0 auto; width: min(84vw, 440px); }
+.hsx-title { font-size: clamp(40px, 6vw, 96px); line-height: .9; margin: 14px 0 24px; }
+.hsx-sub { color: var(--dim); font-size: 16px; line-height: 1.65; max-width: 34ch; }
+.hsx-scroll { display: inline-flex; align-items: center; gap: 9px; margin-top: 34px; color: var(--accent); }
+.hsx-scroll .arrow { animation: hsxNudge 1.8s ease-in-out infinite; }
+@keyframes hsxNudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+.hsx-card { flex: 0 0 auto; width: min(82vw, 580px); display: block; color: inherit; }
+.hsx-shot { position: relative; overflow: hidden; border-radius: 14px; border: 1px solid var(--rule);
+  aspect-ratio: 16 / 10; background: var(--panel); transition: border-color .35s ease; }
+.hsx-shot img { width: 100%; height: 100%; object-fit: cover; object-position: top;
+  transition: transform 1.1s cubic-bezier(.2, .8, .2, 1); }
+.hsx-card:hover .hsx-shot { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
+.hsx-card:hover .hsx-shot img { transform: scale(1.05); }
+.hsx-cap { margin-top: 22px; }
+.hsx-cap h3 { font-weight: 500; letter-spacing: -0.02em; font-size: clamp(24px, 2.6vw, 38px);
   transition: color .3s ease; }
-.hweb-card:hover .hweb-cap h3 { color: var(--accent); }
-.hweb-cap .mono { color: var(--dim); }
-.hweb-foot { margin-top: clamp(40px, 6vw, 64px); display: flex; justify-content: flex-end; }
+.hsx-card:hover .hsx-cap h3 { color: var(--accent); }
+.hsx-cap p { color: var(--dim); margin-top: 10px; max-width: 46ch; line-height: 1.55; font-size: 14.5px; }
+.hsx-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.hsx-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--dim); border: 1px solid var(--rule);
+  border-radius: 100px; padding: 7px 15px; }
+.hsx-more { flex: 0 0 auto; display: grid; place-items: center; padding: 0 clamp(30px, 6vw, 90px); }
+@media (max-width: 819px) {
+  .hsx { height: auto !important; padding: clamp(70px, 12vw, 120px) 0; }
+  .hsx-sticky { position: static; height: auto; display: block; overflow: visible; }
+  .hsx-track { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+    transform: none !important; padding-bottom: 18px; }
+  .hsx-track::-webkit-scrollbar { display: none; }
+  .hsx-intro, .hsx-card, .hsx-more { scroll-snap-align: start; }
+  .hsx-intro, .hsx-card { width: 84vw; }
+}
 
 /* stack pills */
 .stack-pills { display: flex; flex-wrap: wrap; gap: 8px; }
