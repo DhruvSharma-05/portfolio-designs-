@@ -1001,10 +1001,13 @@ export const CSS = `
 .figbox-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
   pointer-events: none; }
 
-/* live Figma prototype embed on a design detail page */
-.figma-embed { position: relative; aspect-ratio: 16/10; background: var(--panel); }
+/* live Figma prototype embed on a design detail page.
+   A tall, height-driven frame (not a short landscape aspect box) so mobile
+   prototypes render large and the visitor can scroll/click through the
+   whole flow inside the iframe rather than it being cropped. */
+.figma-embed { position: relative; height: min(82vh, 880px); background: var(--panel); }
 .figma-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-@media (max-width: 640px) { .figma-embed { aspect-ratio: 9/14; } }
+@media (max-width: 640px) { .figma-embed { height: min(80vh, 700px); } }
 
 .wgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 28px; }
 @media (max-width: 760px) { .wgrid { grid-template-columns: 1fr; } }
