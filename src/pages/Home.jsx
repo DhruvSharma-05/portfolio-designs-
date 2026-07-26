@@ -49,37 +49,40 @@ export default function Home() {
       });
     }
 
-    // design teaser: a sticky child scrubbed sideways as you scroll through
-    // the section. Uses CSS sticky (stable here) + GSAP scrub — NOT GSAP pin,
-    // which mis-fires inside the framer-motion wrapper. Desktop only (native
-    // swipe on mobile); runs regardless of reduced motion.
+    // design teaser: slide the sticky track sideways from the section's own
+    // scroll position. Plain transform, no GSAP pin/scrub (which kept
+    // breaking the layout). Desktop only; mobile is a native swipe row (CSS).
     const track = hsxTrack.current;
     const sec = hsxRef.current;
-    const mm = gsap.matchMedia();
-    if (track && sec) {
-      mm.add("(min-width: 820px)", () => {
-        const dist = () => Math.max(0, track.scrollWidth - window.innerWidth);
-        // tall enough that scrolling past the section drives the full slide
-        const setH = () => { sec.style.height = `${window.innerHeight + dist()}px`; };
-        setH();
-        ScrollTrigger.addEventListener("refreshInit", setH);
-        const tw = gsap.to(track, {
-          x: () => -dist(), ease: "none",
-          scrollTrigger: {
-            trigger: sec, start: "top top", end: "bottom bottom",
-            scrub: 0.6, invalidateOnRefresh: true,
-          },
-        });
-        return () => {
-          tw.kill();
-          ScrollTrigger.removeEventListener("refreshInit", setH);
-          sec.style.height = "";
-        };
-      });
-    }
+    let dist = 0;
+    const isDesktop = () => window.matchMedia("(min-width: 820px)").matches;
+    const onScroll = () => {
+      if (!track || !sec || dist <= 0 || !isDesktop()) { if (track) track.style.transform = ""; return; }
+      const top = sec.getBoundingClientRect().top;      // 0 when section hits the top
+      const x = Math.min(Math.max(-top, 0), dist);
+      track.style.transform = `translate3d(${-x}px,0,0)`;
+    };
+    const measure = () => {
+      if (!track || !sec) return;
+      if (!isDesktop()) { sec.style.height = ""; track.style.transform = ""; dist = 0; return; }
+      dist = Math.max(0, track.scrollWidth - window.innerWidth);
+      // extra height = slide distance, so scrolling past the section drives it
+      sec.style.height = `${window.innerHeight + dist}px`;
+      onScroll();
+    };
+    measure();
+    const settle = window.setTimeout(measure, 300);      // re-measure once images/fonts land
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", measure);
 
     ScrollTrigger.refresh();
-    return () => mm.revert();
+    return () => {
+      window.clearTimeout(settle);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", measure);
+      if (sec) sec.style.height = "";
+      if (track) track.style.transform = "";
+    };
   }, { scope: root, dependencies: [reduced] });
 
   return (
