@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
-import { P, img, srcSet, WEB_PROJECTS, hasPhoto, figmaEmbed, prefersReduced } from "../data.js";
-import { Reveal, TLink } from "../ui.jsx";
+import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
+import { Reveal, TLink, SectionHead, FigmaFrame } from "../ui.jsx";
 
 const page = {
   initial: { opacity: 0 },
@@ -15,100 +15,107 @@ const PROCESS = [
   { k: "Ship and hand over", v: "Live site, source file, and a way for you to change it yourself." },
 ];
 
+/* The browser-chrome preview shared by the hero and the grid — a synced
+   cover screenshot when one exists (fastest), else a live Figma prototype
+   (deferred via FigmaFrame), else a branded name/tag panel. The iframe is
+   pointer-events:none so the whole card stays a single link. `sizes`
+   differs between the wide hero slot and the narrower grid; `eager` mounts
+   the embed immediately (hero only). */
+function Preview({ w, reduced, sizes, eager = false }) {
+  return (
+    <div className="browser">
+      <div className="browser-bar">
+        <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
+        <span className="browser-url mono">
+          {w.embed ? `${w.t} — Figma prototype` : `${w.slug}.com`}
+        </span>
+        <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
+      </div>
+      {hasPhoto(w.cover) ? (
+        <div className="browser-view">
+          <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
+            sizes={sizes} alt={`${w.t} — full page`} loading="lazy" />
+        </div>
+      ) : w.embed && w.href ? (
+        <FigmaFrame w={w} eager={eager} />
+      ) : (
+        <div className="browser-ph">
+          <span className="browser-ph-name">{w.t}</span>
+          <span className="mono">{w.tag}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ==================================================================
    DESIGN — the web-design half of the portfolio.
 
-   Every project is a browser-chrome card whose screenshot scrolls
-   inside its own frame on hover, so the grid previews whole pages
-   rather than crops. Opening one goes to /design/:slug.
+   A magazine-style index: a masthead that states the practice, one
+   featured build shown large (a live Figma preview + the brief beside
+   it), then the rest of the work as a numbered grid. Every card is a
+   single link into /design/:slug.
    ================================================================== */
 export default function Design() {
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
 
+  const [feat, ...rest] = WEB_PROJECTS;
+  const total = String(WEB_PROJECTS.length).padStart(2, "0");
+
   return (
-    <motion.main ref={root} id="main" className="wrap" style={{ paddingTop: "12vh" }}
+    <motion.main ref={root} id="main" className="wrap dz" style={{ paddingTop: "12vh" }}
       variants={page} initial="initial" animate="animate">
-      {/* ---------- masthead ---------- */}
-      <header>
-        <div className="mono" style={{ marginBottom: 26 }}>
-          Web design & build by {P.photographer} — {P.city}
+      {/* ---------- hero: headline + featured live preview ---------- */}
+      <header className="dz-hero">
+        <div className="dz-hero-copy">
+          <div className="dz-kicker">
+            <span className="mono">Design &amp; Build — {P.city}</span>
+            <span className="mono">{total} selected projects</span>
+          </div>
+          <h1>Sites &amp; apps,<br />drawn and<br />shipped whole.</h1>
+          <div className="drawline" style={{ height: 1, background: "var(--accent)", marginTop: 34 }} />
+          <div className="dz-role">
+            <span className="mono">Figma · Canva · React · Webflow</span>
+          </div>
+          {feat && (
+            <TLink to={`/design/${feat.slug}`} className="dz-open mono dz-hero-cta">
+              Open {feat.t} <span className="arrow">→</span>
+            </TLink>
+          )}
         </div>
-        <h1 className="display">Sites for<br />people who<br />make things.</h1>
-        <div className="drawline" style={{ height: 1, background: "var(--accent)", marginTop: 40 }} />
-        <div className="role" style={{ display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap", marginTop: 18 }}>
-          <span className="mono">Figma · Canva · React · Webflow</span>
-          <span className="mono">Designed and built by the same person</span>
-        </div>
+
+        {feat && (
+          <TLink to={`/design/${feat.slug}`} className="dz-hero-media" aria-label={`Open ${feat.t}`}>
+            <span className="mono dz-hero-tag">Featured — {feat.tag}</span>
+            <Preview w={feat} reduced={reduced} sizes="(max-width: 900px) 100vw, 50vw" eager />
+          </TLink>
+        )}
       </header>
 
-      {/* ---------- thesis ---------- */}
-      <section className="band">
-        <div className="thesis-grid">
-          <Reveal>
-            <p className="lead">
-              A photographer who builds the site is a shortcut.
-              <i> Nothing gets cropped in the handover.</i>
-            </p>
-          </Reveal>
-          <Reveal delay={0.1} className="aside">
-            <p>
-              Hover any project below — the screenshot scrolls inside its own browser frame,
-              so you see the whole page, not a hero crop.
-            </p>
-            <p>Open one for the screens, the stack, and a link to the source file.</p>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ---------- project grid ---------- */}
-      <section style={{ paddingBottom: "12vh" }}>
-        <div className="wgrid">
-          {WEB_PROJECTS.map((w, i) => (
-            <Reveal key={w.slug} delay={i * 0.06}>
-              <TLink to={`/design/${w.slug}`} className="wcard"
-                aria-label={`Open ${w.t}`}>
-                <div className="browser">
-                  <div className="browser-bar">
-                    <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
-                    <span className="browser-url mono">
-                      {w.embed ? `${w.t} — Figma prototype` : `${w.slug}.com`}
-                    </span>
-                    <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
-                  </div>
-                  {hasPhoto(w.cover) ? (
-                    <div className="browser-view">
-                      <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
-                        sizes="(max-width: 760px) 100vw, 50vw" alt={`${w.t} — full page`} loading="lazy" />
+      {/* ---------- the rest of the work ---------- */}
+      {rest.length > 0 && (
+        <section className="dz-work-sec">
+          <SectionHead>More work</SectionHead>
+          <div className="dz-grid">
+            {rest.map((w, i) => (
+              <Reveal key={w.slug} delay={i * 0.06}>
+                <TLink to={`/design/${w.slug}`} className="dz-card" aria-label={`Open ${w.t}`}>
+                  <Preview w={w} reduced={reduced} sizes="(max-width: 760px) 100vw, 33vw" />
+                  <div className="dz-card-cap">
+                    <div className="dz-card-line">
+                      <span className="dz-card-idx mono">{String(i + 2).padStart(2, "0")}</span>
+                      <h3>{w.t}</h3>
+                      <span className="dz-arrow" aria-hidden="true"><span className="arrow">→</span></span>
                     </div>
-                  ) : w.embed && w.href ? (
-                    <div className="figbox">
-                      <div className="browser-ph figbox-fallback">
-                        <span className="browser-ph-name">{w.t}</span>
-                        <span className="mono">{w.tag}</span>
-                      </div>
-                      <iframe className="figbox-frame" title={`${w.t} — Figma preview`}
-                        src={figmaEmbed(w.href)} loading="lazy" tabIndex={-1} />
-                    </div>
-                  ) : (
-                    <div className="browser-ph">
-                      <span className="browser-ph-name">{w.t}</span>
-                      <span className="mono">{w.tag}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="wcard-cap">
-                  <div>
-                    <h3>{w.t}</h3>
                     <p>{w.intro}</p>
                   </div>
-                  <span className="tool-badge mono">{w.tool}</span>
-                </div>
-              </TLink>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+                </TLink>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ---------- process ---------- */}
       <section className="sec">

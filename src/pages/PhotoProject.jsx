@@ -1,11 +1,11 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import { PHOTO_PROJECTS, img, srcSet, ratio, prefersReduced } from "../data.js";
-import { Reveal, TLink } from "../ui.jsx";
+import { Reveal, TLink, Lightbox } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 const page = {
@@ -67,7 +67,7 @@ export default function PhotoProject() {
           <div className="mono" style={{ color: "var(--accent)" }}>{p.exif}</div>
         </div>
 
-        <figure className="pj-hero">
+        <figure className="pj-hero" style={{ aspectRatio: ratio(p.photos[0], 16, 9) }}>
           <img ref={heroImg} src={img(p.photos[0], 2000, 1125)} srcSet={srcSet(p.photos[0])}
             sizes="(max-width: 1180px) 100vw, 1180px" alt={p.t} />
         </figure>
@@ -171,6 +171,7 @@ function Roll({ photos, title, onOpen }) {
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
         {photos.map((s, n) => (
           <figure className="roll-fr" key={s + n}
+            style={{ aspectRatio: ratio(s, 3, 2) }}
             onClick={() => { if (drag.current.moved < 6) onOpen(n); }}>
             <img src={img(s, 1400, 933)} srcSet={srcSet(s)} sizes="(max-width: 700px) 84vw, 62vw"
               alt={`${title}, frame ${n + 1}`} loading="lazy" />
@@ -182,79 +183,5 @@ function Roll({ photos, title, onOpen }) {
         <button className="roll-btn" onClick={() => step(1)} aria-label="Next frame">→</button>
       </div>
     </div>
-  );
-}
-
-/* ---------------- lightbox slideshow ----------------
-   Full-screen viewer with keyboard control (← → Esc) and dots. Locks
-   page scroll while open so the page behind doesn't drift. Focus moves
-   to the Close button on open, Tab cycles inside the dialog, and focus
-   returns to the frame that opened it on close. */
-function Lightbox({ photos, title, index, setIndex, reduced }) {
-  const close = useCallback(() => setIndex(-1), [setIndex]);
-  const shift = useCallback(
-    (d) => setIndex((n) => (n + d + photos.length) % photos.length),
-    [setIndex, photos.length],
-  );
-  const boxRef = useRef(null);
-
-  useEffect(() => {
-    const opener = document.activeElement;
-    boxRef.current?.querySelector(".lb-x")?.focus();
-    const key = (e) => {
-      if (e.key === "Escape") close();
-      if (e.key === "ArrowRight") shift(1);
-      if (e.key === "ArrowLeft") shift(-1);
-      if (e.key === "Tab") {
-        const items = boxRef.current?.querySelectorAll("button");
-        if (!items?.length) return;
-        const first = items[0], last = items[items.length - 1];
-        const active = document.activeElement;
-        if (!boxRef.current.contains(active)) { e.preventDefault(); first.focus(); }
-        else if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
-      }
-    };
-    window.addEventListener("keydown", key);
-    const prevOverflow = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", key);
-      document.documentElement.style.overflow = prevOverflow;
-      if (opener instanceof HTMLElement && document.contains(opener)) opener.focus();
-    };
-  }, [close, shift]);
-
-  return (
-    <motion.div className="lb" ref={boxRef} role="dialog" aria-modal="true" aria-label={`${title} — frame viewer`}
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      transition={{ duration: reduced ? 0 : 0.3 }}>
-      <div className="lb-bar">
-        <span className="mono">{title} — {String(index + 1).padStart(2, "0")} / {String(photos.length).padStart(2, "0")}</span>
-        <button className="lb-x" onClick={close} aria-label="Close viewer">Close ✕</button>
-      </div>
-
-      <div className="lb-stage">
-        <button className="lb-arrow prev" onClick={() => shift(-1)} aria-label="Previous frame">←</button>
-        <AnimatePresence mode="wait">
-          <motion.img key={photos[index]} src={img(photos[index], 2000, 1400)}
-            srcSet={srcSet(photos[index])} sizes="100vw"
-            alt={`${title}, frame ${index + 1}`}
-            initial={{ opacity: 0, scale: reduced ? 1 : 0.985 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reduced ? 0 : 0.35, ease: "easeOut" }} />
-        </AnimatePresence>
-        <button className="lb-arrow next" onClick={() => shift(1)} aria-label="Next frame">→</button>
-      </div>
-
-      <div className="lb-foot">
-        {photos.map((s, n) => (
-          <button key={s + n} className={`dot ${n === index ? "on" : ""}`}
-            aria-current={n === index || undefined}
-            onClick={() => setIndex(n)} aria-label={`Frame ${n + 1}`} />
-        ))}
-      </div>
-    </motion.div>
   );
 }

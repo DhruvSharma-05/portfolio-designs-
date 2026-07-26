@@ -1,0 +1,30 @@
+[
+  {
+    "seed": "web-trackher",
+    "sm": "/photos/web/web-trackher-sm.webp",
+    "lg": "/photos/web/web-trackher-lg.webp",
+    "w": 2000,
+    "h": 1375
+  },
+  {
+    "seed": "web-wingwise",
+    "sm": "/photos/web/web-wingwise-sm.webp",
+    "lg": "/photos/web/web-wingwise-lg.webp",
+    "w": 2000,
+    "h": 1375
+  },
+  {
+    "seed": "web-moments",
+    "sm": "/photos/web/web-moments-sm.webp",
+    "lg": "/photos/web/web-moments-lg.webp",
+    "w": 2000,
+    "h": 1375
+  },
+  {
+    "seed": "web-artasta",
+    "sm": "/photos/web/web-artasta-sm.webp",
+    "lg": "/photos/web/web-artasta-lg.webp",
+    "w": 2000,
+    "h": 1375
+  }
+]

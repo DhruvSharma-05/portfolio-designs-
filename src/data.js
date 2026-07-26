@@ -6,6 +6,7 @@
    ================================================================== */
 
 import manifest from "./photos.manifest.json";
+import webCovers from "./web-covers.json";
 
 /* Read the motion preference live so an OS change is respected on the
    next mount. Single source of truth, shared by every animated piece. */
@@ -36,8 +37,8 @@ export const P = {
   city: "Vancouver",
   region: "British Columbia, Canada",
   socials: [
-    { k: "Instagram", v: "@lensofviraj", href: "https://instagram.com/lensofviraj" },
-    { k: "Instagram (personal)", v: "@virajmehtaxo", href: "https://instagram.com/virajmehtaxo" },
+    { k: "Instagram", v: "@lensofviraj", href: "https://www.instagram.com/lensofviraj/" },
+    { k: "Instagram (personal)", v: "@virajmehtaxo", href: "https://www.instagram.com/virajmehtaxo/" },
     { k: "LinkedIn", v: "virajmehtaa", href: "https://www.linkedin.com/in/virajmehtaa" },
   ],
 };
@@ -94,6 +95,11 @@ for (const p of manifest.gallery || []) PHOTOS.set(p.seed, p);
    existing manifest entries still resolve. Normally empty. */
 for (const p of manifest.projectPhotos || []) PHOTOS.set(p.seed, p);
 if (manifest.portrait) PHOTOS.set(manifest.portrait.seed, manifest.portrait);
+/* design-project cover screenshots (scripts/shoot-figma.mjs). Kept in its
+   own file so the Contentful sync, which rewrites the manifest, never
+   clobbers them. Empty [] until `npm run shoot` has been run — the design
+   cards fall back to the live Figma embed while it is. */
+for (const p of webCovers) PHOTOS.set(p.seed, p);
 
 /* img(seed, w, h): resolves a seed to a local optimized image. Picks the
    small variant for thumbnail widths, the large one otherwise. Unknown
@@ -767,35 +773,71 @@ export const CSS = `
 .about { padding: 12vh 0 8vh; }
 .about-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
 @media (max-width: 820px) { .about-hero { grid-template-columns: 1fr; gap: 36px; } }
+.about-kicker { margin-bottom: 22px; }
 .about-hero h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .98;
   font-size: clamp(44px, 8vw, 104px); text-wrap: balance; }
 .about-lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.6vw, 30px);
   line-height: 1.35; margin-top: 28px; max-width: 22ch; }
 .about-lead i { font-style: normal; color: var(--accent); }
+.about-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 34px; }
+.about-tags span { border: 1px solid var(--rule); border-radius: 100px; padding: 8px 16px;
+  transition: border-color .35s ease; }
+.about-tags span:hover { border-color: var(--accent); }
 .about-portrait { position: relative; overflow: hidden; border-radius: 4px;
   border: 1px solid var(--rule); aspect-ratio: 4/5; }
 .about-portrait img { will-change: transform; }
-.about-body { max-width: 62ch; margin: 12vh 0; color: var(--dim); line-height: 1.8; font-size: 16px; }
+.about-portrait figcaption { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
+  padding: 46px 16px 15px; color: var(--ink);
+  background: linear-gradient(to top, color-mix(in srgb, var(--bg) 90%, transparent), transparent); }
+
+/* --- section header: numbered label + a rule that draws in --- */
+.shead { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; }
+.shead-n { flex: none; color: var(--accent); font-variant-numeric: tabular-nums; }
+.shead-label { flex: none; white-space: nowrap; color: var(--dim); }
+.shead-rule { flex: 1 1 auto; height: 1px; background: var(--rule);
+  transform: scaleX(0); transform-origin: left; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
+.shead.in .shead-rule { transform: scaleX(1); }
+
+.about-body { max-width: 64ch; margin: 12vh 0; color: var(--dim); line-height: 1.8; font-size: 16px; }
 .about-body p + p { margin-top: 20px; }
+/* first paragraph reads as a lead-in — brighter, larger, sets the voice */
+.about-body .lead-p { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
+  font-size: clamp(19px, 2.3vw, 25px); line-height: 1.5; }
+.about-body .lead-p + p { margin-top: 30px; }
 .approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
   background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
 /* panels are plain <div> on the about page and <a> on the home page,
    where each one is a door into that practice */
-.approach div, .approach a { background: var(--bg); padding: 30px 26px; display: block;
-  transition: background-color .4s ease; }
+.approach div, .approach a { position: relative; background: var(--bg); padding: 34px 26px 30px;
+  display: block; transition: background-color .4s ease; }
+.approach div::before, .approach a::before { content: ""; position: absolute; left: 0; right: 0; top: 0;
+  height: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+.approach div:hover::before, .approach a:hover::before { transform: scaleX(1); }
 .approach a:hover { background: var(--panel); }
 .approach a:hover h3 { color: var(--accent); }
+.approach-n { display: block; color: var(--accent); opacity: .85; margin-bottom: 18px; }
 .approach h3 { transition: color .3s ease; }
 .approach h3 { font-weight: 400; letter-spacing: -0.02em; font-size: 19px; margin-bottom: 12px; }
 .approach p { color: var(--dim); font-size: 14.5px; line-height: 1.6; }
-.timeline { margin-top: 4vh; }
-.tl-row { display: grid; grid-template-columns: 90px 1fr; gap: 24px; align-items: baseline;
-  padding: 22px 0; border-bottom: 1px solid var(--rule);
+
+/* --- timeline: a real spine with accent dot markers --- */
+.timeline { position: relative; margin-top: 4vh; }
+.timeline::before { content: ""; position: absolute; left: 6px; top: 32px; bottom: 32px;
+  width: 1px; background: var(--rule); }
+.tl-row { position: relative; display: grid; grid-template-columns: 84px 1fr; gap: 24px;
+  align-items: baseline; padding: 26px 0 26px 42px; border-bottom: 1px solid var(--rule);
   transition: padding-left .35s cubic-bezier(.2,.8,.2,1); }
+.tl-row::before { content: ""; position: absolute; left: 1px; top: 32px; width: 11px; height: 11px;
+  border-radius: 50%; background: var(--bg); border: 2px solid var(--accent);
+  transition: transform .35s ease, background-color .35s ease; }
+.tl-row:hover::before { background: var(--accent); transform: scale(1.18); }
 .tl-row:first-child { border-top: 1px solid var(--rule); }
-.tl-row:hover { padding-left: 10px; }
-.tl-row b { font-weight: 400; color: var(--accent); font-variant-numeric: tabular-nums; }
+.tl-row:hover { padding-left: 52px; }
+.tl-row b { font-weight: 400; font-size: clamp(17px, 1.8vw, 22px);
+  color: var(--accent); font-variant-numeric: tabular-nums; }
 .tl-row p { font-size: clamp(16px, 1.9vw, 21px); letter-spacing: -0.01em; }
+@media (max-width: 700px) { .tl-row { grid-template-columns: 64px 1fr; gap: 16px; } }
 
 /* ==================================================================
    PHOTOGRAPHY PAGE
@@ -809,15 +851,20 @@ export const CSS = `
   border-bottom: 1px solid var(--rule); background: var(--panel); }
 .phero-stage { position: absolute; inset: 0; }
 .phero-fr { position: absolute; inset: 0; }
-.phero-fr img { will-change: transform; }
+/* full-bleed cover — the frame fills the banner; object-position keeps the
+   upper-middle (faces) in view when a tall photo is cropped to fit */
+.phero-fr img { will-change: transform; object-position: center 30%; }
 .phero-fr::after { content: ""; position: absolute; inset: 0;
   background: linear-gradient(180deg,
-    color-mix(in srgb, var(--bg) 62%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 12%, transparent) 38%,
-    color-mix(in srgb, var(--bg) 88%, transparent) 100%); }
+    color-mix(in srgb, var(--bg) 46%, transparent) 0%,
+    transparent 30%,
+    color-mix(in srgb, var(--bg) 30%, transparent) 60%,
+    color-mix(in srgb, var(--bg) 94%, transparent) 100%); }
 .phero-in { position: relative; z-index: 2; height: 100%; display: flex;
-  flex-direction: column; justify-content: space-between; padding: 8vh 0 34px; }
-.phero-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  flex-direction: column; justify-content: flex-end; gap: 26px; padding: 8vh 28px 40px; }
+/* top labels stay pinned to the top; caption + rail sit at the bottom */
+.phero-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  margin-bottom: auto; }
 .phero-cap h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
   font-size: clamp(44px, 9vw, 120px); text-wrap: balance; }
 .phero-cap .sub { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 18px; }
@@ -878,7 +925,7 @@ export const CSS = `
 
 /* --- carousel roll: snap-scrolling filmstrip with drag ------------- */
 .roll { position: relative; }
-.roll-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
+.roll-track { display: flex; align-items: flex-start; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
   padding-bottom: 18px; scrollbar-width: none; cursor: grab; }
 .roll-track::-webkit-scrollbar { display: none; }
 .roll-track.dragging { cursor: grabbing; scroll-snap-type: none; }
@@ -894,10 +941,10 @@ export const CSS = `
 
 /* --- lightbox slideshow --- */
 .lb { position: fixed; inset: 0; z-index: 400; background: color-mix(in srgb, var(--bg) 94%, #000);
-  display: grid; grid-template-rows: auto 1fr auto; padding: 20px 24px 28px; }
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: 20px 24px 28px; }
 .lb-bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .lb-stage { position: relative; display: grid; place-items: center; overflow: hidden; }
-.lb-stage img { width: auto; height: auto; max-width: 100%; max-height: 100%;
+.lb-stage img { width: auto; height: auto; max-width: 100%; max-height: calc(100vh - 120px);
   object-fit: contain; border-radius: 3px; }
 .lb-foot { display: flex; justify-content: center; gap: 8px; }
 .lb-x { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
@@ -954,10 +1001,13 @@ export const CSS = `
 .figbox-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
   pointer-events: none; }
 
-/* live Figma prototype embed on a design detail page */
-.figma-embed { position: relative; aspect-ratio: 16/10; background: var(--panel); }
+/* live Figma prototype embed on a design detail page.
+   A tall, height-driven frame (not a short landscape aspect box) so mobile
+   prototypes render large and the visitor can scroll/click through the
+   whole flow inside the iframe rather than it being cropped. */
+.figma-embed { position: relative; height: min(82vh, 880px); background: var(--panel); }
 .figma-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-@media (max-width: 640px) { .figma-embed { aspect-ratio: 9/14; } }
+@media (max-width: 640px) { .figma-embed { height: min(80vh, 700px); } }
 
 .wgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 28px; }
 @media (max-width: 760px) { .wgrid { grid-template-columns: 1fr; } }
@@ -969,6 +1019,52 @@ export const CSS = `
 .wcard-cap p { color: var(--dim); font-size: 14.5px; line-height: 1.6; margin-top: 10px; max-width: 40ch; }
 .tool-badge { flex: 0 0 auto; border: 1px solid var(--rule); border-radius: 100px;
   padding: 5px 12px; }
+
+/* ==================================================================
+   DESIGN INDEX — /design (magazine-style redesign)
+
+   Masthead → one featured build (large split) → a numbered grid of the
+   rest. Reuses the shared .browser / .figbox / .pill primitives so the
+   card previews stay identical to the home page; only the surrounding
+   layout and captions are new (dz- prefix) — Home.jsx keeps .wgrid/.wcard.
+   ================================================================== */
+/* --- hero: headline (left) + featured live preview (right) --- */
+.dz-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+@media (max-width: 900px) { .dz-hero { grid-template-columns: 1fr; gap: 40px; } }
+.dz-hero-copy { min-width: 0; }
+.dz-kicker { display: flex; justify-content: space-between; align-items: baseline;
+  gap: 14px 24px; flex-wrap: wrap; margin-bottom: 30px; }
+.dz-hero-copy h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
+  font-size: clamp(42px, 6.4vw, 92px); text-wrap: balance; }
+.dz-role { margin-top: 18px; }
+.dz-hero-cta { margin-top: 28px; }
+
+/* the featured preview is a single link; a small label rides above the
+   browser frame so the slot reads as "featured", not just another card */
+.dz-hero-media { display: block; min-width: 0; }
+.dz-hero-tag { display: block; color: var(--dim); margin-bottom: 14px; }
+.dz-hero-media:hover .dz-hero-tag { color: var(--accent); }
+
+.dz-open { display: inline-flex; align-items: center; gap: 10px; color: var(--accent); }
+.dz-open .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.dz-hero-cta:hover .arrow { transform: translateX(6px); }
+
+/* --- the rest: numbered grid --- */
+.dz-work-sec { padding: 7vh 0 12vh; }
+.dz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 26px; }
+@media (max-width: 760px) { .dz-grid { grid-template-columns: 1fr; } }
+.dz-card { display: block; }
+.dz-card-cap { padding: 18px 2px 0; }
+.dz-card-line { display: flex; align-items: baseline; gap: 12px; }
+.dz-card-idx { flex: 0 0 auto; color: var(--accent); font-variant-numeric: tabular-nums; }
+.dz-card-line h3 { flex: 1; font-weight: 400; letter-spacing: -0.02em;
+  font-size: clamp(19px, 2.2vw, 24px); transition: color .3s; }
+.dz-card:hover .dz-card-line h3 { color: var(--accent); }
+.dz-arrow { flex: 0 0 auto; color: var(--dim); }
+.dz-arrow .arrow { display: inline-block; transition: transform .3s cubic-bezier(.2,.8,.2,1), color .3s; }
+.dz-card:hover .dz-arrow { color: var(--accent); }
+.dz-card:hover .dz-arrow .arrow { transform: translateX(5px); }
+.dz-card-cap p { color: var(--dim); font-size: 14px; line-height: 1.6; margin-top: 10px; max-width: 40ch; }
 
 /* stack pills */
 .stack-pills { display: flex; flex-wrap: wrap; gap: 8px; }

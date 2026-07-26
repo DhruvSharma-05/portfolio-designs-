@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
-import { P, img, srcSet, FEATURED, PHOTO_PROJECTS, SHEET, prefersReduced, heavyVisualsAllowed } from "../data.js";
+import { P, img, srcSet, ratio, FEATURED, PHOTO_PROJECTS, SHEET, prefersReduced, heavyVisualsAllowed } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 
 const DistortImage = lazy(() => import("../DistortImage.jsx"));
@@ -137,6 +137,7 @@ export default function Photography() {
           <Reveal className="card" key={p.slug} style={{ top: `${92 + n * 12}px`, zIndex: n + 1 }}>
             <div className="card-in">
               <TLink to={`/photography/${p.slug}`} className="shot"
+                style={{ aspectRatio: ratio(p.photos[0], 4, 3) }}
                 aria-label={`Open ${p.t}`}>
                 {heavy ? (
                   <Suspense fallback={

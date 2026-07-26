@@ -2,12 +2,12 @@ import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   P, img, srcSet, ratio, INTRO, SHEET,
-  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, figmaEmbed, prefersReduced, heavyVisualsAllowed,
+  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
-import { Reveal, TLink } from "../ui.jsx";
+import { Reveal, TLink, Lightbox, FigmaFrame } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 /* Three.js is code-split so the hero text (the LCP) paints first. */
@@ -158,14 +158,7 @@ export default function Home() {
                                 alt={`${w.t} — full page`} loading="lazy" />
                             </div>
                           ) : w.embed && w.href ? (
-                            <div className="figbox">
-                              <div className="browser-ph figbox-fallback">
-                                <span className="browser-ph-name">{w.t}</span>
-                                <span className="mono">{w.tag}</span>
-                              </div>
-                              <iframe className="figbox-frame" title={`${w.t} — Figma preview`}
-                                src={figmaEmbed(w.href)} loading="lazy" tabIndex={-1} />
-                            </div>
+                            <FigmaFrame w={w} />
                           ) : (
                             <div className="browser-ph">
                               <span className="browser-ph-name">{w.t}</span>
@@ -244,10 +237,6 @@ export default function Home() {
                 ))}
               </dd>
             </div>
-            <div>
-              <dt className="mono">Colophon</dt>
-              <dd>Dark, minimal, type-led. Built so the pictures are the only bright thing on the page.</dd>
-            </div>
           </Reveal>
 
           <hr className="rule" style={{ marginTop: 44 }} />
@@ -270,7 +259,13 @@ function Gallery() {
   const [cat, setCat] = useState(
     () => GALLERY_CATS.find((c) => GALLERY_ITEMS.some((g) => g.cat === c)) ?? GALLERY_CATS[0],
   );
+  const [lb, setLb] = useState(-1); // lightbox index, -1 = closed
+  const [reduced] = useState(prefersReduced);
   const shots = GALLERY_ITEMS.filter((g) => g.cat === cat);
+  const seeds = shots.map((g) => g.seed);
+
+  // switching category closes any open preview so its index can't go stale
+  const pick = (c) => { setLb(-1); setCat(c); };
 
   return (
     <section className="gwork" id="gallery" aria-label="Gallery">
@@ -279,7 +274,7 @@ function Gallery() {
           <div className="mono">Gallery</div>
           <div className="gtabs" role="group" aria-label="Gallery categories">
             {GALLERY_CATS.map((c) => (
-              <button key={c} className="gtab" aria-pressed={c === cat} onClick={() => setCat(c)}>
+              <button key={c} className="gtab" aria-pressed={c === cat} onClick={() => pick(c)}>
                 {c}
               </button>
             ))}
@@ -288,8 +283,10 @@ function Gallery() {
 
         {shots.length ? (
           <div className="pgrid" key={cat}>
-            {shots.map((g) => (
-              <figure key={g.seed}>
+            {shots.map((g, n) => (
+              <figure key={g.seed} onClick={() => setLb(n)}
+                role="button" tabIndex={0} aria-label={`Preview photo ${n + 1}`}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLb(n); } }}>
                 <img src={img(g.seed, 640)} srcSet={srcSet(g.seed)}
                   sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
                   alt="" loading="lazy" style={{ aspectRatio: ratio(g.seed, 3, 4) }} />
@@ -300,6 +297,12 @@ function Gallery() {
           <div className="gempty mono">{cat} — photos arriving soon</div>
         )}
       </div>
+
+      <AnimatePresence>
+        {lb > -1 && (
+          <Lightbox photos={seeds} title={cat} index={lb} setIndex={setLb} reduced={reduced} single />
+        )}
+      </AnimatePresence>
     </section>
   );
 }
