@@ -1011,6 +1011,52 @@ export const CSS = `
 .tool-badge { flex: 0 0 auto; border: 1px solid var(--rule); border-radius: 100px;
   padding: 5px 12px; }
 
+/* ==================================================================
+   DESIGN INDEX — /design (magazine-style redesign)
+
+   Masthead → one featured build (large split) → a numbered grid of the
+   rest. Reuses the shared .browser / .figbox / .pill primitives so the
+   card previews stay identical to the home page; only the surrounding
+   layout and captions are new (dz- prefix) — Home.jsx keeps .wgrid/.wcard.
+   ================================================================== */
+/* --- hero: headline (left) + featured live preview (right) --- */
+.dz-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+@media (max-width: 900px) { .dz-hero { grid-template-columns: 1fr; gap: 40px; } }
+.dz-hero-copy { min-width: 0; }
+.dz-kicker { display: flex; justify-content: space-between; align-items: baseline;
+  gap: 14px 24px; flex-wrap: wrap; margin-bottom: 30px; }
+.dz-hero-copy h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
+  font-size: clamp(42px, 6.4vw, 92px); text-wrap: balance; }
+.dz-role { margin-top: 18px; }
+.dz-hero-cta { margin-top: 28px; }
+
+/* the featured preview is a single link; a small label rides above the
+   browser frame so the slot reads as "featured", not just another card */
+.dz-hero-media { display: block; min-width: 0; }
+.dz-hero-tag { display: block; color: var(--dim); margin-bottom: 14px; }
+.dz-hero-media:hover .dz-hero-tag { color: var(--accent); }
+
+.dz-open { display: inline-flex; align-items: center; gap: 10px; color: var(--accent); }
+.dz-open .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.dz-hero-cta:hover .arrow { transform: translateX(6px); }
+
+/* --- the rest: numbered grid --- */
+.dz-work-sec { padding: 7vh 0 12vh; }
+.dz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 26px; }
+@media (max-width: 760px) { .dz-grid { grid-template-columns: 1fr; } }
+.dz-card { display: block; }
+.dz-card-cap { padding: 18px 2px 0; }
+.dz-card-line { display: flex; align-items: baseline; gap: 12px; }
+.dz-card-idx { flex: 0 0 auto; color: var(--accent); font-variant-numeric: tabular-nums; }
+.dz-card-line h3 { flex: 1; font-weight: 400; letter-spacing: -0.02em;
+  font-size: clamp(19px, 2.2vw, 24px); transition: color .3s; }
+.dz-card:hover .dz-card-line h3 { color: var(--accent); }
+.dz-arrow { flex: 0 0 auto; color: var(--dim); }
+.dz-arrow .arrow { display: inline-block; transition: transform .3s cubic-bezier(.2,.8,.2,1), color .3s; }
+.dz-card:hover .dz-arrow { color: var(--accent); }
+.dz-card:hover .dz-arrow .arrow { transform: translateX(5px); }
+.dz-card-cap p { color: var(--dim); font-size: 14px; line-height: 1.6; margin-top: 10px; max-width: 40ch; }
+
 /* stack pills */
 .stack-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 .pill { border: 1px solid var(--rule); border-radius: 100px; padding: 6px 14px;
