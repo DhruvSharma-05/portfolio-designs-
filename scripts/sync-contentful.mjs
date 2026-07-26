@@ -2,13 +2,12 @@
    sync-contentful.mjs — build-time Contentful → portfolio photo sync.
 
    Pulls "Photo" entries from Contentful (fields: title, collection,
-   order, location, year, role, image), buckets them into work / gallery
-   / portrait by their `collection` field, resizes to optimized WebP
-   under public/photos/, and writes the work/gallery/portrait sections
-   of src/photos.manifest.json. The admin-authored project sections
-   (projectPhotos/photoProjects/webProjects) are left untouched here —
-   scripts/sync-drive.mjs owns those, and both scripts read-merge-write
-   the manifest so neither clobbers the other's sections.
+   order, category, image), buckets them into work / gallery / portrait
+   by their `collection` field, resizes to optimized WebP under
+   public/photos/, and writes the work/gallery/portrait sections of
+   src/photos.manifest.json. The project sections of the manifest
+   (projectPhotos/photoProjects/webProjects) are read-merged and left
+   untouched, so they survive if ever populated by hand.
 
    Runs automatically via the "prebuild" npm script, or manually with
    `npm run sync`. If credentials are missing it warns and exits 0 so

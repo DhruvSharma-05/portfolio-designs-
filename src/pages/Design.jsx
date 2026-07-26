@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
-import { P, img, srcSet, WEB_PROJECTS, prefersReduced } from "../data.js";
+import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 
 const page = {
@@ -71,13 +71,22 @@ export default function Design() {
                 <div className="browser">
                   <div className="browser-bar">
                     <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
-                    <span className="browser-url mono">{w.slug}.com</span>
-                    <span className="mono" style={{ opacity: 0.5 }}>{w.year}</span>
+                    <span className="browser-url mono">
+                      {w.embed ? `${w.t} — Figma prototype` : `${w.slug}.com`}
+                    </span>
+                    <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
                   </div>
-                  <div className="browser-view">
-                    <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
-                      sizes="(max-width: 760px) 100vw, 50vw" alt={`${w.t} — full page`} loading="lazy" />
-                  </div>
+                  {hasPhoto(w.cover) ? (
+                    <div className="browser-view">
+                      <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
+                        sizes="(max-width: 760px) 100vw, 50vw" alt={`${w.t} — full page`} loading="lazy" />
+                    </div>
+                  ) : (
+                    <div className="browser-ph">
+                      <span className="browser-ph-name">{w.t}</span>
+                      <span className="mono">{w.tag}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="wcard-cap">
                   <div>

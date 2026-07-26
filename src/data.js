@@ -82,15 +82,16 @@ export const INTRO = {
   ],
 };
 
-/* --- real photos (from Google Drive sync) ---------------------------
-   scripts/sync-drive.mjs writes photos.manifest.json at build time.
+/* --- real photos (from the Contentful sync) -------------------------
+   scripts/sync-contentful.mjs writes photos.manifest.json at build time.
    Every synced photo is keyed by seed → { sm, lg } local WebP URLs.
    When the manifest is empty (no credentials / fresh clone) we fall
    back to seeded picsum placeholders so the site still renders. */
 const PHOTOS = new Map();
 for (const p of manifest.work || []) PHOTOS.set(p.seed, p);
 for (const p of manifest.gallery || []) PHOTOS.set(p.seed, p);
-/* photos placed into projects from /admin — keyed `p-<driveFileId>` */
+/* legacy: photos that were placed into projects by hand — kept so any
+   existing manifest entries still resolve. Normally empty. */
 for (const p of manifest.projectPhotos || []) PHOTOS.set(p.seed, p);
 if (manifest.portrait) PHOTOS.set(manifest.portrait.seed, manifest.portrait);
 
@@ -169,12 +170,11 @@ export const SHEET = manifest.gallery?.length
 /* ==================================================================
    GALLERY — the simple, captionless grid on the Work page.
 
-   Three fixed categories. A synced photo's category comes from the
-   Drive subfolder it lives in (see scripts/sync-drive.mjs): make
-   subfolders inside the Gallery folder named after the categories and
-   the sync sorts everything automatically. Photos left in the Gallery
-   folder root land in "Open". With no manifest at all, placeholder
-   seeds are dealt across the categories so the grid still renders.
+   Fixed categories. A synced photo's category comes from the optional
+   `category` field on its Contentful Photo entry (see
+   scripts/sync-contentful.mjs); anything unset lands in "Open". With
+   no manifest at all, placeholder seeds are dealt across the
+   categories so the grid still renders.
    ================================================================== */
 export const GALLERY_CATS = ["Professional Photoshoot", "Open"];
 
@@ -188,10 +188,9 @@ export const GALLERY_ITEMS = manifest.gallery?.length
   ? manifest.gallery.map((p) => ({ seed: p.seed, cat: normCat(p.cat) }))
   : SHEET_FALLBACK.map((s, i) => ({ seed: s, cat: GALLERY_CATS[i % GALLERY_CATS.length] }));
 
-/* True once real design projects exist (published from /admin). Until
-   then the Work page shows the reserved-room panel instead of the
-   placeholder cards. */
-export const HAS_REAL_WEB = !!manifest.webProjects?.length;
+/* Real design projects now ship in WEB_PROJECTS, so the Work-page design
+   section shows the cards (not the old reserved-room placeholder). */
+export const HAS_REAL_WEB = true;
 
 /* ==================================================================
    PHOTOGRAPHY — /photography and /photography/:slug
@@ -271,10 +270,10 @@ function withSyncedPhotos(projects) {
   });
 }
 
-/* Projects made in /admin win outright — they are the real content.
-   Failing that we deal synced photos across the placeholder projects,
-   and failing THAT the placeholders stand alone, so a fresh clone with
-   no credentials still renders a complete site. */
+/* Any projects already in the manifest win outright; otherwise we deal
+   the synced Contentful photos across the placeholder projects, and
+   failing that the placeholders stand alone — so a fresh clone with no
+   photos still renders a complete site. */
 export const PHOTO_PROJECTS = manifest.photoProjects?.length
   ? manifest.photoProjects
   : withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
@@ -293,79 +292,109 @@ export const FEATURED = PHOTO_PROJECTS.map((p) => ({
 /* ==================================================================
    WEB DESIGN — /design and /design/:slug
 
-   Each project carries an external link (Figma, Canva, or the live
-   site) plus a set of screens. `href: ""` renders the button disabled,
-   so a project without a public link still looks intentional.
-   ================================================================== */
+   Real projects: interactive Figma prototypes. Each carries `href`
+   (the Figma prototype link) and `embed: true`, which makes the detail
+   page render the live prototype in an iframe instead of screenshots —
+   so visitors click through the real design, no mock images needed.
 
+   PLACEHOLDER COPY: `intro`/`note`/`role`/`year` are Viraj's to fill in
+   with the real brief. `shots` is empty on purpose (the embed is the
+   visual); add real screen seeds later for a static gallery too. */
 const WEB_PROJECTS_FALLBACK = [
   {
-    slug: "atelier-studio",
-    t: "Atelier Studio",
-    tag: "Studio site",
-    year: "2025",
-    role: "Design · Build",
-    note: "A studio site where the photograph sets the grid. Replace with the real brief, the constraints, and what shipped.",
-    intro: "Editorial layout, one accent, and a gallery that behaves on a phone.",
+    slug: "trackher",
+    t: "TrackHer",
+    tag: "Product design · Prototype",
+    year: "",
+    role: "UX/UI · Interactive prototype",
+    intro: "An interactive Figma prototype — click through the full product flow.",
+    note: "Add the real brief here: what TrackHer is, who it's for, the problem it solves, and your role on the team.",
     tool: "Figma",
-    href: "https://figma.com",
+    href: "https://www.figma.com/proto/8OtvqxlfWmw36HoDlRMTMa/Final-Presentation---Prototype?node-id=2-1928&page-id=0%3A1&starting-point-node-id=2%3A1917",
     live: "",
-    stack: ["Figma", "React", "Vite", "Vercel"],
-    cover: "web-atelier-1",
-    shots: photoSeeds("web-atelier", 4),
+    embed: true,
+    stack: ["Figma", "Prototype"],
+    cover: "web-trackher",
+    shots: [],
     specs: [
-      { k: "Scope", v: "Art direction, UI design, front-end build" },
-      { k: "Timeline", v: "4 weeks, design to live" },
-      { k: "Handoff", v: "Figma file + deployed site" },
+      { k: "Type", v: "Product design · Interactive prototype" },
+      { k: "Tool", v: "Figma" },
     ],
   },
   {
-    slug: "north-cafe",
-    t: "North Café",
-    tag: "Brand & menu",
-    year: "2025",
-    role: "Design · Brand",
-    note: "A small hospitality brand — identity, menu system and a one-page site. Swap for the real story.",
-    intro: "A menu that reads the same printed as it does on a phone.",
-    tool: "Canva",
-    href: "https://canva.com",
+    slug: "wingwise",
+    t: "WingWise",
+    tag: "Product design · Prototype",
+    year: "",
+    role: "UX/UI · Interactive prototype",
+    intro: "An interactive Figma prototype — click through the full product flow.",
+    note: "Add the real brief here: what WingWise is, who it's for, and your role on Team Yuva.",
+    tool: "Figma",
+    href: "https://www.figma.com/proto/5ucSXSWGvoeBuQraNImByn/Team-Yuva?node-id=3280-10661&page-id=1408%3A17032&starting-point-node-id=3280%3A10661",
     live: "",
-    stack: ["Canva", "Illustrator", "Webflow"],
-    cover: "web-north-1",
-    shots: photoSeeds("web-north", 4),
+    embed: true,
+    stack: ["Figma", "Prototype"],
+    cover: "web-wingwise",
+    shots: [],
     specs: [
-      { k: "Scope", v: "Identity, print menu, one-page site" },
-      { k: "Timeline", v: "3 weeks" },
-      { k: "Handoff", v: "Brand kit + editable templates" },
+      { k: "Type", v: "Product design · Interactive prototype" },
+      { k: "Tool", v: "Figma" },
     ],
   },
   {
-    slug: "field-notes",
-    t: "Field Notes",
-    tag: "Editorial CMS",
-    year: "2024",
-    role: "Design · Build",
-    note: "An editorial publication with a CMS behind it. Describe the volume, the constraints and the result.",
-    intro: "Long-form reading, built so the writer never needs a developer.",
+    slug: "moments",
+    t: "MOMents",
+    tag: "Product design · Prototype",
+    year: "",
+    role: "UX/UI · Interactive prototype",
+    intro: "An interactive Figma prototype — click through the full product flow.",
+    note: "Add the real brief here: what MOMents is, who it's for, and your role on team Spark.",
     tool: "Figma",
-    href: "https://figma.com",
+    href: "https://www.figma.com/proto/I4AYMtK2LPSuUrbMnd8vy9/MOMents-by-team-Spark?node-id=1909-5686&page-id=1902%3A3830&starting-point-node-id=1909%3A5686",
     live: "",
-    stack: ["Figma", "React", "Sanity"],
-    cover: "web-field-1",
-    shots: photoSeeds("web-field", 4),
+    embed: true,
+    stack: ["Figma", "Prototype"],
+    cover: "web-moments",
+    shots: [],
     specs: [
-      { k: "Scope", v: "Design system, CMS modelling, build" },
-      { k: "Timeline", v: "6 weeks" },
-      { k: "Handoff", v: "Design system + editor training" },
+      { k: "Type", v: "Product design · Interactive prototype" },
+      { k: "Tool", v: "Figma" },
+    ],
+  },
+  {
+    slug: "artasta",
+    t: "ArtAsta",
+    tag: "Product design · Prototype",
+    year: "",
+    role: "UX/UI · Interactive prototype",
+    intro: "An interactive Figma prototype — click through the full product flow.",
+    note: "Add the real brief here: what ArtAsta is, who it's for, and your role on the project.",
+    tool: "Figma",
+    href: "https://www.figma.com/proto/XDD143AWWhkegVelp4z8sC/Art-Asta-Design?node-id=10153-950&page-id=1%3A43&starting-point-node-id=10490%3A3702&scaling=scale-down&content-scaling=fixed",
+    live: "",
+    embed: true,
+    stack: ["Figma", "Prototype"],
+    cover: "web-artasta",
+    shots: [],
+    specs: [
+      { k: "Type", v: "Product design · Interactive prototype" },
+      { k: "Tool", v: "Figma" },
     ],
   },
 ];
 
-/* Same precedence as the photo projects: /admin content first, the
-   placeholder set only when nothing has been published yet. */
+/* Manifest content first, the real project set otherwise. */
 export const WEB_PROJECTS = manifest.webProjects?.length
   ? manifest.webProjects
   : WEB_PROJECTS_FALLBACK;
+
+/* A Figma prototype URL → its embeddable iframe src. */
+export const figmaEmbed = (url) =>
+  `https://www.figma.com/embed?embed_host=lensofviraj&url=${encodeURIComponent(url)}`;
+
+/* True — real design projects exist, so /design and the home teaser show
+   them (was gated on the removed admin/manifest publishing flow). */
+export const hasPhoto = (s) => PHOTOS.has(s);
 
 export const METRICS = [
   { v: 68, s: "", k: "Projects delivered" },
@@ -905,6 +934,22 @@ export const CSS = `
 .browser:hover .browser-view img { transform: translateY(calc(-100% + 100cqh)); }
 .browser-view { container-type: size; }
 
+/* branded placeholder inside a browser card when a project has no real
+   cover image yet — the name + tag on the dark panel, no stock photo */
+.browser-ph { aspect-ratio: 16/11; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px; text-align: center;
+  padding: 24px; background:
+    radial-gradient(120% 90% at 50% 18%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%),
+    var(--panel); }
+.browser-ph-name { font-weight: 300; letter-spacing: -0.03em; line-height: 1;
+  font-size: clamp(28px, 4vw, 46px); }
+.browser-ph .mono { opacity: 0.7; }
+
+/* live Figma prototype embed on a design detail page */
+.figma-embed { position: relative; aspect-ratio: 16/10; background: var(--panel); }
+.figma-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+@media (max-width: 640px) { .figma-embed { aspect-ratio: 9/14; } }
+
 .wgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 28px; }
 @media (max-width: 760px) { .wgrid { grid-template-columns: 1fr; } }
 .wcard-cap { display: flex; justify-content: space-between; align-items: flex-start;
@@ -985,216 +1030,6 @@ export const CSS = `
 .disc:hover .go .arrow { transform: translateX(6px); }
 .disc:hover strong, .disc:hover .mono { color: var(--bg); }
 
-/* ==================================================================
-   ADMIN — /admin. Same palette as the site so it feels like one thing,
-   but plainer: forms want clarity, not atmosphere.
-   ================================================================== */
-.admin { padding: 6vh 0 14vh; max-width: 1100px; }
-.admin-top { display: flex; justify-content: space-between; align-items: flex-end;
-  gap: 20px; flex-wrap: wrap; padding-bottom: 18px; margin-bottom: 34px;
-  border-bottom: 1px solid var(--rule); }
-.admin-top h1 { font-weight: 300; letter-spacing: -0.03em; font-size: clamp(30px, 5vw, 52px);
-  margin-top: 10px; }
-.admin-top a:hover { color: var(--accent); }
-
-.admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px;
-  overflow: hidden; margin-bottom: 26px; }
-.admin-stat { background: var(--bg); padding: 22px 20px; }
-.admin-stat b { display: block; font-weight: 300; letter-spacing: -0.03em;
-  font-size: clamp(28px, 3.4vw, 42px); line-height: 1; font-variant-numeric: tabular-nums; }
-.admin-stat span { display: block; margin-top: 10px; }
-
-.admin-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-.btn { border: 1px solid var(--rule); border-radius: 100px; padding: 11px 22px;
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--ink);
-  transition: border-color .3s ease, background-color .3s ease, color .3s ease; }
-.btn:hover { border-color: var(--accent); color: var(--accent); }
-.btn:disabled { opacity: .45; pointer-events: none; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-.btn.primary:hover { filter: brightness(1.12); color: var(--bg); }
-.btn.ghost { border-color: transparent; color: var(--dim); }
-.btn.ghost:hover { color: var(--ink); }
-.btn.danger:hover { border-color: #F4595E; color: #F4595E; }
-.btn.small { padding: 8px 16px; font-size: 10px; }
-.mini { width: 30px; height: 30px; border: 1px solid var(--rule); border-radius: 4px;
-  display: grid; place-items: center; font-size: 12px; color: var(--dim);
-  transition: border-color .25s ease, color .25s ease; }
-.mini:hover { border-color: var(--accent); color: var(--accent); }
-.mini:disabled { opacity: .3; pointer-events: none; }
-.mini.danger:hover { border-color: #F4595E; color: #F4595E; }
-
-.admin-msg { padding: 12px 16px; border: 1px solid var(--rule); border-radius: 4px;
-  margin-bottom: 22px; color: var(--accent); }
-.admin-msg.bad { color: #F4595E; border-color: color-mix(in srgb, #F4595E 45%, var(--rule)); }
-.admin-msg.preview { color: #E0A93B; border-color: color-mix(in srgb, #E0A93B 45%, var(--rule));
-  background: color-mix(in srgb, #E0A93B 8%, transparent); }
-.admin-empty { padding: 22px 0; color: var(--dim); }
-
-.admin-sec { margin-top: 44px; }
-.admin-sec-head { display: flex; justify-content: space-between; align-items: flex-end;
-  gap: 16px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
-.admin-sec-head h2 { font-weight: 400; letter-spacing: -0.02em; font-size: 24px; }
-.admin-sec-head span { display: block; margin-top: 6px; }
-
-.admin-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 16px;
-  align-items: center; padding: 16px 0; border-bottom: 1px solid var(--rule); }
-.admin-row .num { color: var(--dim); }
-.admin-row-main strong { font-weight: 400; letter-spacing: -0.02em; font-size: 18px; display: block; }
-.admin-row-main .dim { color: var(--dim); font-style: normal; }
-.admin-row-main span { display: block; margin-top: 5px; }
-.admin-row-acts { display: flex; gap: 8px; align-items: center; }
-@media (max-width: 640px) {
-  .admin-row { grid-template-columns: 1fr; gap: 10px; }
-  .admin-row-acts { justify-content: flex-start; }
-}
-
-/* --- forms --- */
-.admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 30px; }
-@media (max-width: 720px) { .admin-form { grid-template-columns: 1fr; } }
-.admin-field { display: flex; flex-direction: column; gap: 8px; }
-.admin-field.wide { grid-column: 1 / -1; }
-.admin-field em { font-style: normal; font-size: 12.5px; color: var(--dim); }
-.admin-field input, .admin-field textarea, .admin-login input {
-  background: var(--panel); border: 1px solid var(--rule); border-radius: 4px;
-  color: var(--ink); font: inherit; font-size: 15px; padding: 12px 14px; width: 100%;
-  transition: border-color .25s ease; }
-.admin-field input:focus, .admin-field textarea:focus, .admin-login input:focus {
-  border-color: var(--accent); outline: none; }
-.admin-field textarea { resize: vertical; line-height: 1.6; }
-.admin-check { display: flex; align-items: center; gap: 10px; color: var(--dim); font-size: 14.5px; }
-.admin-check input { width: 16px; height: 16px; accent-color: var(--accent); }
-
-.admin-login { max-width: 340px; display: flex; flex-direction: column; gap: 12px; margin-top: 8vh; }
-
-/* --- chosen pictures --- */
-.admin-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 14px; margin-top: 20px; }
-.admin-thumb { border: 1px solid var(--rule); border-radius: 4px; overflow: hidden;
-  background: var(--panel); }
-.admin-thumb img { aspect-ratio: 4/3; }
-.admin-thumb figcaption { display: flex; align-items: center; gap: 6px; padding: 8px;
-  justify-content: space-between; }
-
-/* --- Drive picker --- */
-.admin-picker { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,.72);
-  display: grid; place-items: center; padding: 24px; }
-.admin-picker-in { background: var(--bg); border: 1px solid var(--rule); border-radius: 6px;
-  width: min(1100px, 100%); height: min(80vh, 800px); display: flex; flex-direction: column;
-  overflow: hidden; }
-.admin-picker-top { display: flex; justify-content: space-between; align-items: center;
-  gap: 16px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--rule); }
-.admin-picker-body { display: grid; grid-template-columns: 220px 1fr; flex: 1; min-height: 0; }
-@media (max-width: 700px) { .admin-picker-body { grid-template-columns: 1fr; } .admin-folders { display: none; } }
-.admin-folders { border-right: 1px solid var(--rule); overflow-y: auto; padding: 12px; }
-.fold { display: block; width: 100%; text-align: left; padding: 9px 12px; border-radius: 4px;
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .08em;
-  color: var(--dim); transition: background-color .25s ease, color .25s ease; }
-.fold:hover { background: var(--panel); color: var(--ink); }
-.fold.on { background: var(--accent); color: var(--bg); }
-.admin-grid { overflow-y: auto; padding: 16px; display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; align-content: start; }
-.pickfr { position: relative; border: 1px solid var(--rule); border-radius: 4px;
-  overflow: hidden; aspect-ratio: 1; transition: border-color .25s ease; }
-.pickfr:hover { border-color: var(--accent); }
-.pickfr.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
-.pickfr .badge { position: absolute; right: 6px; top: 6px; background: var(--accent);
-  color: var(--bg); border-radius: 100px; min-width: 22px; height: 22px; display: grid;
-  place-items: center; padding: 0 6px; font-size: 10px; }
-
-/* --- Drive folder picker/creator (client-delivery folder field) --- */
-.admin-folder-body { padding: 16px 20px; overflow-y: auto; }
-.admin-crumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 14px; }
-.crumb { font-size: 11px; letter-spacing: .08em; color: var(--dim); }
-.crumb:hover { color: var(--accent); }
-.crumb::after { content: "/"; margin-left: 6px; color: var(--rule); }
-.crumb:last-child::after { content: none; }
-.admin-folder-new { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px;
-  border-top: 1px solid var(--rule); }
-.admin-folder-new input { flex: 1; }
-
-/* ==================================================================
-   CLIENT AREA — /client. The plainest page on the site: a client here
-   wants their photos, not an experience.
-   ================================================================== */
-.client { min-height: 100vh; display: flex; flex-direction: column;
-  justify-content: center; align-items: center; padding: 12vh 0 8vh; text-align: center; }
-.client-kicker { margin-bottom: 40px; }
-
-/* --- 404 --- */
-.notfound { min-height: 100vh; display: flex; flex-direction: column;
-  justify-content: center; align-items: center; padding: 12vh 0 8vh; text-align: center; }
-.client-card { width: min(560px, 100%); border: 1px solid var(--rule); border-radius: 6px;
-  background: var(--panel); padding: 44px 38px; }
-@media (max-width: 560px) { .client-card { padding: 32px 22px; } }
-.client-card h1 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.05;
-  font-size: clamp(28px, 5vw, 44px); margin-top: 14px; text-wrap: balance; }
-.client-shoot { color: var(--dim); font-size: 15px; margin-top: 10px; }
-.client-lead { color: var(--dim); font-size: 15px; line-height: 1.7; margin-top: 14px; }
-.client-note { color: var(--ink); font-size: 15px; line-height: 1.7; margin-top: 22px;
-  padding: 16px 18px; border-left: 2px solid var(--accent); text-align: left;
-  background: color-mix(in srgb, var(--accent) 6%, transparent); }
-
-.client-card form { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
-.client-card label { text-align: left; }
-.client-card input { background: var(--bg); border: 1px solid var(--rule); border-radius: 4px;
-  color: var(--ink); font-family: 'IBM Plex Mono', monospace; font-size: 16px;
-  letter-spacing: .06em; padding: 15px 16px; width: 100%; text-align: center;
-  transition: border-color .25s ease; }
-.client-card input:focus { border-color: var(--accent); outline: none; }
-
-/* one button does the whole job — make it obvious */
-.client-dl { display: inline-flex; align-items: center; justify-content: center; gap: 12px;
-  width: 100%; margin-top: 26px; padding: 17px 26px; border-radius: 4px;
-  background: var(--accent); color: var(--bg); border: 1px solid var(--accent);
-  font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .16em;
-  text-transform: uppercase; transition: filter .3s ease, opacity .3s ease; }
-.client-dl:hover { filter: brightness(1.12); }
-.client-dl:disabled { opacity: .45; pointer-events: none; }
-.client-dl .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
-.client-dl:hover .arrow { transform: translate(2px, -2px); }
-
-/* secondary action shown alongside (or instead of) the ZIP button */
-.client-alt { display: inline-flex; align-items: center; justify-content: center; gap: 12px;
-  width: 100%; margin-top: 12px; padding: 15px 26px; border-radius: 4px;
-  border: 1px solid var(--rule); color: var(--ink);
-  font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .16em;
-  text-transform: uppercase; transition: border-color .25s ease, color .25s ease; }
-.client-alt:hover { border-color: var(--accent); color: var(--accent); }
-.client-alt .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
-.client-alt:hover .arrow { transform: translate(2px, -2px); }
-
-/* shown instead of the ZIP button when a shoot is over the download cap */
-.client-cap { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--rule);
-  border-radius: 4px; color: var(--dim); font-size: 13px; line-height: 1.7; }
-
-.client-facts { display: flex; justify-content: center; gap: 34px; margin-top: 28px;
-  padding-top: 20px; border-top: 1px solid var(--rule); }
-.client-facts dd { margin: 6px 0 0; font-size: 19px; font-variant-numeric: tabular-nums; }
-.client-help { margin-top: 20px; line-height: 1.8; text-transform: none; letter-spacing: .04em; }
-.client-help a { color: var(--accent); }
-.client-err { margin-top: 18px; color: #F4595E; text-transform: none; letter-spacing: .04em;
-  line-height: 1.7; }
-.client-foot { margin-top: 44px; }
-.client-foot .back:hover { color: var(--accent); }
-
-/* --- admin: the delivery panel --- */
-.deliver { border: 1px solid var(--rule); border-radius: 6px; padding: 26px 24px;
-  background: var(--panel); }
-.deliver .admin-sec-head { border-bottom-color: var(--rule); }
-.admin-inline { display: flex; gap: 8px; align-items: center; }
-.admin-inline input { flex: 1; }
-.deliver-send { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--rule); }
-.deliver-send pre { background: var(--bg); border: 1px solid var(--rule); border-radius: 4px;
-  padding: 16px 18px; margin: 12px 0 14px; white-space: pre-wrap; word-break: break-word;
-  font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.7; color: var(--dim); }
-.deliver-hint { margin-top: 12px; text-transform: none; letter-spacing: .04em; }
-.admin-folder-manual { margin-top: 10px; }
-.admin-folder-manual summary { cursor: pointer; font-size: 11px; letter-spacing: .08em;
-  color: var(--dim); }
-.admin-folder-manual summary:hover { color: var(--accent); }
-.admin-folder-manual input { margin-top: 8px; }
 
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }

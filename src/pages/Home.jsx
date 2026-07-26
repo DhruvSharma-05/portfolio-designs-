@@ -4,15 +4,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, INTRO, FRAMES, SHEET,
-  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, prefersReduced, heavyVisualsAllowed,
+  P, img, srcSet, ratio, INTRO, SHEET,
+  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 /* Three.js is code-split so the hero text (the LCP) paints first. */
 const HeroCanvas = lazy(() => import("../HeroCanvas.jsx"));
-const DistortImage = lazy(() => import("../DistortImage.jsx"));
 
 const page = {
   initial: { opacity: 0 },
@@ -131,45 +130,6 @@ export default function Home() {
       {/* gallery — four categories, no captions */}
       <Gallery />
 
-      {/* photography — the selected projects, each opening a detail page */}
-      <section className="wrap stack" id="work">
-        <div className="mono" style={{ padding: "0 0 34px" }}>
-          Photography — selected work
-        </div>
-        {FRAMES.map((f, i) => (
-          <Reveal className="card" key={f.seed} style={{ top: `${92 + i * 12}px`, zIndex: i + 1 }}>
-            <div className="card-in">
-              <TLink to={`/work/${f.seed}`} className="shot" aria-label={`Open ${f.t}`}>
-                {heavy ? (
-                  <Suspense fallback={
-                    <img data-par src={img(f.seed, 1200, 900)} srcSet={srcSet(f.seed)}
-                      sizes="(max-width: 860px) 100vw, 55vw" alt={f.t} />
-                  }>
-                    <DistortImage src={img(f.seed, 1200, 900)} srcSet={srcSet(f.seed)}
-                      sizes="(max-width: 860px) 100vw, 55vw" alt={f.t} />
-                  </Suspense>
-                ) : (
-                  <img data-par src={img(f.seed, 1200, 900)} srcSet={srcSet(f.seed)}
-                    sizes="(max-width: 860px) 100vw, 55vw" alt={f.t} />
-                )}
-                <span className="open">View project →</span>
-              </TLink>
-              <div className="cap">
-                <div>
-                  <span className="kind mono">{f.kind}</span>
-                  <h2>{f.t}</h2>
-                  <p>{f.note}</p>
-                </div>
-                <div className="meta">
-                  <span className="mono">{f.loc}</span>
-                  <span className="mono" style={{ color: "var(--accent)" }}>{f.exif}</span>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        ))}
-      </section>
-
       {/* design — real projects once they're published; until then the
           space is visibly held for them */}
       <section className="sec" id="design">
@@ -186,14 +146,23 @@ export default function Home() {
                         <div className="browser">
                           <div className="browser-bar">
                             <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
-                            <span className="browser-url mono">{w.slug}.com</span>
-                            <span className="mono" style={{ opacity: 0.5 }}>{w.year}</span>
+                            <span className="browser-url mono">
+                              {w.embed ? `${w.t} — Figma prototype` : `${w.slug}.com`}
+                            </span>
+                            <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
                           </div>
-                          <div className="browser-view">
-                            <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
-                              sizes="(max-width: 760px) 100vw, 50vw"
-                              alt={`${w.t} — full page`} loading="lazy" />
-                          </div>
+                          {hasPhoto(w.cover) ? (
+                            <div className="browser-view">
+                              <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
+                                sizes="(max-width: 760px) 100vw, 50vw"
+                                alt={`${w.t} — full page`} loading="lazy" />
+                            </div>
+                          ) : (
+                            <div className="browser-ph">
+                              <span className="browser-ph-name">{w.t}</span>
+                              <span className="mono">{w.tag}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="wcard-cap">
                           <div>
@@ -275,9 +244,7 @@ export default function Home() {
           <hr className="rule" style={{ marginTop: 44 }} />
           <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, paddingTop: 18 }}>
             <span className="mono">© 2026 {P.name}</span>
-            <span className="mono">
-              <TLink to="/client">Client area</TLink> — collect a finished shoot
-            </span>
+            <span className="mono">{P.city}, {P.region} — Booking 2026</span>
           </div>
         </div>
       </section>
