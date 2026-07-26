@@ -7,7 +7,7 @@ import {
   P, img, focus, INTRO, SHEET,
   GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, prefersReduced,
 } from "../data.js";
-import { Reveal, TLink } from "../ui.jsx";
+import { Reveal, TLink, SlideHeading } from "../ui.jsx";
 
 const page = {
   initial: { opacity: 0 },
@@ -149,7 +149,7 @@ export default function Home() {
       <section className="end invert" id="contact">
         <div className="wrap">
           <Reveal>
-            <h2 className="display">Bring me<br />the difficult one.</h2>
+            <SlideHeading lines={["Bring me", "the difficult one."]} />
             <MagneticMail email={P.email} reduced={reduced} />
             <div className="mono" style={{ marginTop: 18 }}>
               {P.phone} — {P.city}, {P.region}

@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { P, img, WEB_PROJECTS, prefersReduced } from "../data.js";
-import { Reveal, TLink, useMouseTilt } from "../ui.jsx";
+import { Reveal, TLink, useMouseTilt, SlideHeading } from "../ui.jsx";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -208,7 +208,7 @@ export default function Design() {
         {/* ---------- end ---------- */}
         <section className="dlx-cta">
           <Reveal>
-            <h2 className="dlx-title">Got a site<br />that deserves better?</h2>
+            <SlideHeading className="dlx-title" lines={["Got a site", "that deserves better?"]} />
             <a className="dlx-mail" href={`mailto:${P.email}`}>{P.email} <span className="arrow">→</span></a>
           </Reveal>
           <div className="dlx-back">

@@ -108,6 +108,33 @@ export function Reveal({ children, className = "", delay = 0, y = 18, as: Tag = 
   return <Tag ref={ref} className={`rv ${className}`} {...rest}>{children}</Tag>;
 }
 
+/* ---------------- SlideHeading ----------------
+   The big closing CTA line. Its two lines slide in from opposite sides
+   and converge as the block scrolls up (scrubbed to scroll position), so
+   the statement assembles itself. Reduced motion → static, in place. */
+export function SlideHeading({ lines, className = "display", as: Tag = "h2" }) {
+  const ref = useRef(null);
+  useGSAP(() => {
+    if (prefersReduced()) return;
+    const el = ref.current;
+    const l1 = el.querySelector(".sh-l1");
+    const l2 = el.querySelector(".sh-l2");
+    const trig = { trigger: el, start: "top 88%", end: "top 50%", scrub: 0.6 };
+    gsap.fromTo(l1, { xPercent: -70, opacity: 0 },
+      { xPercent: 0, opacity: 1, ease: "none", scrollTrigger: trig });
+    gsap.fromTo(l2, { xPercent: 70, opacity: 0 },
+      { xPercent: 0, opacity: 1, ease: "none", scrollTrigger: { ...trig } });
+  }, { scope: ref, dependencies: [lines.join("|")] });
+
+  return (
+    <Tag ref={ref} className={className}>
+      <span className="sh-line sh-l1">{lines[0]}</span>
+      <br />
+      <span className="sh-line sh-l2">{lines[1]}</span>
+    </Tag>
+  );
+}
+
 /* ---------------- figures block ----------------
    Counting is only worth doing if it happens in front of the reader.
 

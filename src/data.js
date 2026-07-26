@@ -603,6 +603,8 @@ export const CSS = `
 .display .ch { display: inline-block; opacity: 0; transform: translateY(0.4em) rotate(3deg);
   filter: blur(12px); animation: charUp 1s cubic-bezier(.16,1,.3,1) both; }
 @keyframes charUp { to { opacity: 1; transform: none; filter: blur(0); } }
+/* the two lines of a SlideHeading slide in from opposite sides (see ui.jsx) */
+.sh-line { display: inline-block; will-change: transform; }
 .mast .drawline { height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left;
   margin-top: 40px; animation: draw 1.1s .85s cubic-bezier(.76,0,.24,1) forwards; }
 @keyframes draw { to { transform: scaleX(1); } }

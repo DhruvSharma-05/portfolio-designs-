@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import { P, img, focus, ABOUT, INTRO, SHOTLIST, METRICS, QUOTES, prefersReduced } from "../data.js";
-import { Reveal, TLink, Metrics } from "../ui.jsx";
+import { Reveal, TLink, Metrics, SlideHeading } from "../ui.jsx";
 import ParticleSphere from "../ParticleSphere.jsx";
 
 const page = {
@@ -113,7 +113,7 @@ export default function About() {
 
       <section className="end" style={{ marginTop: "12vh" }}>
         <Reveal>
-          <h2 className="display">Let's make<br />something.</h2>
+          <SlideHeading lines={["Let's make", "something."]} />
           <a className="mail" href={`mailto:${P.email}`}>{P.email}</a>
         </Reveal>
         <div style={{ marginTop: 44 }}>

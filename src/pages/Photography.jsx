@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import { P, img, focus, FEATURED, PHOTO_PROJECTS, SHEET, prefersReduced } from "../data.js";
-import { Reveal, TLink } from "../ui.jsx";
+import { Reveal, TLink, SlideHeading } from "../ui.jsx";
 import Coverflow from "../Coverflow.jsx";
 
 const page = {
@@ -27,7 +27,7 @@ function PhotoCard({ p, n, total, reduced }) {
 
   return (
     <div ref={ref} className="pcard-wrap" style={{ top: `calc(84px + ${n * 20}px)`, zIndex: n + 1 }}>
-      <motion.article className="pcard" style={{ scale }}>
+      <motion.article className="pcard invert" style={{ scale }}>
         <div className="pcard-head">
           <span className="pcard-num">{String(n + 1).padStart(2, "0")}</span>
           <span className="pcard-badge mono">{p.kind}</span>
@@ -174,7 +174,7 @@ export default function Photography() {
       <section className="end">
         <div className="wrap">
           <Reveal>
-            <h2 className="display">Shooting<br />this year?</h2>
+            <SlideHeading lines={["Shooting", "this year?"]} />
             <a className="mail" href={`mailto:${P.email}`}>{P.email}</a>
           </Reveal>
           <div style={{ marginTop: 44 }}>
