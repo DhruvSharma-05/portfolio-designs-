@@ -272,13 +272,15 @@ function Gallery() {
       <div className="wrap">
         <div className="gwork-head">
           <div className="mono">Gallery</div>
-          <div className="gtabs" role="group" aria-label="Gallery categories">
-            {GALLERY_CATS.map((c) => (
-              <button key={c} className="gtab" aria-pressed={c === cat} onClick={() => pick(c)}>
-                {c}
-              </button>
-            ))}
-          </div>
+          {GALLERY_CATS.length > 1 && (
+            <div className="gtabs" role="group" aria-label="Gallery categories">
+              {GALLERY_CATS.map((c) => (
+                <button key={c} className="gtab" aria-pressed={c === cat} onClick={() => pick(c)}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {shots.length ? (

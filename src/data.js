@@ -182,17 +182,16 @@ export const SHEET = manifest.gallery?.length
    no manifest at all, placeholder seeds are dealt across the
    categories so the grid still renders.
    ================================================================== */
-export const GALLERY_CATS = ["Professional Photoshoot", "Open"];
+/* "Professional Photoshoot" was retired — every gallery photo now lands in
+   the single "Open" category (so nothing a Contentful entry tagged
+   "professional" gets hidden). */
+export const GALLERY_CATS = ["Open"];
 
-const normCat = (raw = "") => {
-  const s = String(raw).toLowerCase();
-  if (s.includes("professional") || s.includes("shoot")) return "Professional Photoshoot";
-  return "Open";
-};
+const normCat = () => "Open";
 
 export const GALLERY_ITEMS = manifest.gallery?.length
   ? manifest.gallery.map((p) => ({ seed: p.seed, cat: normCat(p.cat) }))
-  : SHEET_FALLBACK.map((s, i) => ({ seed: s, cat: GALLERY_CATS[i % GALLERY_CATS.length] }));
+  : SHEET_FALLBACK.map((s) => ({ seed: s, cat: "Open" }));
 
 /* Real design projects now ship in WEB_PROJECTS, so the Work-page design
    section shows the cards (not the old reserved-room placeholder). */
