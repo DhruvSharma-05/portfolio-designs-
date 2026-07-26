@@ -1,10 +1,10 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion, AnimatePresence } from "motion/react";
-import { P, img, srcSet, ABOUT, INTRO, SHOTLIST, METRICS, QUOTES, prefersReduced } from "../data.js";
-import { Reveal, TLink, Metrics } from "../ui.jsx";
+import { motion } from "motion/react";
+import { P, img, srcSet, ABOUT, INTRO, SHOTLIST, METRICS, prefersReduced } from "../data.js";
+import { Reveal, TLink, Metrics, SectionHead } from "../ui.jsx";
 
 const page = {
   initial: { opacity: 0, y: 12 },
@@ -31,29 +31,38 @@ export default function About() {
       variants={page} initial="initial" animate="animate">
       <div className="about-hero">
         <div>
-          <div className="mono" style={{ marginBottom: 22 }}>About — {P.city}</div>
+          <div className="mono about-kicker">About — {P.city}</div>
           <h1>{P.photographer}</h1>
           <p className="about-lead">
             {ABOUT.lead.split(" ").map((w, i) =>
               i === 0 ? <i key={i}>{w} </i> : w + " "
             )}
           </p>
+          <div className="about-tags">
+            <span className="mono">Designer</span>
+            <span className="mono">Photographer</span>
+            <span className="mono" style={{ color: "var(--accent)" }}>Booking 2026</span>
+          </div>
         </div>
         <figure className="about-portrait">
           <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} srcSet={srcSet(ABOUT.portrait)}
             sizes="(max-width: 820px) 100vw, 45vw" alt={`${P.photographer}, portrait`} />
+          <figcaption className="mono">{P.city}, {P.region} — Lensofviraj</figcaption>
         </figure>
       </div>
 
       <Reveal as="div" className="about-body">
-        {ABOUT.body.map((p, i) => <p key={i}>{p}</p>)}
+        {ABOUT.body.map((p, i) => (
+          <p key={i} className={i === 0 ? "lead-p" : ""}>{p}</p>
+        ))}
       </Reveal>
 
       <section>
-        <div className="mono" style={{ marginBottom: 24 }}>How I work</div>
+        <SectionHead n="01">How I work</SectionHead>
         <Reveal className="approach">
-          {ABOUT.approach.map((a) => (
+          {ABOUT.approach.map((a, i) => (
             <div key={a.k}>
+              <span className="approach-n mono">{String(i + 1).padStart(2, "0")}</span>
               <h3>{a.k}</h3>
               <p>{a.v}</p>
             </div>
@@ -62,7 +71,7 @@ export default function About() {
       </section>
 
       <section className="timeline">
-        <div className="mono" style={{ marginBottom: 24 }}>The short version</div>
+        <SectionHead n="02">The short version</SectionHead>
         {ABOUT.timeline.map((t, i) => (
           <Reveal className="tl-row" key={t.y} delay={i * 0.05}>
             <b>{t.y}</b>
@@ -74,7 +83,7 @@ export default function About() {
       {/* what a client walks away with — moved here from the Work page,
           which now stays about the work itself */}
       <section style={{ marginTop: "10vh" }}>
-        <div className="mono" style={{ marginBottom: 24 }}>What you get</div>
+        <SectionHead n="03">What you get</SectionHead>
         <div>
           {INTRO.offer.map((o, i) => (
             <Reveal className="sl-row" key={o.k} delay={i * 0.04}>
@@ -87,7 +96,7 @@ export default function About() {
       </section>
 
       <section style={{ marginTop: "10vh" }}>
-        <div className="mono" style={{ marginBottom: 24 }}>What I'm hired for</div>
+        <SectionHead n="04">What I'm hired for</SectionHead>
         <div>
           {SHOTLIST.map((s, i) => (
             <Reveal className="sl-row" key={s.k} delay={i * 0.04}>
@@ -100,13 +109,8 @@ export default function About() {
       </section>
 
       <section style={{ marginTop: "10vh" }}>
-        <div className="mono" style={{ marginBottom: 24 }}>The numbers</div>
+        <SectionHead n="05">The numbers</SectionHead>
         <Metrics items={METRICS} />
-      </section>
-
-      <section style={{ marginTop: "10vh" }}>
-        <div className="mono" style={{ marginBottom: 24 }}>What clients say</div>
-        <Quotes />
       </section>
 
       <section className="end" style={{ marginTop: "12vh" }}>
@@ -114,42 +118,38 @@ export default function About() {
           <h2 className="display">Let's make<br />something.</h2>
           <a className="mail" href={`mailto:${P.email}`}>{P.email}</a>
         </Reveal>
+
+        <Reveal as="dl" className="colophon" style={{ marginTop: 56 }}>
+          <div>
+            <dt className="mono">Contact</dt>
+            <dd>
+              <a href={`mailto:${P.email}`}>{P.email}</a><br />
+              <a href={`mailto:${P.email2}`}>{P.email2}</a><br />
+              <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
+            </dd>
+          </div>
+          <div>
+            <dt className="mono">Based in</dt>
+            <dd>{P.city}<br />{P.region}</dd>
+          </div>
+          <div>
+            <dt className="mono">Elsewhere</dt>
+            <dd>
+              {P.socials.map((s) => (
+                <span key={s.href} style={{ display: "block" }}>
+                  <a href={s.href} target="_blank" rel="noreferrer">
+                    {s.k} — {s.v}
+                  </a>
+                </span>
+              ))}
+            </dd>
+          </div>
+        </Reveal>
+
         <div style={{ marginTop: 44 }}>
           <TLink to="/" className="mono back"><span className="arrow">←</span> Back to work</TLink>
         </div>
       </section>
     </motion.main>
-  );
-}
-
-/* Client quotes — the crossfading slideshow that used to sit on the
-   Work page. Autoplays; the dots jump straight to a quote. */
-function Quotes() {
-  const [qi, setQi] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setQi((i) => (i + 1) % QUOTES.length), 5200);
-    return () => clearInterval(t);
-  }, []);
-  return (
-    <div>
-      <div className="slide">
-        <AnimatePresence mode="wait">
-          <motion.blockquote className="q" key={qi}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -14 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}>
-            <p><span style={{ color: "var(--accent)" }}>“</span>{QUOTES[qi].q}</p>
-            <footer className="mono">{QUOTES[qi].a} — {QUOTES[qi].r}</footer>
-          </motion.blockquote>
-        </AnimatePresence>
-      </div>
-      <div className="dots">
-        {QUOTES.map((q, i) => (
-          <button key={i} className={`dot ${i === qi ? "on" : ""}`}
-            onClick={() => setQi(i)} aria-label={`Quote ${i + 1}`} />
-        ))}
-      </div>
-    </div>
   );
 }

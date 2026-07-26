@@ -67,6 +67,32 @@ export function Logo() {
   );
 }
 
+/* ---------------- section header ----------------
+   A numbered label with a rule that draws itself across when the header
+   scrolls into view. Gives every section the same strong, quiet anchor
+   so the page reads as a rhythm instead of a flat stack of text. */
+export function SectionHead({ n, children }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (prefersReduced()) { el.classList.add("in"); return; }
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { el.classList.add("in"); io.disconnect(); } },
+      { threshold: 0.6 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div className="shead" ref={ref}>
+      {n && <span className="shead-n mono">{n}</span>}
+      <span className="shead-label mono">{children}</span>
+      <span className="shead-rule" aria-hidden="true" />
+    </div>
+  );
+}
+
 /* ---------------- shared animated primitives ----------------
    Reveal and Counter run inside useGSAP (a scoped layout effect); under
    reduced motion they skip the animation and render final state. */

@@ -244,10 +244,6 @@ export default function Home() {
                 ))}
               </dd>
             </div>
-            <div>
-              <dt className="mono">Colophon</dt>
-              <dd>Dark, minimal, type-led. Built so the pictures are the only bright thing on the page.</dd>
-            </div>
           </Reveal>
 
           <hr className="rule" style={{ marginTop: 44 }} />
