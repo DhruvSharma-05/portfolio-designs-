@@ -6,6 +6,7 @@
    ================================================================== */
 
 import manifest from "./photos.manifest.json";
+import webCovers from "./web-covers.json";
 
 /* Read the motion preference live so an OS change is respected on the
    next mount. Single source of truth, shared by every animated piece. */
@@ -94,6 +95,11 @@ for (const p of manifest.gallery || []) PHOTOS.set(p.seed, p);
    existing manifest entries still resolve. Normally empty. */
 for (const p of manifest.projectPhotos || []) PHOTOS.set(p.seed, p);
 if (manifest.portrait) PHOTOS.set(manifest.portrait.seed, manifest.portrait);
+/* design-project cover screenshots (scripts/shoot-figma.mjs). Kept in its
+   own file so the Contentful sync, which rewrites the manifest, never
+   clobbers them. Empty [] until `npm run shoot` has been run — the design
+   cards fall back to the live Figma embed while it is. */
+for (const p of webCovers) PHOTOS.set(p.seed, p);
 
 /* img(seed, w, h): resolves a seed to a local optimized image. Picks the
    small variant for thumbnail widths, the large one otherwise. Unknown

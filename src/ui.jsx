@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
-import { P, img, srcSet, prefersReduced } from "./data.js";
+import { P, img, srcSet, figmaEmbed, prefersReduced } from "./data.js";
 import { useApp } from "./context.js";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -64,6 +64,44 @@ export function Logo() {
         ))}
       </span>
     </span>
+  );
+}
+
+/* ---------------- deferred Figma preview ----------------
+   A live Figma prototype preview that only mounts its (heavy) iframe once
+   the card is near the viewport — so a page never loads more than it needs
+   at once and offscreen cards cost nothing until you scroll to them. Until
+   then the branded name/tag panel stands in (and stays behind the iframe as
+   its load placeholder). `eager` forces an immediate mount for
+   above-the-fold slots. The iframe is pointer-events:none / tabIndex -1 so
+   the whole card stays a single link to the detail page. */
+export function FigmaFrame({ w, eager = false }) {
+  const ref = useRef(null);
+  const [show, setShow] = useState(eager);
+
+  useEffect(() => {
+    if (show) return;
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") { setShow(true); return; }
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setShow(true); io.disconnect(); } },
+      { rootMargin: "600px" }, // start loading well before it scrolls into view
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [show]);
+
+  return (
+    <div className="figbox" ref={ref}>
+      <div className="browser-ph figbox-fallback">
+        <span className="browser-ph-name">{w.t}</span>
+        <span className="mono">{w.tag}</span>
+      </div>
+      {show && (
+        <iframe className="figbox-frame" title={`${w.t} — Figma preview`}
+          src={figmaEmbed(w.href)} loading="lazy" tabIndex={-1} />
+      )}
+    </div>
   );
 }
 

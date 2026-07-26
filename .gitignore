@@ -12,10 +12,14 @@ dist
 dist-ssr
 *.local
 
-# Google Drive photo sync — secrets, cache, and generated images
+# Contentful photo sync — secrets, cache, and generated images
 .env
 .drive-cache.json
-public/photos/
+public/photos/*
+# ...but keep the design-project cover screenshots (npm run shoot): they're
+# stable, hand-generated assets that must ship with the repo, not build-time
+# Contentful output.
+!public/photos/web/
 
 # Editor directories and files
 .vscode/*

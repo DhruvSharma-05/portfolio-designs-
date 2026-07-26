@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
-import { P, img, srcSet, WEB_PROJECTS, hasPhoto, figmaEmbed, prefersReduced } from "../data.js";
-import { Reveal, TLink, SectionHead } from "../ui.jsx";
+import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
+import { Reveal, TLink, SectionHead, FigmaFrame } from "../ui.jsx";
 
 const page = {
   initial: { opacity: 0 },
@@ -15,13 +15,13 @@ const PROCESS = [
   { k: "Ship and hand over", v: "Live site, source file, and a way for you to change it yourself." },
 ];
 
-/* The browser-chrome preview shared by the featured card and the grid —
-   a live Figma prototype when the project has one (the iframe is
-   pointer-events:none so the whole card stays a single link), a synced
-   cover screenshot otherwise, and a branded name/tag panel as the last
-   fallback. `sizes` differs between the wide featured slot and the
-   narrower grid, so it's passed in. */
-function Preview({ w, reduced, sizes }) {
+/* The browser-chrome preview shared by the hero and the grid — a synced
+   cover screenshot when one exists (fastest), else a live Figma prototype
+   (deferred via FigmaFrame), else a branded name/tag panel. The iframe is
+   pointer-events:none so the whole card stays a single link. `sizes`
+   differs between the wide hero slot and the narrower grid; `eager` mounts
+   the embed immediately (hero only). */
+function Preview({ w, reduced, sizes, eager = false }) {
   return (
     <div className="browser">
       <div className="browser-bar">
@@ -37,14 +37,7 @@ function Preview({ w, reduced, sizes }) {
             sizes={sizes} alt={`${w.t} — full page`} loading="lazy" />
         </div>
       ) : w.embed && w.href ? (
-        <div className="figbox">
-          <div className="browser-ph figbox-fallback">
-            <span className="browser-ph-name">{w.t}</span>
-            <span className="mono">{w.tag}</span>
-          </div>
-          <iframe className="figbox-frame" title={`${w.t} — Figma preview`}
-            src={figmaEmbed(w.href)} loading="lazy" tabIndex={-1} />
-        </div>
+        <FigmaFrame w={w} eager={eager} />
       ) : (
         <div className="browser-ph">
           <span className="browser-ph-name">{w.t}</span>
@@ -95,7 +88,7 @@ export default function Design() {
         {feat && (
           <TLink to={`/design/${feat.slug}`} className="dz-hero-media" aria-label={`Open ${feat.t}`}>
             <span className="mono dz-hero-tag">Featured — {feat.tag}</span>
-            <Preview w={feat} reduced={reduced} sizes="(max-width: 900px) 100vw, 50vw" />
+            <Preview w={feat} reduced={reduced} sizes="(max-width: 900px) 100vw, 50vw" eager />
           </TLink>
         )}
       </header>

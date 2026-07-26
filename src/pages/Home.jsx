@@ -5,9 +5,9 @@ import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   P, img, srcSet, ratio, INTRO, SHEET,
-  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, figmaEmbed, prefersReduced, heavyVisualsAllowed,
+  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
-import { Reveal, TLink, Lightbox } from "../ui.jsx";
+import { Reveal, TLink, Lightbox, FigmaFrame } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 /* Three.js is code-split so the hero text (the LCP) paints first. */
@@ -158,14 +158,7 @@ export default function Home() {
                                 alt={`${w.t} — full page`} loading="lazy" />
                             </div>
                           ) : w.embed && w.href ? (
-                            <div className="figbox">
-                              <div className="browser-ph figbox-fallback">
-                                <span className="browser-ph-name">{w.t}</span>
-                                <span className="mono">{w.tag}</span>
-                              </div>
-                              <iframe className="figbox-frame" title={`${w.t} — Figma preview`}
-                                src={figmaEmbed(w.href)} loading="lazy" tabIndex={-1} />
-                            </div>
+                            <FigmaFrame w={w} />
                           ) : (
                             <div className="browser-ph">
                               <span className="browser-ph-name">{w.t}</span>
