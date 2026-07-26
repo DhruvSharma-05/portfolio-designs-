@@ -809,15 +809,20 @@ export const CSS = `
   border-bottom: 1px solid var(--rule); background: var(--panel); }
 .phero-stage { position: absolute; inset: 0; }
 .phero-fr { position: absolute; inset: 0; }
-.phero-fr img { will-change: transform; }
+/* full-bleed cover — the frame fills the banner; object-position keeps the
+   upper-middle (faces) in view when a tall photo is cropped to fit */
+.phero-fr img { will-change: transform; object-position: center 30%; }
 .phero-fr::after { content: ""; position: absolute; inset: 0;
   background: linear-gradient(180deg,
-    color-mix(in srgb, var(--bg) 62%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 12%, transparent) 38%,
-    color-mix(in srgb, var(--bg) 88%, transparent) 100%); }
+    color-mix(in srgb, var(--bg) 46%, transparent) 0%,
+    transparent 30%,
+    color-mix(in srgb, var(--bg) 30%, transparent) 60%,
+    color-mix(in srgb, var(--bg) 94%, transparent) 100%); }
 .phero-in { position: relative; z-index: 2; height: 100%; display: flex;
-  flex-direction: column; justify-content: space-between; padding: 8vh 0 34px; }
-.phero-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  flex-direction: column; justify-content: flex-end; gap: 26px; padding: 8vh 28px 40px; }
+/* top labels stay pinned to the top; caption + rail sit at the bottom */
+.phero-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  margin-bottom: auto; }
 .phero-cap h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
   font-size: clamp(44px, 9vw, 120px); text-wrap: balance; }
 .phero-cap .sub { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 18px; }
