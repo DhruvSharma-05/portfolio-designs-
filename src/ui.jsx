@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { P, prefersReduced } from "./data.js";
+import { motion, AnimatePresence } from "motion/react";
+import { P, img, srcSet, prefersReduced } from "./data.js";
 import { useApp } from "./context.js";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -156,4 +157,96 @@ function Counter({ to, suf, run = true, delay = 0 }) {
   }, { scope: ref, dependencies: [run] });
 
   return <b ref={ref}>{n}<span className="suf" ref={sufRef}>{suf}</span></b>;
+}
+
+/* ---------------- lightbox / preview ----------------
+   Full-screen viewer. Locks page scroll while open so the page behind
+   doesn't drift. Focus moves to the Close button on open, Tab cycles
+   inside the dialog, and focus returns to the frame that opened it.
+
+   Two modes, one component:
+   • carousel (default) — ← → Esc, prev/next arrows and a dot rail, for
+     browsing every frame in a photo project.
+   • single ({ single }) — just the one clicked photo, Esc or click the
+     backdrop to close. No arrows, no dots. Used by the Work gallery.
+
+   Pass a seed list, a title, and the [index, setIndex] pair driving it
+   (-1 = closed). Wrap the render in <AnimatePresence> so the exit fade
+   plays. */
+export function Lightbox({ photos, title, index, setIndex, reduced, single = false }) {
+  const close = useCallback(() => setIndex(-1), [setIndex]);
+  const shift = useCallback(
+    (d) => setIndex((n) => (n + d + photos.length) % photos.length),
+    [setIndex, photos.length],
+  );
+  const boxRef = useRef(null);
+
+  useEffect(() => {
+    const opener = document.activeElement;
+    boxRef.current?.querySelector(".lb-x")?.focus();
+    const key = (e) => {
+      if (e.key === "Escape") close();
+      if (!single && e.key === "ArrowRight") shift(1);
+      if (!single && e.key === "ArrowLeft") shift(-1);
+      if (e.key === "Tab") {
+        const items = boxRef.current?.querySelectorAll("button");
+        if (!items?.length) return;
+        const first = items[0], last = items[items.length - 1];
+        const active = document.activeElement;
+        if (!boxRef.current.contains(active)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    window.addEventListener("keydown", key);
+    const prevOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", key);
+      document.documentElement.style.overflow = prevOverflow;
+      if (opener instanceof HTMLElement && document.contains(opener)) opener.focus();
+    };
+  }, [close, shift, single]);
+
+  return (
+    <motion.div className="lb" ref={boxRef} role="dialog" aria-modal="true" aria-label={`${title} — photo viewer`}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: reduced ? 0 : 0.3 }}
+      onClick={single ? (e) => { if (e.target === e.currentTarget) close(); } : undefined}>
+      <div className="lb-bar">
+        <span className="mono">
+          {single ? title : `${title} — ${String(index + 1).padStart(2, "0")} / ${String(photos.length).padStart(2, "0")}`}
+        </span>
+        <button className="lb-x" onClick={close} aria-label="Close viewer">Close ✕</button>
+      </div>
+
+      <div className="lb-stage">
+        {!single && (
+          <button className="lb-arrow prev" onClick={() => shift(-1)} aria-label="Previous frame">←</button>
+        )}
+        <AnimatePresence mode="wait">
+          <motion.img key={photos[index]} src={img(photos[index], 2000, 1400)}
+            srcSet={srcSet(photos[index])} sizes="100vw"
+            alt={single ? title : `${title}, frame ${index + 1}`}
+            initial={{ opacity: 0, scale: reduced ? 1 : 0.985 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduced ? 0 : 0.35, ease: "easeOut" }} />
+        </AnimatePresence>
+        {!single && (
+          <button className="lb-arrow next" onClick={() => shift(1)} aria-label="Next frame">→</button>
+        )}
+      </div>
+
+      {!single && (
+        <div className="lb-foot">
+          {photos.map((s, n) => (
+            <button key={s + n} className={`dot ${n === index ? "on" : ""}`}
+              aria-current={n === index || undefined}
+              onClick={() => setIndex(n)} aria-label={`Frame ${n + 1}`} />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
 }

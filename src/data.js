@@ -899,10 +899,10 @@ export const CSS = `
 
 /* --- lightbox slideshow --- */
 .lb { position: fixed; inset: 0; z-index: 400; background: color-mix(in srgb, var(--bg) 94%, #000);
-  display: grid; grid-template-rows: auto 1fr auto; padding: 20px 24px 28px; }
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: 20px 24px 28px; }
 .lb-bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .lb-stage { position: relative; display: grid; place-items: center; overflow: hidden; }
-.lb-stage img { width: auto; height: auto; max-width: 100%; max-height: 100%;
+.lb-stage img { width: auto; height: auto; max-width: 100%; max-height: calc(100vh - 120px);
   object-fit: contain; border-radius: 3px; }
 .lb-foot { display: flex; justify-content: center; gap: 8px; }
 .lb-x { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
