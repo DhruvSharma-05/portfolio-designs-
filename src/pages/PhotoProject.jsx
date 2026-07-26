@@ -67,7 +67,7 @@ export default function PhotoProject() {
           <div className="mono" style={{ color: "var(--accent)" }}>{p.exif}</div>
         </div>
 
-        <figure className="pj-hero">
+        <figure className="pj-hero" style={{ aspectRatio: ratio(p.photos[0], 16, 9) }}>
           <img ref={heroImg} src={img(p.photos[0], 2000, 1125)} srcSet={srcSet(p.photos[0])}
             sizes="(max-width: 1180px) 100vw, 1180px" alt={p.t} />
         </figure>
@@ -171,6 +171,7 @@ function Roll({ photos, title, onOpen }) {
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
         {photos.map((s, n) => (
           <figure className="roll-fr" key={s + n}
+            style={{ aspectRatio: ratio(s, 3, 2) }}
             onClick={() => { if (drag.current.moved < 6) onOpen(n); }}>
             <img src={img(s, 1400, 933)} srcSet={srcSet(s)} sizes="(max-width: 700px) 84vw, 62vw"
               alt={`${title}, frame ${n + 1}`} loading="lazy" />

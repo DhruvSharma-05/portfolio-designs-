@@ -878,7 +878,7 @@ export const CSS = `
 
 /* --- carousel roll: snap-scrolling filmstrip with drag ------------- */
 .roll { position: relative; }
-.roll-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
+.roll-track { display: flex; align-items: flex-start; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
   padding-bottom: 18px; scrollbar-width: none; cursor: grab; }
 .roll-track::-webkit-scrollbar { display: none; }
 .roll-track.dragging { cursor: grabbing; scroll-snap-type: none; }
