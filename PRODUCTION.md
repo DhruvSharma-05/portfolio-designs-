@@ -89,9 +89,9 @@ Not done / narrower than it looks:
   it. Add dynamic `<title>`/description + canonical + JSON-LD (Photographer).
 - **`robots.txt` + `sitemap.xml`** — none in `public/`.
 - **Analytics** — none (Vercel Analytics or Plausible).
-- **Auto-update** — the Vercel Deploy Hook (`VERCEL_DEPLOY_HOOK_URL`) triggers a
-  rebuild; wiring a Contentful webhook straight to it makes photo publishing
-  fully automatic (see `CLAUDE.md`).
+- **Auto-update** — a Contentful webhook → Vercel Deploy Hook makes publishing
+  (new photos *and* new collections/projects) go live automatically, no manual
+  rebuild. **Full setup steps below → "Auto-publishing".**
 
 ### 🟡 Polish / later
 - Decide the fate of `/photography/:slug` and `/design`/`/design/:slug`
@@ -100,3 +100,47 @@ Not done / narrower than it looks:
   reconsidered/removed if they're not needed going forward.
 - Privacy policy / cookie notice — required once analytics or a form is added.
 - Accessibility pass (gallery images are decorative `alt=""`; run Lighthouse).
+
+---
+
+## Auto-publishing (Contentful → Vercel)
+
+The site is static: `scripts/sync-contentful.mjs` runs at **build time** (the
+`prebuild` step), pulls every Photo, optimizes it to WebP, and bakes the result
+into the deploy. So new content — including a brand-new `collection` value,
+which the sync turns into a new photography project automatically — appears on
+the **next build**. Wire Contentful's publish event to a Vercel Deploy Hook and
+that build happens on its own, ~1–2 min after you publish. No code changes; this
+is one-time dashboard config.
+
+**1 — Create the Vercel Deploy Hook**
+1. Vercel → your project → **Settings → Git → Deploy Hooks**.
+2. Create a hook: name `contentful-publish`, branch = your production branch
+   (e.g. `main`).
+3. Copy the URL — it looks like
+   `https://api.vercel.com/v1/integrations/deploy/prj_xxx/yyyy`.
+   Treat it as a **secret**: anyone with it can trigger a build. (It's the same
+   value as the `VERCEL_DEPLOY_HOOK_URL` env var, if set.)
+
+**2 — Create the Contentful webhook that calls it**
+1. Contentful → **Settings → Webhooks → Add Webhook**.
+2. Name `Vercel rebuild`; **Method `POST`**, **URL** = the Deploy Hook URL above.
+3. **Triggers** → *Select specific triggering events*:
+   - **Entry**: Publish, Unpublish (add Delete if you want deletions to redeploy)
+   - **Asset**: Publish, Unpublish (so replacing an image also redeploys)
+4. *(optional)* **Filters** → `sys.contentType.sys.id` **equals** `photo` and
+   `sys.environment.sys.id` equals `master`, so only Photo changes trigger builds.
+5. Leave headers/payload at defaults — Deploy Hooks ignore the request body.
+6. Save.
+
+**3 — Verify**
+- Publish a Photo (or a whole new collection) → Vercel → **Deployments** shows a
+  new build whose source is **Deploy Hook** → live in ~1–2 min.
+
+**Notes**
+- The build reads `CONTENTFUL_SPACE_ID` + `CONTENTFUL_ACCESS_TOKEN` from Vercel
+  env vars (already set) — the webhook itself carries no credentials.
+- Bulk edits fire many events; publish your batch, then let one build settle
+  (Vercel coalesces in-flight deploy-hook triggers). For a big import, publish
+  everything, then trigger one build.
+- Nothing about the runtime changes — the live site still never calls Contentful.

@@ -37,7 +37,9 @@ within it.
 - **Config** lives in `.env` (git-ignored); `.env.example` is the committed
   template. On Vercel, the same vars go in Project Settings → Environment
   Variables; the existing **Deploy Hook** URL still triggers a rebuild after
-  changing photos.
+  changing photos. Wire a **Contentful webhook → that Deploy Hook** to make
+  publishing (new photos *and* new collections) auto-deploy — full steps in
+  [PRODUCTION.md](PRODUCTION.md) → "Auto-publishing".
 - **Google Drive is fully removed.** The admin panel, the `/client`
   delivery area, the entire `api/` serverless backend, and
   `scripts/sync-drive.mjs` were all deleted — the site is now a pure static
