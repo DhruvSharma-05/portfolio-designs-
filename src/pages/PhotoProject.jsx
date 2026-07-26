@@ -61,10 +61,12 @@ export default function PhotoProject() {
 
         <div className="detail-head">
           <div>
-            <div className="mono" style={{ marginBottom: 16 }}>{p.kind} — {p.year}</div>
+            <div className="mono" style={{ marginBottom: 16 }}>
+              {p.kind}{p.year ? ` — ${p.year}` : ""}
+            </div>
             <h1>{p.t}</h1>
           </div>
-          <div className="mono" style={{ color: "var(--accent)" }}>{p.exif}</div>
+          {p.exif && <div className="mono" style={{ color: "var(--accent)" }}>{p.exif}</div>}
         </div>
 
         <figure className="pj-hero" style={{ aspectRatio: ratio(p.photos[0], 16, 9) }}>
@@ -77,16 +79,19 @@ export default function PhotoProject() {
             <p className="pj-intro">{p.intro}</p>
           </Reveal>
           <Reveal as="dl" className="spec" delay={0.08}>
-            <div><dt className="mono">Location</dt><dd>{p.loc}</dd></div>
-            <div><dt className="mono">Capture</dt><dd>{p.exif}</dd></div>
-            <div><dt className="mono">Role</dt><dd>{p.role}</dd></div>
+            {p.loc && <div><dt className="mono">Location</dt><dd>{p.loc}</dd></div>}
+            {p.exif && <div><dt className="mono">Capture</dt><dd>{p.exif}</dd></div>}
+            {p.role && <div><dt className="mono">Role</dt><dd>{p.role}</dd></div>}
+            <div><dt className="mono">Collection</dt><dd>{p.kind}</dd></div>
             <div><dt className="mono">Frames</dt><dd>{p.photos.length}</dd></div>
           </Reveal>
         </div>
 
-        <p className="detail-note" style={{ marginTop: "6vh", color: "var(--dim)", fontSize: 16 }}>
-          {p.note}
-        </p>
+        {p.note && (
+          <p className="detail-note" style={{ marginTop: "6vh", color: "var(--dim)", fontSize: 16 }}>
+            {p.note}
+          </p>
+        )}
 
         {/* ---------- carousel roll ---------- */}
         <section className="sec" style={{ marginTop: "6vh" }}>

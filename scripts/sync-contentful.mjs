@@ -2,12 +2,14 @@
    sync-contentful.mjs — build-time Contentful → portfolio photo sync.
 
    Pulls "Photo" entries from Contentful (fields: title, collection,
-   order, category, image), buckets them into work / gallery / portrait
-   by their `collection` field, resizes to optimized WebP under
-   public/photos/, and writes the work/gallery/portrait sections of
-   src/photos.manifest.json. The project sections of the manifest
-   (projectPhotos/photoProjects/webProjects) are read-merged and left
-   untouched, so they survive if ever populated by hand.
+   order, category, image), buckets them by their `collection` field, and
+   resizes to optimized WebP under public/photos/. Three roles are special
+   — work / gallery / portrait — and drive those manifest sections. Any
+   OTHER collection value (e.g. "wildlife", "traditional", "modern") is
+   treated as a photo-project collection: its photos go to
+   public/photos/projects/<slug>/, are listed in `projectPhotos`, and are
+   grouped into `photoProjects` (one project per collection). The
+   `webProjects` section is read-merged and left untouched.
 
    Runs automatically via the "prebuild" npm script, or manually with
    `npm run sync`. If credentials are missing it warns and exits 0 so
@@ -236,6 +238,109 @@ async function main() {
     }
   }
 
+  /* ---- project collections -------------------------------------------
+     Any `collection` value that isn't a known role (work/gallery/portrait)
+     is treated as a photo-project collection — e.g. "wildlife",
+     "traditional", "modern". Each distinct value becomes one project: its
+     photos are optimized under public/photos/projects/<slug>/, listed flat
+     in `projectPhotos` (so data.js can resolve their seeds), and grouped
+     into `photoProjects` with the project meta the pages read. */
+  const projectColls = [
+    ...new Set(
+      items
+        .map((it) => (it.fields.collection || "").trim())
+        .filter((c) => c && !ROLES.includes(c)),
+    ),
+  ].sort((a, b) => {
+    // order collections by the smallest `order` among their photos
+    const min = (c) =>
+      Math.min(
+        ...items
+          .filter((it) => (it.fields.collection || "").trim() === c)
+          .map((it) => it.fields.order ?? 9999),
+        9999,
+      );
+    return min(a) - min(b) || a.localeCompare(b);
+  });
+
+  const projectPhotos = [];
+  const photoProjects = [];
+
+  for (const coll of projectColls) {
+    const collSlug = slug(coll);
+    const roleDir = `projects/${collSlug}`;
+    const entries = items
+      .filter((it) => (it.fields.collection || "").trim() === coll)
+      .sort((a, b) => {
+        const oa = a.fields.order ?? 9999;
+        const ob = b.fields.order ?? 9999;
+        return oa - ob || (a.fields.title || "").localeCompare(b.fields.title || "");
+      });
+
+    const photos = [];
+    let firstExif = "";
+    for (const entry of entries) {
+      const assetId = entry.fields.image?.sys?.id;
+      const asset = assetId && assets.get(assetId);
+      const fileUrl = asset?.fields?.file?.url;
+      if (!fileUrl) {
+        warn(`entry ${entry.sys.id} (${entry.fields.title || "untitled"}) has no image, skipping`);
+        continue;
+      }
+
+      let seed = `${collSlug}-${slug(entry.fields.title || entry.sys.id)}`;
+      while (usedSeeds.has(`${roleDir}/${seed}`)) seed += "-x";
+      usedSeeds.add(`${roleDir}/${seed}`);
+
+      const cacheKey = `${roleDir}/${entry.sys.id}`;
+      const stamp = `${asset.sys.id}:${asset.sys.updatedAt}`;
+      const prev = cache[cacheKey];
+      const outputsExist =
+        prev &&
+        prev.seed === seed &&
+        prev.variants &&
+        Object.values(prev.variants)
+          .filter((v) => typeof v === "string")
+          .every((rel) => existsSync(path.join(ROOT, "public", rel.replace(/^\//, ""))));
+
+      let variants;
+      let exif;
+      if (prev && prev.stamp === stamp && outputsExist) {
+        variants = prev.variants;
+        exif = prev.exif ?? "";
+        log(`skip (cached) ${roleDir}/${entry.fields.title}`);
+      } else {
+        log(`fetch ${roleDir}/${entry.fields.title}`);
+        const assetUrl = fileUrl.startsWith("//") ? `https:${fileUrl}` : fileUrl;
+        const res = await fetch(assetUrl);
+        if (!res.ok) throw new Error(`asset download failed: ${res.status}`);
+        const buffer = Buffer.from(await res.arrayBuffer());
+        exif = await formatExif(buffer);
+        variants = await renderVariants(buffer, roleDir, seed);
+      }
+
+      nextCache[cacheKey] = { seed, stamp, variants, exif };
+      projectPhotos.push({ seed, sm: variants.sm, lg: variants.lg, w: variants.w, h: variants.h });
+      photos.push(seed);
+      if (!firstExif && exif) firstExif = exif;
+    }
+
+    if (!photos.length) continue;
+    const title = coll.replace(/\b\w/g, (m) => m.toUpperCase());
+    photoProjects.push({
+      slug: collSlug,
+      t: title,
+      kind: title,
+      loc: "",
+      year: "",
+      exif: firstExif,
+      role: "Photography",
+      intro: `Selected ${title.toLowerCase()} photography — the full set, shot and graded as one.`,
+      note: "",
+      photos,
+    });
+  }
+
   // Prune output files whose source entry is gone.
   await pruneOrphans(usedSeeds);
 
@@ -245,20 +350,30 @@ async function main() {
     work: buckets.work,
     gallery: buckets.gallery,
     portrait: buckets.portrait[0] || null,
+    projectPhotos,
+    photoProjects,
   };
 
   await writeFile(MANIFEST, JSON.stringify(manifest, null, 2) + "\n");
   await writeFile(CACHE, JSON.stringify(nextCache, null, 2) + "\n");
   log(
     `done — work:${manifest.work.length} gallery:${manifest.gallery.length}` +
-      ` portrait:${manifest.portrait ? 1 : 0}`,
+      ` portrait:${manifest.portrait ? 1 : 0}` +
+      ` projects:${photoProjects.length} (${projectPhotos.length} photos)`,
   );
 }
 
-/* Remove WebP outputs under public/photos/{work,gallery,portrait} that no
-   longer correspond to a synced seed (entry deleted/retitled in Contentful). */
+/* Remove WebP outputs under public/photos/{work,gallery,portrait} and every
+   public/photos/projects/<slug> dir that no longer correspond to a synced
+   seed (entry deleted/retitled/re-collectioned in Contentful). */
 async function pruneOrphans(usedSeeds) {
-  for (const role of ROLES) {
+  const roleDirs = [...ROLES];
+  const projectsRoot = path.join(PUBLIC_PHOTOS, "projects");
+  if (existsSync(projectsRoot)) {
+    const subs = await readdir(projectsRoot, { withFileTypes: true }).catch(() => []);
+    for (const d of subs) if (d.isDirectory()) roleDirs.push(`projects/${d.name}`);
+  }
+  for (const role of roleDirs) {
     const dir = path.join(PUBLIC_PHOTOS, role);
     if (!existsSync(dir)) continue;
     let names;

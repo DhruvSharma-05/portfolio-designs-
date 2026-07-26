@@ -167,31 +167,22 @@ const SHEET_FALLBACK = ["pf-c1", "pf-c2", "pf-c3", "pf-c4", "pf-c5", "pf-c6"];
 
 /* Prefer real synced photos; fall back to placeholders when the
    manifest is empty. FRAMES drives the work cards + /work/:seed pages;
-   SHEET drives the contact strip + horizontal gallery. */
+   SHEET drives the contact strip + horizontal gallery — it prefers the
+   gallery bucket, then falls back to the pool of project photos (so the
+   strip still fills once photos live under collections rather than the
+   gallery bucket), then to placeholders. */
 export const FRAMES = manifest.work?.length ? manifest.work : FRAMES_FALLBACK;
 export const SHEET = manifest.gallery?.length
   ? manifest.gallery.map((p) => p.seed)
-  : SHEET_FALLBACK;
+  : manifest.projectPhotos?.length
+    ? manifest.projectPhotos.map((p) => p.seed)
+    : SHEET_FALLBACK;
 
-/* ==================================================================
-   GALLERY — the simple, captionless grid on the Work page.
-
-   Fixed categories. A synced photo's category comes from the optional
-   `category` field on its Contentful Photo entry (see
-   scripts/sync-contentful.mjs); anything unset lands in "Open". With
-   no manifest at all, placeholder seeds are dealt across the
-   categories so the grid still renders.
-   ================================================================== */
-/* "Professional Photoshoot" was retired — every gallery photo now lands in
-   the single "Open" category (so nothing a Contentful entry tagged
-   "professional" gets hidden). */
-export const GALLERY_CATS = ["Open"];
-
-const normCat = () => "Open";
-
-export const GALLERY_ITEMS = manifest.gallery?.length
-  ? manifest.gallery.map((p) => ({ seed: p.seed, cat: normCat(p.cat) }))
-  : SHEET_FALLBACK.map((s) => ({ seed: s, cat: "Open" }));
+/* The old captioned "Gallery" grid (category tabs) was replaced by the
+   per-collection photography cards — see PHOTO_PROJECTS below and
+   PhotoProjects in Home.jsx. Photos are now organised by their
+   `collection` (wildlife / traditional / …), each opening its own
+   /photography/:slug gallery. */
 
 /* Real design projects now ship in WEB_PROJECTS, so the Work-page design
    section shows the cards (not the old reserved-room placeholder). */
@@ -293,6 +284,20 @@ export const FEATURED = PHOTO_PROJECTS.map((p) => ({
   loc: p.loc,
   year: p.year,
 }));
+
+/* A flat pool of every project photo, round-robin interleaved across the
+   projects — so a home-page grid mixes the collections (one wildlife, one
+   traditional, one modern, …) instead of showing one whole set then the
+   next. Drives the "selected frames" grid on the home page. */
+export const PHOTO_POOL = (() => {
+  const lists = PHOTO_PROJECTS.map((p) => p.photos || []);
+  const out = [];
+  const longest = Math.max(0, ...lists.map((l) => l.length));
+  for (let i = 0; i < longest; i++) {
+    for (const l of lists) if (l[i]) out.push(l[i]);
+  }
+  return out;
+})();
 
 /* ==================================================================
    WEB DESIGN — /design and /design/:slug
@@ -640,6 +645,42 @@ export const CSS = `
 .gtab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .gempty { padding: 9vh 24px; text-align: center; border: 1px dashed var(--rule);
   border-radius: 6px; }
+
+/* --- home: photography collection cards ---
+   One framed cover per collection; opens the full gallery at
+   /photography/:slug. Mirrors the site's card idiom (accent hover, the
+   same pill "open" badge as the project stack). */
+.gwork-all { display: inline-flex; align-items: center; gap: 8px; color: var(--dim);
+  transition: color .3s ease; }
+.gwork-all:hover { color: var(--accent); }
+.gwork-all .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.gwork-all:hover .arrow { transform: translateX(5px); }
+.projrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
+@media (max-width: 560px) { .projrow { grid-template-columns: 1fr; } }
+.projcard { display: block; }
+.projshot { position: relative; overflow: hidden; border: 1px solid var(--rule);
+  border-radius: 4px; background: var(--panel); aspect-ratio: 4/3;
+  transition: border-color .4s ease; }
+.projcard:hover .projshot { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
+.projshot img { transition: transform 1.1s cubic-bezier(.2,.8,.2,1), filter .6s ease; }
+.projcard:hover .projshot img { transform: scale(1.05); }
+.projshot::after { content: ""; position: absolute; inset: 0; background: var(--accent);
+  opacity: 0; mix-blend-mode: overlay; transition: opacity .4s ease; pointer-events: none; }
+.projcard:hover .projshot::after { opacity: .12; }
+.projshot .open { position: absolute; right: 12px; bottom: 12px; z-index: 2;
+  background: color-mix(in srgb, var(--bg) 55%, transparent); color: var(--ink);
+  backdrop-filter: blur(8px); border: 1px solid var(--rule); border-radius: 100px;
+  padding: 7px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: .14em; text-transform: uppercase; }
+.projcap { display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px; padding: 14px 2px 0; }
+.projcap h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(19px, 2.2vw, 25px);
+  transition: color .3s; }
+.projcard:hover .projcap h3 { color: var(--accent); }
+.projcap .mono { flex: 0 0 auto; color: var(--dim); }
+/* label above the pooled "selected frames" grid on the home page */
+.gwork-sub { margin: 48px 0 20px; color: var(--dim);
+  padding-top: 26px; border-top: 1px solid var(--rule); }
 
 /* --- reserved room (design work not published yet) --- */
 .reserved { border: 1px dashed var(--rule); border-radius: 6px; padding: 8vh 36px;

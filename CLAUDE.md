@@ -13,16 +13,24 @@ via `npm run sync`. The script optimizes images to WebP under
 reads (falling back to `picsum.photos` placeholders when the manifest is
 empty). The live site is 100% static; nothing hits Contentful at runtime.
 
-Gallery photos may carry an optional `category` field
-(`Professional Photoshoot` | `Open` | …, see `GALLERY_CATS` in `data.js`);
-anything unset lands in "Open".
+The `collection` field also drives **photography projects**: any value
+other than `work`/`gallery`/`portrait` (e.g. `wildlife`, `traditional`,
+`modern`) is treated as its own project collection. The sync groups those
+photos under `public/photos/projects/<slug>/`, lists them in the manifest's
+`projectPhotos`, and builds one entry per collection in `photoProjects`.
+`data.js` exposes them as `PHOTO_PROJECTS`, which drives the home
+photography cards, the `/photography` stack + hero, and each
+`/photography/:slug` gallery view (grid + roll + lightbox of that
+collection). `order` controls both the collection sort and the photo sort
+within it.
 
-- **Content type:** `Photo` — fields `title`, `collection` (`work` | `gallery`
-  | `portrait`), `order` (int, controls sort), `image` (media, one file).
-  `location`/`year`/`role` were dropped from the model, so those Work-detail
-  rows render blank for now — add the fields back later if wanted. The EXIF
-  technical line (`35mm · f/8 · 1/500`) is still read automatically from the
-  uploaded file, same as before.
+- **Content type:** `Photo` — fields `title`, `collection` (`work` |
+  `gallery` | `portrait` | any project-collection name, e.g. `wildlife`),
+  `order` (int, controls sort), `image` (media, one file).
+  `location`/`year`/`role` were dropped from the model, so those detail
+  rows render blank for now (the pages hide empty rows) — add the fields
+  back later if wanted. The EXIF technical line (`35mm · f/8 · 1/500`) is
+  still read automatically from the uploaded file, same as before.
 - **Auth:** Content Delivery API only (read-only, published entries) —
   `CONTENTFUL_SPACE_ID` + `CONTENTFUL_ACCESS_TOKEN` (+ optional
   `CONTENTFUL_ENVIRONMENT`, default `master`). No Google API involved.

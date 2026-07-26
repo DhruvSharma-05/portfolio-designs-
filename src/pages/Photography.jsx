@@ -157,11 +157,13 @@ export default function Photography() {
                 <div>
                   <span className="kind mono">{p.kind}</span>
                   <h2>{p.t}</h2>
-                  <p>{p.note}</p>
+                  <p>{p.note || p.intro}</p>
                 </div>
                 <div className="meta">
-                  <span className="mono">{p.loc} — {p.year}</span>
-                  <span className="mono" style={{ color: "var(--accent)" }}>{p.exif}</span>
+                  <span className="mono">
+                    {[p.loc, p.year].filter(Boolean).join(" — ") || `${p.photos.length} frames`}
+                  </span>
+                  {p.exif && <span className="mono" style={{ color: "var(--accent)" }}>{p.exif}</span>}
                 </div>
               </div>
             </div>

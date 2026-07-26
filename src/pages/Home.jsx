@@ -5,7 +5,7 @@ import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   P, img, srcSet, ratio, INTRO, SHEET,
-  GALLERY_CATS, GALLERY_ITEMS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
+  PHOTO_PROJECTS, PHOTO_POOL, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
 import { Reveal, TLink, Lightbox, FigmaFrame } from "../ui.jsx";
 import { useApp } from "../context.js";
@@ -127,8 +127,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* gallery — four categories, no captions */}
-      <Gallery />
+      {/* photography — one card per collection, opening the gallery view */}
+      <PhotoProjects />
 
       {/* design — real projects once they're published; until then the
           space is visibly held for them */}
@@ -251,58 +251,67 @@ export default function Home() {
 }
 
 /* ==================================================================
-   GALLERY — four category tabs over a captionless masonry grid.
-   Simple on purpose: the frames are the content, nothing explains
-   them. Starts on the first category that actually has photos.
+   PHOTOGRAPHY — one card per collection (wildlife / traditional / …),
+   each opening its full gallery at /photography/:slug. The frames are
+   the content; the card just names the set and its size.
    ================================================================== */
-function Gallery() {
-  const [cat, setCat] = useState(
-    () => GALLERY_CATS.find((c) => GALLERY_ITEMS.some((g) => g.cat === c)) ?? GALLERY_CATS[0],
-  );
-  const [lb, setLb] = useState(-1); // lightbox index, -1 = closed
+function PhotoProjects() {
+  const [lb, setLb] = useState(-1); // lightbox index into PHOTO_POOL, -1 = closed
   const [reduced] = useState(prefersReduced);
-  const shots = GALLERY_ITEMS.filter((g) => g.cat === cat);
-  const seeds = shots.map((g) => g.seed);
-
-  // switching category closes any open preview so its index can't go stale
-  const pick = (c) => { setLb(-1); setCat(c); };
 
   return (
-    <section className="gwork" id="gallery" aria-label="Gallery">
+    <section className="gwork" id="gallery" aria-label="Photography">
       <div className="wrap">
         <div className="gwork-head">
-          <div className="mono">Gallery</div>
-          {GALLERY_CATS.length > 1 && (
-            <div className="gtabs" role="group" aria-label="Gallery categories">
-              {GALLERY_CATS.map((c) => (
-                <button key={c} className="gtab" aria-pressed={c === cat} onClick={() => pick(c)}>
-                  {c}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="mono">Photography</div>
+          <TLink to="/photography" className="mono gwork-all">
+            All collections <span className="arrow">→</span>
+          </TLink>
         </div>
 
-        {shots.length ? (
-          <div className="pgrid" key={cat}>
-            {shots.map((g, n) => (
-              <figure key={g.seed} onClick={() => setLb(n)}
-                role="button" tabIndex={0} aria-label={`Preview photo ${n + 1}`}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLb(n); } }}>
-                <img src={img(g.seed, 640)} srcSet={srcSet(g.seed)}
-                  sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
-                  alt="" loading="lazy" style={{ aspectRatio: ratio(g.seed, 3, 4) }} />
-              </figure>
-            ))}
-          </div>
-        ) : (
-          <div className="gempty mono">{cat} — photos arriving soon</div>
+        <div className="projrow">
+          {PHOTO_PROJECTS.map((p, n) => (
+            <Reveal key={p.slug} delay={n * 0.06}>
+              <TLink to={`/photography/${p.slug}`} className="projcard" aria-label={`Open ${p.t}`}>
+                <div className="projshot" style={{ aspectRatio: ratio(p.photos[0], 4, 3) }}>
+                  <img src={img(p.photos[0], 900, 675)} srcSet={srcSet(p.photos[0])}
+                    sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
+                    alt={p.t} loading="lazy" />
+                  <span className="open">{p.photos.length} frames →</span>
+                </div>
+                <div className="projcap">
+                  <h3>{p.t}</h3>
+                  <span className="mono">{p.kind}</span>
+                </div>
+              </TLink>
+            </Reveal>
+          ))}
+        </div>
+
+        {/* selected frames — a mix from every collection, click to enlarge */}
+        {PHOTO_POOL.length > 0 && (
+          <>
+            <div className="mono gwork-sub">Selected frames</div>
+            <div className="pgrid">
+              {PHOTO_POOL.map((s, n) => (
+                <figure key={s + n} onClick={() => setLb(n)}
+                  role="button" tabIndex={0} aria-label={`Preview photo ${n + 1}`}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLb(n); } }}>
+                  <span className="idx mono">{String(n + 1).padStart(2, "0")}</span>
+                  <img src={img(s, 640)} srcSet={srcSet(s)}
+                    sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
+                    alt="" loading="lazy" style={{ aspectRatio: ratio(s, 3, 4) }} />
+                </figure>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
       <AnimatePresence>
         {lb > -1 && (
-          <Lightbox photos={seeds} title={cat} index={lb} setIndex={setLb} reduced={reduced} single />
+          <Lightbox photos={PHOTO_POOL} title="Selected frames"
+            index={lb} setIndex={setLb} reduced={reduced} single />
         )}
       </AnimatePresence>
     </section>
