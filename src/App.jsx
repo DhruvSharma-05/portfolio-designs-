@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -25,6 +25,20 @@ const NAV = [
   { to: "/design", label: "Design" },
   { to: "/about", label: "About" },
 ];
+
+/* Scroll to an in-page section by id, using Lenis when it's running so
+   the motion matches the rest of the site; falls back to native. Retries
+   briefly because the target may still be mounting right after a route
+   change. Reduced motion jumps instantly. */
+function scrollToId(id, lenisRef, reduced, tries = 10) {
+  const el = document.getElementById(id);
+  if (!el) {
+    if (tries > 0) requestAnimationFrame(() => scrollToId(id, lenisRef, reduced, tries - 1));
+    return;
+  }
+  if (lenisRef.current && !reduced) lenisRef.current.scrollTo(el, { offset: -70 });
+  else el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+}
 
 /* ==================================================================
    SHELL — persists across route changes. Owns the smooth scroll +
@@ -72,18 +86,35 @@ export default function App() {
     };
   }, { dependencies: [reduced] });
 
+  /* Direct load / reload of a URL that carries a #hash (e.g. someone
+     pastes "/#contact") — scroll to that section once mounted. */
+  useEffect(() => {
+    const id = location.hash.replace("#", "");
+    if (id) requestAnimationFrame(() => scrollToId(id, lenisRef, reduced));
+    // run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   /* Page transition: the accent iris closes over the screen, we swap the
      route + reset scroll while it's covered, then it opens to reveal the
      new page. Under reduced motion it's an instant navigation. */
   const go = useCallback((to) => {
-    if (to === location.pathname) return;
+    // `to` may carry a #hash (e.g. "/#contact"): split it off so the
+    // route compares on pathname, and the hash becomes a scroll target.
+    const [path, hash] = to.split("#");
+    const dest = path || "/";
+    // Same page + a hash → just scroll to the section, no transition.
+    if (dest === location.pathname && hash) { scrollToId(hash, lenisRef, reduced); return; }
+    if (dest === location.pathname) return;
     const finish = () => {
-      navigate(to);
+      navigate(dest);
       lenisRef.current?.scrollTo(0, { immediate: true });
       window.scrollTo(0, 0);
       // a programmatic jump to the top may not emit a scroll update, so
       // reveal the bar explicitly on every navigation
       barRef.current?.classList.remove("hide");
+      // after the new page mounts, honour a #hash by scrolling to it
+      if (hash) requestAnimationFrame(() => scrollToId(hash, lenisRef, reduced));
     };
     if (reduced || !irisRef.current) { finish(); return; }
     if (busy.current) return;

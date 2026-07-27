@@ -764,6 +764,25 @@ export const CSS = `
   margin-top: 13vh; padding-top: 22px; border-top: 1px solid var(--rule); }
 .colophon dd { margin: 8px 0 0; font-size: 14px; line-height: 1.72; color: var(--dim); }
 
+/* --- contact form --- */
+.contact-form { max-width: 620px; margin-top: 30px; display: flex; flex-direction: column; gap: 18px; }
+.cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 620px) { .cf-row { grid-template-columns: 1fr; } }
+.cf-field { display: flex; flex-direction: column; gap: 8px; }
+.cf-field input, .cf-field textarea { background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 4px; color: var(--ink); font: inherit; font-size: 15px; padding: 13px 15px;
+  width: 100%; transition: border-color .25s ease; }
+.cf-field input:focus, .cf-field textarea:focus { border-color: var(--accent); outline: none; }
+.cf-field textarea { resize: vertical; line-height: 1.6; }
+/* honeypot: off-screen, never shown, no tab stop */
+.cf-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.cf-foot { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 4px; }
+.cf-foot button[disabled] { opacity: .5; pointer-events: none; }
+.cf-err { text-transform: none; letter-spacing: .02em; color: #F4595E; }
+.cf-err a { color: var(--accent); }
+.form-done { margin-top: 30px; }
+.form-done .mono { margin-top: 10px; }
+
 /* --- work detail page --- */
 .detail { padding: 12vh 0 10vh; }
 .back { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 40px; }

@@ -116,7 +116,11 @@ export default function About() {
       <section className="end" style={{ marginTop: "12vh" }}>
         <Reveal>
           <h2 className="display">Let's make<br />something.</h2>
-          <a className="mail" href={`mailto:${P.email}`}>{P.email}</a>
+          <div style={{ marginTop: 30 }}>
+            <TLink to="/#contact" className="extlink">
+              Start an enquiry <span className="arrow">→</span>
+            </TLink>
+          </div>
         </Reveal>
 
         <Reveal as="dl" className="colophon" style={{ marginTop: 56 }}>

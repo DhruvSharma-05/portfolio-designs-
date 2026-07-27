@@ -131,6 +131,80 @@ export function SectionHead({ n, children }) {
   );
 }
 
+/* ---------------- contact form ----------------
+   Real enquiry form for a static site: it POSTs to a form-backend
+   service (Formspree) that emails Viraj — no server of our own. The
+   endpoint id lives in VITE_FORMSPREE_ID; until that's set the form
+   degrades to the plain mailto link, so nothing is ever broken. A
+   hidden `_gotcha` honeypot catches bots (Formspree drops it silently). */
+export function ContactForm({ email }) {
+  const id = import.meta.env.VITE_FORMSPREE_ID;
+  const [status, setStatus] = useState("idle"); // idle | sending | ok | error
+
+  // No endpoint configured yet → graceful fallback to the email link.
+  if (!id) return <a className="mail" href={`mailto:${email}`}>{email}</a>;
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    setStatus("sending");
+    try {
+      const res = await fetch(`https://formspree.io/f/${id}`, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: new FormData(form),
+      });
+      if (res.ok) { setStatus("ok"); form.reset(); }
+      else setStatus("error");
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  if (status === "ok") {
+    return (
+      <div className="form-done" role="status">
+        <p className="pj-intro">Thanks — your message is in.</p>
+        <p className="mono">Viraj usually replies within a day or two.</p>
+      </div>
+    );
+  }
+
+  return (
+    <form className="contact-form" onSubmit={onSubmit}>
+      <input type="hidden" name="_subject" value="New enquiry — Crafted & Captured" />
+      <div className="cf-row">
+        <label className="cf-field">
+          <span className="mono">Your name</span>
+          <input name="name" type="text" required autoComplete="name" />
+        </label>
+        <label className="cf-field">
+          <span className="mono">Email</span>
+          <input name="email" type="email" required autoComplete="email" />
+        </label>
+      </div>
+      <label className="cf-field">
+        <span className="mono">What do you need?</span>
+        <textarea name="message" rows={4} required
+          placeholder="A shoot, a site, or both — a few lines is plenty." />
+      </label>
+      {/* honeypot — hidden from people, tempting to bots */}
+      <input type="text" name="_gotcha" tabIndex={-1} autoComplete="off"
+        className="cf-hp" aria-hidden="true" />
+      <div className="cf-foot">
+        <button className="extlink" type="submit" disabled={status === "sending"}>
+          {status === "sending" ? "Sending…" : "Send enquiry"} <span className="arrow">→</span>
+        </button>
+        {status === "error" && (
+          <span className="mono cf-err">
+            That didn't send — please email <a href={`mailto:${email}`}>{email}</a> instead.
+          </span>
+        )}
+      </div>
+    </form>
+  );
+}
+
 /* ---------------- shared animated primitives ----------------
    Reveal and Counter run inside useGSAP (a scoped layout effect); under
    reduced motion they skip the animation and render final state. */

@@ -188,7 +188,14 @@ export default function Photography() {
         <div className="wrap">
           <Reveal>
             <h2 className="display">Shooting<br />this year?</h2>
-            <a className="mail" href={`mailto:${P.email}`}>{P.email}</a>
+            <div style={{ marginTop: 30 }}>
+              <TLink to="/#contact" className="extlink">
+                Start an enquiry <span className="arrow">→</span>
+              </TLink>
+            </div>
+            <div className="mono" style={{ marginTop: 18 }}>
+              or email <a href={`mailto:${P.email}`} style={{ color: "var(--accent)" }}>{P.email}</a>
+            </div>
           </Reveal>
           <div style={{ marginTop: 44 }}>
             <TLink to="/" className="mono back"><span className="arrow">←</span> Back to work</TLink>

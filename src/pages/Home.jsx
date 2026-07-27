@@ -7,7 +7,7 @@ import {
   P, img, srcSet, ratio, INTRO, SHEET,
   PHOTO_PROJECTS, PHOTO_POOL, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
-import { Reveal, TLink, Lightbox, FigmaFrame } from "../ui.jsx";
+import { Reveal, TLink, Lightbox, FigmaFrame, ContactForm } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 /* Three.js is code-split so the hero text (the LCP) paints first. */
@@ -206,9 +206,13 @@ export default function Home() {
         <div className="wrap">
           <Reveal>
             <h2 className="display">Bring me<br />the difficult one.</h2>
-            <MagneticMail email={P.email} reduced={reduced} />
-            <div className="mono" style={{ marginTop: 18 }}>
-              {P.phone} — {P.city}, {P.region}
+            <p className="standfirst" style={{ marginTop: 20 }}>
+              Tell me about the shoot, the site, or both — a few lines is enough to start.
+            </p>
+            <ContactForm email={P.email} />
+            <div className="mono" style={{ marginTop: 20 }}>
+              Prefer email? <a href={`mailto:${P.email}`} style={{ color: "var(--accent)" }}>{P.email}</a>
+              {" · "}{P.phone} · {P.city}, {P.region}
             </div>
           </Reveal>
 
@@ -315,25 +319,5 @@ function PhotoProjects() {
         )}
       </AnimatePresence>
     </section>
-  );
-}
-
-/* Magnetic email link — the label eases toward the cursor while hovered,
-   a classic "cursor UX" micro-interaction, disabled under reduced motion. */
-function MagneticMail({ email, reduced }) {
-  const ref = useRef(null);
-  const move = (e) => {
-    if (reduced) return;
-    const r = ref.current.getBoundingClientRect();
-    const x = (e.clientX - (r.left + r.width / 2)) * 0.3;
-    const y = (e.clientY - (r.top + r.height / 2)) * 0.4;
-    gsap.to(ref.current, { x, y, duration: 0.4, ease: "power3.out" });
-  };
-  const reset = () => gsap.to(ref.current, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1,0.4)" });
-  return (
-    <a ref={ref} className="mail" href={`mailto:${email}`}
-      onPointerMove={move} onPointerLeave={reset} style={{ willChange: "transform" }}>
-      {email}
-    </a>
   );
 }
