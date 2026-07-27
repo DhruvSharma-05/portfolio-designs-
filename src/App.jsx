@@ -1,29 +1,58 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion } from "motion/react";
 import Lenis from "lenis";
-import { CSS, THEMES, P, prefersReduced } from "./data.js";
+import { CSS, THEME, P, prefersReduced } from "./data.js";
 import { AppProvider } from "./context.js";
-import { TLink, Cursor } from "./ui.jsx";
+import { TLink, Logo } from "./ui.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 import Home from "./pages/Home.jsx";
 import WorkDetail from "./pages/WorkDetail.jsx";
 import About from "./pages/About.jsx";
+import Photography from "./pages/Photography.jsx";
+import PhotoProject from "./pages/PhotoProject.jsx";
+import Design from "./pages/Design.jsx";
+import DesignProject from "./pages/DesignProject.jsx";
+import NotFound from "./pages/NotFound.jsx";
+
+/* Primary navigation. `/` matches exactly; the others also light up on
+   their detail pages (/photography/:slug, /design/:slug). */
+const NAV = [
+  { to: "/", label: "Work" },
+  { to: "/photography", label: "Photography" },
+  { to: "/design", label: "Design" },
+  { to: "/about", label: "About" },
+];
+
+/* Scroll to an in-page section by id, using Lenis when it's running so
+   the motion matches the rest of the site; falls back to native. Retries
+   briefly because the target may still be mounting right after a route
+   change. Reduced motion jumps instantly. */
+function scrollToId(id, lenisRef, reduced, tries = 10) {
+  const el = document.getElementById(id);
+  if (!el) {
+    if (tries > 0) requestAnimationFrame(() => scrollToId(id, lenisRef, reduced, tries - 1));
+    return;
+  }
+  if (lenisRef.current && !reduced) lenisRef.current.scrollTo(el, { offset: -70 });
+  else el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+}
 
 /* ==================================================================
-   SHELL — persists across route changes. Owns the theme, the smooth
-   scroll + reading-progress bar, and the aperture page transition.
+   SHELL — persists across route changes. Owns the smooth scroll +
+   reading-progress bar, and the aperture page transition.
    ================================================================== */
 export default function App() {
-  const [theme, setTheme] = useState(THEMES[0]);
   const [reduced] = useState(prefersReduced);
   const navigate = useNavigate();
   const location = useLocation();
   const progRef = useRef(null);
+  const barRef = useRef(null);
   const irisRef = useRef(null);
   const lenisRef = useRef(null);
+  const topRef = useRef(null);
   const busy = useRef(false);
 
   /* Lenis smooth scroll (native scroll, so sticky keeps working) driven
@@ -44,6 +73,9 @@ export default function App() {
       start: 0, end: "max",
       onUpdate: (self) => {
         if (progRef.current) progRef.current.style.width = `${self.progress * 100}%`;
+        /* The bar stays visible the whole way down — nav is always one
+           click away — so no hide-on-scroll toggle here. */
+        topRef.current?.classList.toggle("show", self.scroll() > 600);
       },
     });
     return () => {
@@ -52,15 +84,35 @@ export default function App() {
     };
   }, { dependencies: [reduced] });
 
+  /* Direct load / reload of a URL that carries a #hash (e.g. someone
+     pastes "/#contact") — scroll to that section once mounted. */
+  useEffect(() => {
+    const id = location.hash.replace("#", "");
+    if (id) requestAnimationFrame(() => scrollToId(id, lenisRef, reduced));
+    // run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   /* Page transition: the accent iris closes over the screen, we swap the
      route + reset scroll while it's covered, then it opens to reveal the
      new page. Under reduced motion it's an instant navigation. */
   const go = useCallback((to) => {
-    if (to === location.pathname) return;
+    // `to` may carry a #hash (e.g. "/#contact"): split it off so the
+    // route compares on pathname, and the hash becomes a scroll target.
+    const [path, hash] = to.split("#");
+    const dest = path || "/";
+    // Same page + a hash → just scroll to the section, no transition.
+    if (dest === location.pathname && hash) { scrollToId(hash, lenisRef, reduced); return; }
+    if (dest === location.pathname) return;
     const finish = () => {
-      navigate(to);
+      navigate(dest);
       lenisRef.current?.scrollTo(0, { immediate: true });
       window.scrollTo(0, 0);
+      // a programmatic jump to the top may not emit a scroll update, so
+      // reveal the bar explicitly on every navigation
+      barRef.current?.classList.remove("hide");
+      // after the new page mounts, honour a #hash by scrolling to it
+      if (hash) requestAnimationFrame(() => scrollToId(hash, lenisRef, reduced));
     };
     if (reduced || !irisRef.current) { finish(); return; }
     if (busy.current) return;
@@ -75,51 +127,66 @@ export default function App() {
   }, [navigate, location.pathname, reduced]);
 
   const vars = {
-    "--bg": theme.bg, "--panel": theme.panel, "--ink": theme.ink, "--dim": theme.dim,
-    "--rule": theme.rule, "--accent": theme.accent, "--filter": theme.filter,
+    "--bg": THEME.bg, "--panel": THEME.panel, "--ink": THEME.ink, "--dim": THEME.dim,
+    "--rule": THEME.rule, "--accent": THEME.accent, "--filter": THEME.filter,
   };
 
   return (
-    <AppProvider value={{ theme, setTheme, go }}>
+    <AppProvider value={{ theme: THEME, go }}>
       <div className="pf" style={vars}>
         <style>{CSS}</style>
 
         <a className="skip" href="#main">Skip to content</a>
-        <Cursor />
 
         {/* aperture transition overlay */}
         <div className="iris" aria-hidden="true">
           <div className="iris-lens" ref={irisRef} />
         </div>
 
-        {/* bar + accent switcher */}
-        <div className="bar">
+        {/* masthead bar */}
+        <div className="bar" ref={barRef}>
           <div className="bar-in">
-            <TLink to="/" className="mono brand">{P.name}</TLink>
+            <TLink to="/" className="mono brand" aria-label={`${P.name} — home`}><Logo /></TLink>
             <nav className="nav mono" aria-label="Primary">
-              <TLink to="/" aria-current={location.pathname === "/" ? "page" : undefined}>Work</TLink>
-              <TLink to="/about" aria-current={location.pathname === "/about" ? "page" : undefined}>About</TLink>
-            </nav>
-            <div className="chips" role="group" aria-label="Accent colour">
-              {THEMES.map((t) => (
-                <motion.button key={t.id} className="chip" aria-pressed={t.id === theme.id}
-                  aria-label={t.name} title={t.name} onClick={() => setTheme(t)}
-                  whileHover={{ scale: 1.25 }} whileTap={{ scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}>
-                  <i style={{ background: t.accent }} />
-                </motion.button>
+              {NAV.map((n) => (
+                <TLink key={n.to} to={n.to}
+                  aria-current={
+                    (n.to === "/" ? location.pathname === "/" : location.pathname.startsWith(n.to))
+                      ? "page" : undefined
+                  }>
+                  {n.label}
+                </TLink>
               ))}
-            </div>
-            <div className="themename mono">{theme.name}</div>
+            </nav>
+            <span className="mono barmeta">{P.city} — Booking 2026</span>
           </div>
           <div className="prog" ref={progRef} style={{ width: "0%" }} />
         </div>
 
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/work/:seed" element={<WorkDetail />} />
-          <Route path="/about" element={<About />} />
-        </Routes>
+        {/* back to top — fades in once you're a scroll past the fold */}
+        <button type="button" className="totop" ref={topRef} aria-label="Back to top"
+          onClick={() => {
+            if (reduced || !lenisRef.current) {
+              window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+              return;
+            }
+            lenisRef.current.scrollTo(0, { duration: 1 });
+          }}>
+          <span className="arrow" aria-hidden="true">↑</span>
+        </button>
+
+        <ErrorBoundary key={location.pathname}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/work/:seed" element={<WorkDetail />} />
+            <Route path="/photography" element={<Photography />} />
+            <Route path="/photography/:slug" element={<PhotoProject />} />
+            <Route path="/design" element={<Design />} />
+            <Route path="/design/:slug" element={<DesignProject />} />
+            <Route path="/about" element={<About />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ErrorBoundary>
       </div>
     </AppProvider>
   );

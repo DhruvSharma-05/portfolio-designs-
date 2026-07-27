@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
-import { FRAMES, img, prefersReduced } from "../data.js";
+import { FRAMES, img, srcSet, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
 import { useApp } from "../context.js";
 
@@ -55,11 +55,12 @@ export default function WorkDetail() {
           <div className="mono" style={{ marginBottom: 16 }}>{f.kind}</div>
           <h1>{f.t}</h1>
         </div>
-        <div className="mono" style={{ color: "var(--accent)" }}>{f.exif}</div>
+        {f.role && <div className="mono" style={{ color: "var(--accent)" }}>{f.role}</div>}
       </div>
 
       <figure className="detail-fig">
-        <img ref={figImg} src={img(f.seed, 1600, 1067)} alt={f.t} />
+        <img ref={figImg} src={img(f.seed, 1600, 1067)} srcSet={srcSet(f.seed)}
+          sizes="(max-width: 1180px) 100vw, 1180px" alt={f.t} />
       </figure>
 
       <div className="detail-grid">
@@ -67,10 +68,10 @@ export default function WorkDetail() {
           <p className="detail-note">{f.note}</p>
         </Reveal>
         <Reveal as="dl" className="spec" delay={0.08}>
-          <div><dt className="mono">Location</dt><dd>{f.loc}</dd></div>
-          <div><dt className="mono">Capture</dt><dd>{f.exif}</dd></div>
-          <div><dt className="mono">Role</dt><dd>{f.role}</dd></div>
-          <div><dt className="mono">Year</dt><dd>{f.year}</dd></div>
+          {f.loc && <div><dt className="mono">Location</dt><dd>{f.loc}</dd></div>}
+          {f.role && <div><dt className="mono">Role</dt><dd>{f.role}</dd></div>}
+          <div><dt className="mono">Collection</dt><dd>{f.kind}</dd></div>
+          {f.year && <div><dt className="mono">Year</dt><dd>{f.year}</dd></div>}
         </Reveal>
       </div>
 

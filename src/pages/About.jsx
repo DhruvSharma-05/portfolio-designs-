@@ -3,8 +3,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
-import { P, img, ABOUT, prefersReduced } from "../data.js";
-import { Reveal, TLink } from "../ui.jsx";
+import { P, img, srcSet, ABOUT, prefersReduced } from "../data.js";
+import { Reveal, TLink, SectionHead } from "../ui.jsx";
 
 const page = {
   initial: { opacity: 0, y: 12 },
@@ -31,28 +31,38 @@ export default function About() {
       variants={page} initial="initial" animate="animate">
       <div className="about-hero">
         <div>
-          <div className="mono" style={{ marginBottom: 22 }}>About — {P.city}</div>
+          <div className="mono about-kicker">About — {P.city}</div>
           <h1>{P.photographer}</h1>
           <p className="about-lead">
             {ABOUT.lead.split(" ").map((w, i) =>
               i === 0 ? <i key={i}>{w} </i> : w + " "
             )}
           </p>
+          <div className="about-tags">
+            <span className="mono">Designer</span>
+            <span className="mono">Photographer</span>
+            <span className="mono" style={{ color: "var(--accent)" }}>Booking 2026</span>
+          </div>
         </div>
         <figure className="about-portrait">
-          <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} alt={`${P.photographer}, portrait`} />
+          <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} srcSet={srcSet(ABOUT.portrait)}
+            sizes="(max-width: 820px) 100vw, 45vw" alt={`${P.photographer}, portrait`} />
+          <figcaption className="mono">{P.city}, {P.region} — Lensofviraj</figcaption>
         </figure>
       </div>
 
       <Reveal as="div" className="about-body">
-        {ABOUT.body.map((p, i) => <p key={i}>{p}</p>)}
+        {ABOUT.body.map((p, i) => (
+          <p key={i} className={i === 0 ? "lead-p" : ""}>{p}</p>
+        ))}
       </Reveal>
 
       <section>
-        <div className="mono" style={{ marginBottom: 24 }}>How I work</div>
+        <SectionHead n="01">How I work</SectionHead>
         <Reveal className="approach">
-          {ABOUT.approach.map((a) => (
+          {ABOUT.approach.map((a, i) => (
             <div key={a.k}>
+              <span className="approach-n mono">{String(i + 1).padStart(2, "0")}</span>
               <h3>{a.k}</h3>
               <p>{a.v}</p>
             </div>
@@ -61,7 +71,7 @@ export default function About() {
       </section>
 
       <section className="timeline">
-        <div className="mono" style={{ marginBottom: 24 }}>The short version</div>
+        <SectionHead n="02">The short version</SectionHead>
         {ABOUT.timeline.map((t, i) => (
           <Reveal className="tl-row" key={t.y} delay={i * 0.05}>
             <b>{t.y}</b>
@@ -73,8 +83,40 @@ export default function About() {
       <section className="end" style={{ marginTop: "12vh" }}>
         <Reveal>
           <h2 className="display">Let's make<br />something.</h2>
-          <a className="mail" href={`mailto:${P.email}`}>{P.email}</a>
+          <div style={{ marginTop: 30 }}>
+            <TLink to="/#contact" className="extlink">
+              Start an enquiry <span className="arrow">→</span>
+            </TLink>
+          </div>
         </Reveal>
+
+        <Reveal as="dl" className="colophon" style={{ marginTop: 56 }}>
+          <div>
+            <dt className="mono">Contact</dt>
+            <dd>
+              <a href={`mailto:${P.email}`}>{P.email}</a><br />
+              <a href={`mailto:${P.email2}`}>{P.email2}</a><br />
+              <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
+            </dd>
+          </div>
+          <div>
+            <dt className="mono">Based in</dt>
+            <dd>{P.city}<br />{P.region}</dd>
+          </div>
+          <div>
+            <dt className="mono">Elsewhere</dt>
+            <dd>
+              {P.socials.map((s) => (
+                <span key={s.href} style={{ display: "block" }}>
+                  <a href={s.href} target="_blank" rel="noreferrer">
+                    {s.k} — {s.v}
+                  </a>
+                </span>
+              ))}
+            </dd>
+          </div>
+        </Reveal>
+
         <div style={{ marginTop: 44 }}>
           <TLink to="/" className="mono back"><span className="arrow">←</span> Back to work</TLink>
         </div>

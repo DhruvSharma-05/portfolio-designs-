@@ -1,6 +1,328 @@
 {
-  "generatedAt": null,
+  "generatedAt": "2026-07-27T06:59:52.385Z",
   "work": [],
   "gallery": [],
-  "portrait": null
+  "portrait": {
+    "seed": "viraj-portrait",
+    "sm": "/photos/portrait/viraj-portrait-sm.webp",
+    "lg": "/photos/portrait/viraj-portrait-lg.webp",
+    "w": 2000,
+    "h": 2667
+  },
+  "projectPhotos": [
+    {
+      "seed": "traditional-cream-gold",
+      "sm": "/photos/projects/traditional/traditional-cream-gold-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-cream-gold-lg.webp",
+      "w": 1365,
+      "h": 2048
+    },
+    {
+      "seed": "traditional-fountain-portrait",
+      "sm": "/photos/projects/traditional/traditional-fountain-portrait-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-fountain-portrait-lg.webp",
+      "w": 2000,
+      "h": 3553
+    },
+    {
+      "seed": "traditional-blue-traditional",
+      "sm": "/photos/projects/traditional/traditional-blue-traditional-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-blue-traditional-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    {
+      "seed": "traditional-evening-elegance",
+      "sm": "/photos/projects/traditional/traditional-evening-elegance-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-evening-elegance-lg.webp",
+      "w": 2000,
+      "h": 3554
+    },
+    {
+      "seed": "traditional-between-takes",
+      "sm": "/photos/projects/traditional/traditional-between-takes-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-between-takes-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "traditional-maroon",
+      "sm": "/photos/projects/traditional/traditional-maroon-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-maroon-lg.webp",
+      "w": 1150,
+      "h": 2048
+    },
+    {
+      "seed": "traditional-green-traditional",
+      "sm": "/photos/projects/traditional/traditional-green-traditional-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-green-traditional-lg.webp",
+      "w": 1150,
+      "h": 2048
+    },
+    {
+      "seed": "traditional-the-gathering",
+      "sm": "/photos/projects/traditional/traditional-the-gathering-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-the-gathering-lg.webp",
+      "w": 2000,
+      "h": 1190
+    },
+    {
+      "seed": "traditional-white-a",
+      "sm": "/photos/projects/traditional/traditional-white-a-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-white-a-lg.webp",
+      "w": 1150,
+      "h": 2048
+    },
+    {
+      "seed": "traditional-white-b",
+      "sm": "/photos/projects/traditional/traditional-white-b-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-white-b-lg.webp",
+      "w": 1365,
+      "h": 2048
+    },
+    {
+      "seed": "traditional-white-fence",
+      "sm": "/photos/projects/traditional/traditional-white-fence-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-white-fence-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    {
+      "seed": "traditional-sherwani",
+      "sm": "/photos/projects/traditional/traditional-sherwani-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-sherwani-lg.webp",
+      "w": 2000,
+      "h": 3877
+    },
+    {
+      "seed": "traditional-black-fountain",
+      "sm": "/photos/projects/traditional/traditional-black-fountain-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-black-fountain-lg.webp",
+      "w": 2000,
+      "h": 3554
+    },
+    {
+      "seed": "traditional-floral-seated",
+      "sm": "/photos/projects/traditional/traditional-floral-seated-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-floral-seated-lg.webp",
+      "w": 2000,
+      "h": 3178
+    },
+    {
+      "seed": "traditional-dusk",
+      "sm": "/photos/projects/traditional/traditional-dusk-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-dusk-lg.webp",
+      "w": 2000,
+      "h": 3553
+    },
+    {
+      "seed": "traditional-group-women",
+      "sm": "/photos/projects/traditional/traditional-group-women-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-group-women-lg.webp",
+      "w": 2000,
+      "h": 3554
+    },
+    {
+      "seed": "traditional-large-group",
+      "sm": "/photos/projects/traditional/traditional-large-group-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-large-group-lg.webp",
+      "w": 2000,
+      "h": 1444
+    },
+    {
+      "seed": "traditional-event-seated",
+      "sm": "/photos/projects/traditional/traditional-event-seated-sm.webp",
+      "lg": "/photos/projects/traditional/traditional-event-seated-lg.webp",
+      "w": 2000,
+      "h": 1137
+    },
+    {
+      "seed": "wildlife-bighorn",
+      "sm": "/photos/projects/wildlife/wildlife-bighorn-sm.webp",
+      "lg": "/photos/projects/wildlife/wildlife-bighorn-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "wildlife-lionesses",
+      "sm": "/photos/projects/wildlife/wildlife-lionesses-sm.webp",
+      "lg": "/photos/projects/wildlife/wildlife-lionesses-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "wildlife-cheetah-rest",
+      "sm": "/photos/projects/wildlife/wildlife-cheetah-rest-sm.webp",
+      "lg": "/photos/projects/wildlife/wildlife-cheetah-rest-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "wildlife-cheetah",
+      "sm": "/photos/projects/wildlife/wildlife-cheetah-sm.webp",
+      "lg": "/photos/projects/wildlife/wildlife-cheetah-lg.webp",
+      "w": 2000,
+      "h": 1153
+    },
+    {
+      "seed": "wildlife-cheetahs",
+      "sm": "/photos/projects/wildlife/wildlife-cheetahs-sm.webp",
+      "lg": "/photos/projects/wildlife/wildlife-cheetahs-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "wildlife-deer-pair",
+      "sm": "/photos/projects/wildlife/wildlife-deer-pair-sm.webp",
+      "lg": "/photos/projects/wildlife/wildlife-deer-pair-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "wildlife-buck",
+      "sm": "/photos/projects/wildlife/wildlife-buck-sm.webp",
+      "lg": "/photos/projects/wildlife/wildlife-buck-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "wildlife-stags",
+      "sm": "/photos/projects/wildlife/wildlife-stags-sm.webp",
+      "lg": "/photos/projects/wildlife/wildlife-stags-lg.webp",
+      "w": 2000,
+      "h": 1126
+    },
+    {
+      "seed": "modern-venus",
+      "sm": "/photos/projects/modern/modern-venus-sm.webp",
+      "lg": "/photos/projects/modern/modern-venus-lg.webp",
+      "w": 2000,
+      "h": 2858
+    },
+    {
+      "seed": "modern-green-machine",
+      "sm": "/photos/projects/modern/modern-green-machine-sm.webp",
+      "lg": "/photos/projects/modern/modern-green-machine-lg.webp",
+      "w": 2000,
+      "h": 3081
+    },
+    {
+      "seed": "modern-after-hours",
+      "sm": "/photos/projects/modern/modern-after-hours-sm.webp",
+      "lg": "/photos/projects/modern/modern-after-hours-lg.webp",
+      "w": 2000,
+      "h": 3555
+    },
+    {
+      "seed": "modern-pink-field",
+      "sm": "/photos/projects/modern/modern-pink-field-sm.webp",
+      "lg": "/photos/projects/modern/modern-pink-field-lg.webp",
+      "w": 2000,
+      "h": 3555
+    },
+    {
+      "seed": "modern-motion",
+      "sm": "/photos/projects/modern/modern-motion-sm.webp",
+      "lg": "/photos/projects/modern/modern-motion-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    {
+      "seed": "modern-two-men-car",
+      "sm": "/photos/projects/modern/modern-two-men-car-sm.webp",
+      "lg": "/photos/projects/modern/modern-two-men-car-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    {
+      "seed": "modern-green-car",
+      "sm": "/photos/projects/modern/modern-green-car-sm.webp",
+      "lg": "/photos/projects/modern/modern-green-car-lg.webp",
+      "w": 2000,
+      "h": 3062
+    },
+    {
+      "seed": "modern-friends",
+      "sm": "/photos/projects/modern/modern-friends-sm.webp",
+      "lg": "/photos/projects/modern/modern-friends-lg.webp",
+      "w": 2000,
+      "h": 1123
+    }
+  ],
+  "photoProjects": [
+    {
+      "slug": "traditional",
+      "t": "Traditional",
+      "kind": "Traditional",
+      "loc": "",
+      "year": "",
+      "exif": "50mm · f/5 · 1/200 · ISO 100",
+      "role": "Photography",
+      "intro": "Selected traditional photography — the full set, shot and graded as one.",
+      "note": "",
+      "photos": [
+        "traditional-cream-gold",
+        "traditional-fountain-portrait",
+        "traditional-blue-traditional",
+        "traditional-evening-elegance",
+        "traditional-between-takes",
+        "traditional-maroon",
+        "traditional-green-traditional",
+        "traditional-the-gathering",
+        "traditional-white-a",
+        "traditional-white-b",
+        "traditional-white-fence",
+        "traditional-sherwani",
+        "traditional-black-fountain",
+        "traditional-floral-seated",
+        "traditional-dusk",
+        "traditional-group-women",
+        "traditional-large-group",
+        "traditional-event-seated"
+      ]
+    },
+    {
+      "slug": "wildlife",
+      "t": "Wildlife",
+      "kind": "Wildlife",
+      "loc": "",
+      "year": "",
+      "exif": "191mm · f/4 · 1/200 · ISO 100",
+      "role": "Photography",
+      "intro": "Selected wildlife photography — the full set, shot and graded as one.",
+      "note": "",
+      "photos": [
+        "wildlife-bighorn",
+        "wildlife-lionesses",
+        "wildlife-cheetah-rest",
+        "wildlife-cheetah",
+        "wildlife-cheetahs",
+        "wildlife-deer-pair",
+        "wildlife-buck",
+        "wildlife-stags"
+      ]
+    },
+    {
+      "slug": "modern",
+      "t": "Modern",
+      "kind": "Modern",
+      "loc": "",
+      "year": "",
+      "exif": "50mm · f/2 · 1/60 · ISO 1000",
+      "role": "Photography",
+      "intro": "Selected modern photography — the full set, shot and graded as one.",
+      "note": "",
+      "photos": [
+        "modern-venus",
+        "modern-green-machine",
+        "modern-after-hours",
+        "modern-pink-field",
+        "modern-motion",
+        "modern-two-men-car",
+        "modern-green-car",
+        "modern-friends"
+      ]
+    }
+  ],
+  "webProjects": []
 }

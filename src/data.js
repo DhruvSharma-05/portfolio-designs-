@@ -6,6 +6,7 @@
    ================================================================== */
 
 import manifest from "./photos.manifest.json";
+import webCovers from "./web-covers.json";
 
 /* Read the motion preference live so an OS change is respected on the
    next mount. Single source of truth, shared by every animated piece. */
@@ -13,23 +14,92 @@ export const prefersReduced = () =>
   typeof matchMedia !== "undefined" &&
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/* Gate for the two three.js-backed effects (HeroCanvas, DistortImage) —
+   checked BEFORE the lazy import() is triggered, not after, so touch
+   devices, reduced-motion, and narrow viewports never fetch the chunk
+   (881KB/234KB gzip, the single largest chunk in the app) at all, rather
+   than fetching it and then declining to render. */
+export const heavyVisualsAllowed = () =>
+  typeof matchMedia !== "undefined" &&
+  matchMedia("(pointer: fine)").matches &&
+  !matchMedia("(prefers-reduced-motion: reduce)").matches &&
+  matchMedia("(min-width: 768px)").matches;
+
 export const P = {
-  name: "Crafted & Captured",
-  photographer: "Viraj",
-  role: "Photographer & Web Designer",
-  email: "hello@yourstudio.com",
-  city: "Your City",
+  name: "Crafted & Captured",   // the studio, shown in the masthead bar
+  photographer: "Viraj Mehta",  // the person the home page is about
+  photoBrand: "Lensofviraj",    // the photography practice — /photography
+  designBrand: "Design & Build",// the web practice — /design
+  role: "Photographer & Designer",
+  email: "virajmehta@outlook.in",
+  email2: "virajmehta227@gmail.com", // secondary contact
+  phone: "+1 (672) 968-9680",
+  city: "Vancouver",
+  region: "British Columbia, Canada",
+  socials: [
+    { k: "Instagram", v: "@lensofviraj", href: "https://www.instagram.com/lensofviraj/" },
+    { k: "Instagram (personal)", v: "@virajmehtaxo", href: "https://www.instagram.com/virajmehtaxo/" },
+    { k: "LinkedIn", v: "virajmehtaa", href: "https://www.linkedin.com/in/virajmehtaa" },
+  ],
 };
 
-/* --- real photos (from Google Drive sync) ---------------------------
-   scripts/sync-drive.mjs writes photos.manifest.json at build time.
+/* ==================================================================
+   INTRO — the home page introduces the person, not one of the crafts.
+
+   Viraj runs two practices in parallel: photography as Lenzofviraj,
+   and web design & build. A visitor landing cold should learn who he
+   is, what he does, and what they walk away with — then choose a
+   door. Each craft keeps its own page.
+
+   PLACEHOLDER COPY: replace with Viraj's own words.
+   ================================================================== */
+export const INTRO = {
+  lead: "Engineering taught him how things work. Design and photography taught him how they feel.",
+  body: [
+    "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling — designing intuitive digital products and capturing moments through photography.",
+    "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws and ships the sites and apps those pictures end up on — so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
+  ],
+  /* the two doors, mirrored in the hero strip */
+  does: [
+    {
+      k: "Photography",
+      brand: "Lensofviraj",
+      to: "/photography",
+      v: "Portraits, events and visual stories. Shot, selected and graded as one body of work.",
+    },
+    {
+      k: "Web design & build",
+      brand: "Design & Build",
+      to: "/design",
+      v: "Apps and sites designed and shipped end to end — UI/UX through to a live, fast, editable page.",
+    },
+  ],
+  /* what a client actually walks away with */
+  offer: [
+    { k: "A finished set", v: "Graded, consistent, delivered in web and print sizes. Not a folder of raws." },
+    { k: "A site that ships", v: "Designed, built and deployed — not a mockup you then have to find a developer for." },
+    { k: "One point of contact", v: "The person who shot it is the person who built it. No handover, no translation loss." },
+    { k: "Something you can edit", v: "You leave with the source file and a way to change the words yourself." },
+  ],
+};
+
+/* --- real photos (from the Contentful sync) -------------------------
+   scripts/sync-contentful.mjs writes photos.manifest.json at build time.
    Every synced photo is keyed by seed → { sm, lg } local WebP URLs.
    When the manifest is empty (no credentials / fresh clone) we fall
    back to seeded picsum placeholders so the site still renders. */
 const PHOTOS = new Map();
 for (const p of manifest.work || []) PHOTOS.set(p.seed, p);
 for (const p of manifest.gallery || []) PHOTOS.set(p.seed, p);
+/* legacy: photos that were placed into projects by hand — kept so any
+   existing manifest entries still resolve. Normally empty. */
+for (const p of manifest.projectPhotos || []) PHOTOS.set(p.seed, p);
 if (manifest.portrait) PHOTOS.set(manifest.portrait.seed, manifest.portrait);
+/* design-project cover screenshots (scripts/shoot-figma.mjs). Kept in its
+   own file so the Contentful sync, which rewrites the manifest, never
+   clobbers them. Empty [] until `npm run shoot` has been run — the design
+   cards fall back to the live Figma embed while it is. */
+for (const p of webCovers) PHOTOS.set(p.seed, p);
 
 /* img(seed, w, h): resolves a seed to a local optimized image. Picks the
    small variant for thumbnail widths, the large one otherwise. Unknown
@@ -40,25 +110,40 @@ export const img = (s, w = 1200, h = 800) => {
   return `https://picsum.photos/seed/${s}/${w}/${h}`;
 };
 
-/* Shared near-black base. Themes differ ONLY by accent — the room stays
-   dark, one light changes. */
+/* srcSet(seed): the sm+lg pair as a srcset descriptor, so <img> can ship
+   the resolution that actually matches the viewport instead of always
+   whatever fixed width img() was called with. Falls back to two picsum
+   widths for not-yet-synced placeholder seeds so the attribute stays
+   valid (only ever hit before real content is published). */
+export const srcSet = (s) => {
+  const p = PHOTOS.get(s);
+  if (p) return `${p.sm} 640w, ${p.lg} 2000w`;
+  return `https://picsum.photos/seed/${s}/640/640 640w, https://picsum.photos/seed/${s}/2000/2000 2000w`;
+};
+
+/* ratio(seed, fw, fh): CSS aspect-ratio for a seed — the synced photo's
+   real dimensions when the manifest has them, the placeholder's requested
+   size otherwise. Lets free-flowing grids reserve space before the image
+   loads, so lazy loading doesn't shift the layout. */
+export const ratio = (s, fw = 3, fh = 2) => {
+  const p = PHOTOS.get(s);
+  return p?.w && p?.h ? `${p.w} / ${p.h}` : `${fw} / ${fh}`;
+};
+
+/* Near-black base. Dark, quiet room; the work is the only bright thing. */
 const BASE = {
   bg: "#0A0A0B",
   panel: "#111114",
   ink: "#ECECEC",
-  dim: "#71717A",
+  dim: "#82828B",
   rule: "#1E1E22",
   filter: "saturate(0.92) brightness(0.96)",
 };
 
-export const THEMES = [
-  { id: "mono", name: "Mono", accent: "#E4E4E7" },
-  { id: "amber", name: "Amber", accent: "#E0A93B" },
-  { id: "cyan", name: "Cyan", accent: "#38BDF8" },
-  { id: "violet", name: "Violet", accent: "#A78BFA" },
-  { id: "rose", name: "Rose", accent: "#F471A0" },
-  { id: "lime", name: "Lime", accent: "#A3E635" },
-].map((t) => ({ ...BASE, ...t }));
+/* One fixed palette. The accent switcher was removed at the client's
+   request, so the accent is a constant — every var(--accent) rule in
+   the CSS keeps working, it just never changes. */
+export const THEME = { ...BASE, accent: "#E4E4E7" };
 
 const FRAMES_FALLBACK = [
   { seed: "pf-01", t: "Selected Work 01", loc: "Location, XX", exif: "35mm · f/8 · 1/500", kind: "Photography",
@@ -82,17 +167,249 @@ const SHEET_FALLBACK = ["pf-c1", "pf-c2", "pf-c3", "pf-c4", "pf-c5", "pf-c6"];
 
 /* Prefer real synced photos; fall back to placeholders when the
    manifest is empty. FRAMES drives the work cards + /work/:seed pages;
-   SHEET drives the contact strip + horizontal gallery. */
+   SHEET drives the contact strip + horizontal gallery — it prefers the
+   gallery bucket, then falls back to the pool of project photos (so the
+   strip still fills once photos live under collections rather than the
+   gallery bucket), then to placeholders. */
 export const FRAMES = manifest.work?.length ? manifest.work : FRAMES_FALLBACK;
 export const SHEET = manifest.gallery?.length
   ? manifest.gallery.map((p) => p.seed)
-  : SHEET_FALLBACK;
-export const TICKER = ["Editorial", "Events", "Portraits", "Art direction", "Colour grading", "Design & build", "Booking 2026"];
+  : manifest.projectPhotos?.length
+    ? manifest.projectPhotos.map((p) => p.seed)
+    : SHEET_FALLBACK;
+
+/* The old captioned "Gallery" grid (category tabs) was replaced by the
+   per-collection photography cards — see PHOTO_PROJECTS below and
+   PhotoProjects in Home.jsx. Photos are now organised by their
+   `collection` (wildlife / traditional / …), each opening its own
+   /photography/:slug gallery. */
+
+/* Real design projects now ship in WEB_PROJECTS, so the Work-page design
+   section shows the cards (not the old reserved-room placeholder). */
+export const HAS_REAL_WEB = true;
+
+/* ==================================================================
+   PHOTOGRAPHY — /photography and /photography/:slug
+
+   FEATURED drives the hero slideshow; PHOTO_PROJECTS drives the sticky
+   stack below it and every project page. Each project owns its own set
+   of frames, so a project page can show a grid + a carousel roll.
+
+   PLACEHOLDER CONTENT — swap titles, notes and seeds for the real
+   shoots. Seeds resolve through img(): a synced photo if the Drive
+   manifest has one, a seeded placeholder otherwise.
+   ================================================================== */
+
+const photoSeeds = (slug, n) => Array.from({ length: n }, (_, i) => `${slug}-${i + 1}`);
+
+const PHOTO_PROJECTS_FALLBACK = [
+  {
+    slug: "after-hours",
+    t: "After Hours",
+    kind: "Editorial",
+    loc: "Location, XX",
+    year: "2025",
+    exif: "35mm · f/1.8 · 1/125",
+    role: "Photography · Grade",
+    note: "A night series shot entirely on available light. Replace this with the real brief — who it was for and what the pictures had to carry.",
+    intro: "Two nights, one lens, no flash. The city did the lighting.",
+    photos: photoSeeds("after-hours", 9),
+  },
+  {
+    slug: "salt-and-light",
+    t: "Salt & Light",
+    kind: "Landscape",
+    loc: "Location, XX",
+    year: "2025",
+    exif: "24mm · f/11 · 1/250",
+    role: "Photography · Art direction",
+    note: "A coastal set made across one week of weather. Say what the trip was for and what came out of it.",
+    intro: "Early light, long lenses, and a lot of waiting for the sky to commit.",
+    photos: photoSeeds("salt-and-light", 8),
+  },
+  {
+    slug: "faces",
+    t: "Faces",
+    kind: "Portraits",
+    loc: "Studio, XX",
+    year: "2024",
+    exif: "85mm · f/2 · 1/200",
+    role: "Portrait · One light",
+    note: "A portrait series shot over a single afternoon. One light, one backdrop, twelve people.",
+    intro: "One light, moved twice. Everything else is the person.",
+    photos: photoSeeds("faces", 10),
+  },
+  {
+    slug: "the-long-table",
+    t: "The Long Table",
+    kind: "Events",
+    loc: "Location, XX",
+    year: "2024",
+    exif: "50mm · f/1.4 · 1/60",
+    role: "Event · Documentary",
+    note: "A full-day event covered documentary-style. Describe the day and what the client used the set for.",
+    intro: "Documentary coverage — nobody looked at the camera on purpose.",
+    photos: photoSeeds("the-long-table", 8),
+  },
+];
+
+/* When the Drive sync has real photos, deal them out across the
+   projects in order so the pages fill with actual work; otherwise the
+   placeholder seeds stand in. */
+function withSyncedPhotos(projects) {
+  const pool = [...(manifest.work || []), ...(manifest.gallery || [])].map((p) => p.seed);
+  if (!pool.length) return projects;
+  const per = Math.max(4, Math.floor(pool.length / projects.length));
+  return projects.map((p, i) => {
+    const slice = pool.slice(i * per, (i + 1) * per);
+    return slice.length ? { ...p, photos: slice } : p;
+  });
+}
+
+/* Any projects already in the manifest win outright; otherwise we deal
+   the synced Contentful photos across the placeholder projects, and
+   failing that the placeholders stand alone — so a fresh clone with no
+   photos still renders a complete site. */
+export const PHOTO_PROJECTS = manifest.photoProjects?.length
+  ? manifest.photoProjects
+  : withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
+
+/* Hero slideshow: the opening frame of each project, so the hero doubles
+   as a table of contents. */
+export const FEATURED = PHOTO_PROJECTS.map((p) => ({
+  seed: p.photos[0],
+  t: p.t,
+  slug: p.slug,
+  kind: p.kind,
+  loc: p.loc,
+  year: p.year,
+}));
+
+/* A flat pool of every project photo, round-robin interleaved across the
+   projects — so a home-page grid mixes the collections (one wildlife, one
+   traditional, one modern, …) instead of showing one whole set then the
+   next. Drives the "selected frames" grid on the home page. */
+export const PHOTO_POOL = (() => {
+  const lists = PHOTO_PROJECTS.map((p) => p.photos || []);
+  const out = [];
+  const longest = Math.max(0, ...lists.map((l) => l.length));
+  for (let i = 0; i < longest; i++) {
+    for (const l of lists) if (l[i]) out.push(l[i]);
+  }
+  return out;
+})();
+
+/* ==================================================================
+   WEB DESIGN — /design and /design/:slug
+
+   Real projects: interactive Figma prototypes. Each carries `href`
+   (the Figma prototype link) and `embed: true`, which makes the detail
+   page render the live prototype in an iframe instead of screenshots —
+   so visitors click through the real design, no mock images needed.
+
+   PLACEHOLDER COPY: `intro`/`note`/`role`/`year` are Viraj's to fill in
+   with the real brief. `shots` is empty on purpose (the embed is the
+   visual); add real screen seeds later for a static gallery too. */
+const WEB_PROJECTS_FALLBACK = [
+  {
+    slug: "trackher",
+    t: "TrackHer",
+    tag: "Product design · Prototype",
+    year: "",
+    role: "UX/UI · Interactive prototype",
+    intro: "An interactive Figma prototype — click through the full product flow.",
+    note: "Add the real brief here: what TrackHer is, who it's for, the problem it solves, and your role on the team.",
+    tool: "Figma",
+    href: "https://www.figma.com/proto/8OtvqxlfWmw36HoDlRMTMa/Final-Presentation---Prototype?node-id=2-1928&page-id=0%3A1&starting-point-node-id=2%3A1917",
+    live: "",
+    embed: true,
+    stack: ["Figma", "Prototype"],
+    cover: "web-trackher",
+    shots: [],
+    specs: [
+      { k: "Type", v: "Product design · Interactive prototype" },
+      { k: "Tool", v: "Figma" },
+    ],
+  },
+  {
+    slug: "wingwise",
+    t: "WingWise",
+    tag: "Product design · Prototype",
+    year: "",
+    role: "UX/UI · Interactive prototype",
+    intro: "An interactive Figma prototype — click through the full product flow.",
+    note: "Add the real brief here: what WingWise is, who it's for, and your role on Team Yuva.",
+    tool: "Figma",
+    href: "https://www.figma.com/proto/5ucSXSWGvoeBuQraNImByn/Team-Yuva?node-id=3280-10661&page-id=1408%3A17032&starting-point-node-id=3280%3A10661",
+    live: "",
+    embed: true,
+    stack: ["Figma", "Prototype"],
+    cover: "web-wingwise",
+    shots: [],
+    specs: [
+      { k: "Type", v: "Product design · Interactive prototype" },
+      { k: "Tool", v: "Figma" },
+    ],
+  },
+  {
+    slug: "moments",
+    t: "MOMents",
+    tag: "Product design · Prototype",
+    year: "",
+    role: "UX/UI · Interactive prototype",
+    intro: "An interactive Figma prototype — click through the full product flow.",
+    note: "Add the real brief here: what MOMents is, who it's for, and your role on team Spark.",
+    tool: "Figma",
+    href: "https://www.figma.com/proto/I4AYMtK2LPSuUrbMnd8vy9/MOMents-by-team-Spark?node-id=1909-5686&page-id=1902%3A3830&starting-point-node-id=1909%3A5686",
+    live: "",
+    embed: true,
+    stack: ["Figma", "Prototype"],
+    cover: "web-moments",
+    shots: [],
+    specs: [
+      { k: "Type", v: "Product design · Interactive prototype" },
+      { k: "Tool", v: "Figma" },
+    ],
+  },
+  {
+    slug: "artasta",
+    t: "ArtAsta",
+    tag: "Product design · Prototype",
+    year: "",
+    role: "UX/UI · Interactive prototype",
+    intro: "An interactive Figma prototype — click through the full product flow.",
+    note: "Add the real brief here: what ArtAsta is, who it's for, and your role on the project.",
+    tool: "Figma",
+    href: "https://www.figma.com/proto/XDD143AWWhkegVelp4z8sC/Art-Asta-Design?node-id=10153-950&page-id=1%3A43&starting-point-node-id=10490%3A3702&scaling=scale-down&content-scaling=fixed",
+    live: "",
+    embed: true,
+    stack: ["Figma", "Prototype"],
+    cover: "web-artasta",
+    shots: [],
+    specs: [
+      { k: "Type", v: "Product design · Interactive prototype" },
+      { k: "Tool", v: "Figma" },
+    ],
+  },
+];
+
+/* Manifest content first, the real project set otherwise. */
+export const WEB_PROJECTS = manifest.webProjects?.length
+  ? manifest.webProjects
+  : WEB_PROJECTS_FALLBACK;
+
+/* A Figma prototype URL → its embeddable iframe src. */
+export const figmaEmbed = (url) =>
+  `https://www.figma.com/embed?embed_host=lensofviraj&url=${encodeURIComponent(url)}`;
+
+/* True — real design projects exist, so /design and the home teaser show
+   them (was gated on the removed admin/manifest publishing flow). */
+export const hasPhoto = (s) => PHOTOS.has(s);
 
 export const METRICS = [
   { v: 68, s: "", k: "Projects delivered" },
   { v: 92, s: "%", k: "Clients who returned" },
-  { v: 11, s: "", k: "Years behind a lens" },
+  { v: 10, s: "+", k: "Years behind a lens" },
   { v: 4, s: "wks", k: "Shoot to live site" },
 ];
 
@@ -111,31 +428,31 @@ export const SHOTLIST = [
   { k: "Colour grading", v: "Yours or mine. Consistent across a set, not just pretty alone." },
 ];
 
-/* PLACEHOLDER — replace with the client's real bio, approach and history. */
+/* Viraj's real bio — condensed from his own words. */
 export const ABOUT = {
   portrait: manifest.portrait?.seed ?? "pf-about",
-  lead: "I make pictures for a living and build the places they live online. Same eye, two crafts.",
+  lead: "I create meaningful visual experiences — digital products designed with intent, and moments captured through a lens.",
   body: [
-    "This is where the biography goes. Two or three short paragraphs — how you started, what you care about, the kind of work you say yes to. Keep it plain and specific; let the pictures carry the rest.",
-    "Mention the way you work: available light, small kits, quick turnarounds. Then the second craft — that you design and build the sites, so a shoot doesn't end at a folder of files.",
-    "Close with what you're after now — the briefs you want, who you'd like to hear from, and that you're booking for the year ahead.",
+    "My creative journey started with technology. While studying Computer Science Engineering I built a foundation in programming and problem-solving, working as a developer and building solutions through code. But I kept being drawn to the creative side of technology — not just how things work, but how they look, feel and connect with people. That curiosity led me into UI/UX design, and to designing applications and websites that pair functionality with meaningful experiences.",
+    "Photography has run alongside all of it. In 2014 I held my first point-and-shoot camera, and what started as simple curiosity grew into a passion for visual storytelling. In 2018 I bought my first DSLR and went deeper — eventually sharing what I'd learned by teaching others, and leading a photography group in college: organising shoots, collaborating with fellow creators, and helping people find their own perspective.",
+    "Today, based in Vancouver, I bring engineering, design and photography together — creating digital experiences and capturing visual stories that connect technology with human emotion.",
   ],
   approach: [
-    { k: "One decision", v: "Shot, graded and built by the same person, so nothing gets lost in the handover." },
-    { k: "Available light", v: "Natural first. Flash only when the picture actually needs it." },
-    { k: "Ship end to end", v: "The photograph sets the grid; the site is built around it, not the reverse." },
+    { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs — analytical where it helps, intuitive where it matters." },
+    { k: "One pair of hands", v: "Shot, designed and built by the same person, so nothing gets lost in a handover." },
+    { k: "Technology with emotion", v: "Products people can use without thinking; pictures people feel before they think." },
   ],
   timeline: [
-    { y: "2015", t: "Picked up a camera properly. First paid editorial." },
-    { y: "2018", t: "Went full-time. Started grading for other shooters." },
-    { y: "2021", t: "Added design & build — began shipping clients' sites." },
-    { y: "2026", t: "Booking campaigns, portraits and editorial builds." },
+    { y: "2014", t: "First point-and-shoot camera. Curiosity becomes a habit." },
+    { y: "2018", t: "First DSLR. Photography turns serious — and he starts teaching it." },
+    { y: "2019", t: "Leads the college photography group: shoots, collabs, mentoring." },
+    { y: "2026", t: "Vancouver. Designing digital products, shooting as Lensofviraj." },
   ],
 };
 
+/* Inter + IBM Plex Mono are self-hosted via @fontsource (see main.jsx) —
+   no render-blocking request to fonts.googleapis.com. */
 export const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
-
 .pf, .pf *, .pf *::before, .pf *::after { box-sizing: border-box; margin: 0; }
 .pf { background: var(--bg); color: var(--ink);
   font-family: 'Inter', system-ui, sans-serif; font-weight: 400;
@@ -175,38 +492,61 @@ export const CSS = `
 /* --- appear (GSAP-driven; see Reveal) --- */
 .rv { will-change: opacity, transform; }
 
-/* --- bar + accent switcher --- */
+/* --- bar --- */
+/* Hides while reading down, returns the moment you scroll up (driven
+   from App.jsx) — so the page is uninterrupted, but navigation is one
+   flick away from anywhere, including the bottom. */
 .bar { position: sticky; top: 0; z-index: 80;
   background: color-mix(in srgb, var(--bg) 80%, transparent);
-  backdrop-filter: blur(16px); border-bottom: 1px solid var(--rule); }
+  backdrop-filter: blur(16px); border-bottom: 1px solid var(--rule);
+  transition: transform .42s cubic-bezier(.2,.8,.2,1); }
+.bar.hide { transform: translateY(-101%); }
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
-.chips { display: flex; gap: 8px; align-items: center; }
-.chip { width: 14px; height: 14px; border-radius: 50%; position: relative;
-  border: 1px solid var(--rule); display: grid; place-items: center; }
-.chip i { display: block; width: 10px; height: 10px; border-radius: 50%; }
-.chip[aria-pressed="true"] { box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--accent); }
-.themename { min-width: 92px; text-align: right; color: var(--accent); }
-@media (max-width: 640px) { .themename { display: none; } }
+/* sits where the accent switcher used to be */
+.barmeta { text-align: right; }
+@media (max-width: 860px) { .barmeta { display: none; } }
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
+/* --- back to top --- */
+/* .pf-scoped (not bare .totop) so its border/background survive the
+   .pf button { border: none; background: none; } reset above, which
+   otherwise wins on specificity (class+type beats a single class). */
+.pf .totop { position: fixed; z-index: 90;
+  right: max(24px, env(safe-area-inset-right));
+  bottom: max(24px, env(safe-area-inset-bottom));
+  width: 48px; height: 48px; display: grid; place-items: center;
+  border: 1px solid var(--rule); border-radius: 50%;
+  background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px);
+  opacity: 0; transform: translateY(8px) scale(0.9); pointer-events: none;
+  transition: opacity .3s ease, transform .3s cubic-bezier(.2,.8,.2,1), border-color .3s ease; }
+.pf .totop.show { opacity: 1; transform: none; pointer-events: auto; }
+.pf .totop:hover { border-color: var(--accent); color: var(--accent); }
+.pf .totop .arrow { font-size: 18px; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.pf .totop:hover .arrow { transform: translateY(-3px); }
+@media (max-width: 640px) { .pf .totop { width: 44px; height: 44px; right: 16px; bottom: 16px; } }
+
 /* --- masthead --- */
-.mast { padding: 17vh 0 10vh; position: relative; }
+.mast { padding: 13vh 0 9vh; position: relative; }
 .mast .wrap { position: relative; z-index: 1; }
 .hero-canvas { position: absolute !important; inset: 0; z-index: 0;
   pointer-events: none;
   -webkit-mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%);
           mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%); }
 .display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
-  font-size: clamp(52px, 12vw, 168px); text-wrap: balance; }
-.display .ch { display: inline-block; opacity: 0; transform: translateY(0.4em) rotate(3deg);
-  filter: blur(12px); animation: charUp 1s cubic-bezier(.16,1,.3,1) both; }
-@keyframes charUp { to { opacity: 1; transform: none; filter: blur(0); } }
+  font-size: clamp(44px, 10.5vw, 140px); text-wrap: balance;
+  overflow-wrap: break-word; max-width: 100%; }
 .mast .drawline { height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left;
-  margin-top: 40px; animation: draw 1.1s .85s cubic-bezier(.76,0,.24,1) forwards; }
+  margin-top: 40px; animation: draw 1.1s var(--line-delay, 1.5s) cubic-bezier(.76,0,.24,1) forwards; }
 @keyframes draw { to { transform: scaleX(1); } }
+/* standfirst / disciplines / role: fade+rise in after the headline
+   resolves (--rd, set inline per element), so the primary hero text
+   settles before the supporting copy and CTAs do. */
+.hero-reveal { opacity: 0; transform: translateY(14px);
+  animation: heroUp .6s cubic-bezier(.16,1,.3,1) var(--rd, 0s) forwards; }
+@keyframes heroUp { to { opacity: 1; transform: none; } }
 .mast .role { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
   margin-top: 18px; }
 
@@ -217,20 +557,11 @@ export const CSS = `
 .strip-track { display: flex; gap: 10px; padding: 14px 0; width: max-content;
   animation: roll 48s linear infinite; }
 .strip:hover .strip-track { animation-play-state: paused; }
-.strip-fr { flex: 0 0 auto; width: 200px; height: 132px; overflow: hidden; border-radius: 2px; }
+.strip-fr { flex: 0 0 auto; width: 210px; height: 210px; overflow: hidden; border-radius: 2px; }
+@media (max-width: 640px) { .strip-fr { width: 160px; height: 160px; } }
 @keyframes roll { to { transform: translateX(-50%); } }
 
-/* --- ticker --- */
-.tick { border-bottom: 1px solid var(--rule); overflow: hidden; padding: 16px 0; display: flex;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-          mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.tick-in { display: flex; width: max-content; animation: roll 34s linear infinite; }
-.tick-in em { font-style: normal; font-weight: 500; font-size: 15px; white-space: nowrap;
-  padding: 0 20px; display: flex; align-items: center; gap: 20px; }
-.tick-in em::after { content: "·"; color: var(--accent); }
-
 /* --- thesis --- */
-.thesis { padding: 15vh 0 12vh; }
 .thesis-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 56px; align-items: end; }
 @media (max-width: 860px) { .thesis-grid { grid-template-columns: 1fr; align-items: start; gap: 32px; } }
 .lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(24px, 3.6vw, 44px);
@@ -267,19 +598,98 @@ export const CSS = `
 .cap .meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   padding-top: 16px; border-top: 1px solid var(--rule); }
 
-/* --- pinned horizontal gallery --- */
-.gallery { overflow: hidden; border-top: 1px solid var(--rule); background: var(--bg); }
-.gallery.scrollable { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.gallery-track { display: flex; gap: 24px; align-items: center; width: max-content;
-  padding: 10vh 28px; }
-.gallery-head { flex: 0 0 auto; width: min(40vw, 460px); padding-right: 48px; }
-.gallery-head h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
-  font-size: clamp(30px, 4.4vw, 60px); text-wrap: balance; }
-.gallery-head p { color: var(--dim); font-size: 15px; line-height: 1.7; margin-top: 20px; max-width: 34ch; }
-.gal-fr { flex: 0 0 auto; width: min(40vw, 420px); aspect-ratio: 3/4; overflow: hidden;
-  border-radius: 4px; border: 1px solid var(--rule); }
-.gal-fr .mono { display: block; padding: 12px 2px 0; }
-@media (max-width: 700px) { .gallery-head { width: 78vw; } .gal-fr { width: 70vw; } }
+/* --- brand logo in the bar ---
+   Drop the real file at public/logo.svg (or .png / .webp) and it is
+   picked up automatically; until then the wordmark text shows. The
+   .pf img reset (width/height 100% + filter) must not apply here. */
+/* The C& mark + wordmark. On load the outline draws itself, then the
+   fill develops in — a nod to a print coming up in the tray. Hovering
+   the brand twists the mark slightly, like focusing a lens. */
+.logo { display: inline-flex; align-items: center; gap: 12px; }
+.logo-mark { height: 34px; width: auto; aspect-ratio: 13113 / 11894; color: var(--ink);
+  overflow: visible; transition: transform .5s cubic-bezier(.2,.8,.2,1), color .3s ease;
+  transform-origin: 50% 50%; }
+.logo-mark path { fill: currentColor; stroke: currentColor; stroke-width: 220;
+  stroke-dasharray: 1; stroke-dashoffset: 1; fill-opacity: 0;
+  animation: logoDraw 1.4s cubic-bezier(.4,0,.2,1) .2s forwards,
+             logoFill .7s ease 1.2s forwards; }
+@keyframes logoDraw { to { stroke-dashoffset: 0; } }
+@keyframes logoFill { to { fill-opacity: 1; } }
+.brand { display: inline-flex; align-items: center; min-height: 34px; }
+.brand:hover .logo-mark { transform: rotate(-12deg) scale(1.08); }
+/* wordmark: each letter rises out of a clipped line, cascading left to
+   right so the name finishes composing just as the mark's fill lands.
+   On hover the letters track apart slightly — a quiet typographic nod. */
+.logo-word { display: inline-flex; overflow: hidden; gap: 0px;
+  transition: gap .45s cubic-bezier(.2,.8,.2,1), color .3s ease; }
+.logo-word b { font-weight: inherit; display: inline-block; opacity: 0;
+  transform: translateY(130%); animation: wordUp .6s cubic-bezier(.16,1,.3,1) forwards; }
+@keyframes wordUp { to { opacity: 1; transform: none; } }
+.brand:hover .logo-word { gap: 1.5px; }
+@media (max-width: 720px) {
+  .logo-mark { height: 28px; }
+  .logo-word { display: none; } /* the mark carries the brand on phones */
+}
+
+/* --- categorised gallery (Work page) ---
+   Deliberately mute: four category tabs and a masonry of frames.
+   No captions, no notes — the grid is the whole statement. */
+.gwork { padding: 12vh 0; border-top: 1px solid var(--rule); }
+.gwork-head { display: flex; justify-content: space-between; align-items: center;
+  gap: 18px 28px; flex-wrap: wrap; margin-bottom: 36px; }
+.gtabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.gtab { border: 1px solid var(--rule); border-radius: 100px; padding: 8px 16px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--dim);
+  transition: border-color .3s ease, color .3s ease, background-color .3s ease; }
+.gtab:hover { border-color: var(--accent); color: var(--accent); }
+.gtab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.gempty { padding: 9vh 24px; text-align: center; border: 1px dashed var(--rule);
+  border-radius: 6px; }
+
+/* --- home: photography collection cards ---
+   One framed cover per collection; opens the full gallery at
+   /photography/:slug. Mirrors the site's card idiom (accent hover, the
+   same pill "open" badge as the project stack). */
+.gwork-all { display: inline-flex; align-items: center; gap: 8px; color: var(--dim);
+  transition: color .3s ease; }
+.gwork-all:hover { color: var(--accent); }
+.gwork-all .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.gwork-all:hover .arrow { transform: translateX(5px); }
+.projrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
+@media (max-width: 560px) { .projrow { grid-template-columns: 1fr; } }
+.projcard { display: block; }
+.projshot { position: relative; overflow: hidden; border: 1px solid var(--rule);
+  border-radius: 4px; background: var(--panel); aspect-ratio: 4/3;
+  transition: border-color .4s ease; }
+.projcard:hover .projshot { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
+.projshot img { transition: transform 1.1s cubic-bezier(.2,.8,.2,1), filter .6s ease; }
+.projcard:hover .projshot img { transform: scale(1.05); }
+.projshot::after { content: ""; position: absolute; inset: 0; background: var(--accent);
+  opacity: 0; mix-blend-mode: overlay; transition: opacity .4s ease; pointer-events: none; }
+.projcard:hover .projshot::after { opacity: .12; }
+.projshot .open { position: absolute; right: 12px; bottom: 12px; z-index: 2;
+  background: color-mix(in srgb, var(--bg) 55%, transparent); color: var(--ink);
+  backdrop-filter: blur(8px); border: 1px solid var(--rule); border-radius: 100px;
+  padding: 7px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: .14em; text-transform: uppercase; }
+.projcap { display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px; padding: 14px 2px 0; }
+.projcap h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(19px, 2.2vw, 25px);
+  transition: color .3s; }
+.projcard:hover .projcap h3 { color: var(--accent); }
+.projcap .mono { flex: 0 0 auto; color: var(--dim); }
+/* label above the pooled "selected frames" grid on the home page */
+.gwork-sub { margin: 48px 0 20px; color: var(--dim);
+  padding-top: 26px; border-top: 1px solid var(--rule); }
+
+/* --- reserved room (design work not published yet) --- */
+.reserved { border: 1px dashed var(--rule); border-radius: 6px; padding: 8vh 36px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.reserved h3 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.05;
+  font-size: clamp(24px, 3.2vw, 40px); text-wrap: balance; }
+.reserved p { color: var(--dim); font-size: 15px; line-height: 1.7; max-width: 44ch; }
+.reserved .extlink { margin-top: 10px; }
 
 /* --- section shell with sticky label --- */
 .sec { padding: 13vh 0; border-top: 1px solid var(--rule); }
@@ -298,17 +708,36 @@ export const CSS = `
 .metric b { display: block; font-weight: 300; letter-spacing: -0.03em;
   font-size: clamp(36px, 4.4vw, 60px); line-height: 1; font-variant-numeric: tabular-nums; }
 .metric span { display: block; margin-top: 12px; }
+/* the % / wks rides in as the number lands, so it needs its own box */
+.metric b .suf { display: inline-block; margin-top: 0; will-change: transform, opacity; }
 
-/* --- services / shot list --- */
-.sl-row { display: grid; grid-template-columns: 42px 1fr 1.1fr; gap: 20px; align-items: baseline;
-  padding: 22px 0; border-bottom: 1px solid var(--rule);
+/* --- services / shot list ---
+   Hover sweeps the current accent across the whole row and flips the
+   text to the page background — so the row reads as a solid block in
+   whichever colour the visitor picked in the bar. The fill wipes in
+   from the left and out to the right (transform-origin swaps on
+   hover), and bleeds 18px past the text so nothing sits flush to the
+   edge. Children are lifted above it with z-index. */
+.sl-row { position: relative; display: grid; grid-template-columns: 42px 1fr 1.1fr;
+  gap: 20px; align-items: baseline; padding: 22px 0;
+  border-bottom: 1px solid var(--rule);
   transition: padding-left .35s cubic-bezier(.2,.8,.2,1); }
+.sl-row::before { content: ""; position: absolute; inset: 0 -18px; z-index: 0;
+  background: var(--accent); border-radius: 3px; transform: scaleX(0);
+  transform-origin: right; transition: transform .55s cubic-bezier(.76,0,.24,1); }
+.sl-row:hover::before { transform: scaleX(1); transform-origin: left; }
+.sl-row > * { position: relative; z-index: 1; }
 .sl-row:first-child { border-top: 1px solid var(--rule); }
 .sl-row:hover { padding-left: 10px; }
 .sl-row h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(18px, 2.1vw, 25px);
-  transition: color .3s; }
-.sl-row:hover h3 { color: var(--accent); }
-.sl-row p { color: var(--dim); font-size: 14.5px; line-height: 1.58; }
+  transition: color .35s ease .06s; }
+.sl-row p { color: var(--dim); font-size: 14.5px; line-height: 1.58;
+  transition: color .35s ease .06s; }
+.sl-row .mono { transition: color .35s ease .06s; }
+/* on the filled row every layer switches to the background colour —
+   the body copy at reduced opacity so the hierarchy survives */
+.sl-row:hover h3, .sl-row:hover .mono { color: var(--bg); }
+.sl-row:hover p { color: color-mix(in srgb, var(--bg) 72%, transparent); }
 @media (max-width: 700px) { .sl-row { grid-template-columns: 30px 1fr; } .sl-row p { grid-column: 2; } }
 
 /* --- quotes slideshow --- */
@@ -316,9 +745,12 @@ export const CSS = `
 .q p { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(21px, 2.7vw, 32px);
   line-height: 1.35; max-width: 24ch; }
 .q footer { margin-top: 22px; }
-.dots { display: flex; gap: 8px; margin-top: 28px; }
-.dot { width: 26px; height: 2px; background: var(--rule); transition: background-color .4s; }
-.dot.on { background: var(--accent); }
+/* Each dot is a 26px-tall tap target; the 2px bar centred in it is the visual. */
+.dots { display: flex; gap: 8px; margin-top: 16px; }
+.dot { width: 26px; height: 26px; position: relative; }
+.dot::before { content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  margin-top: -1px; height: 2px; background: var(--rule); transition: background-color .4s; }
+.dot.on::before { background: var(--accent); }
 
 /* --- end --- */
 .end { padding: 14vh 0 44px; border-top: 1px solid var(--rule); }
@@ -332,6 +764,25 @@ export const CSS = `
 .colophon { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 28px;
   margin-top: 13vh; padding-top: 22px; border-top: 1px solid var(--rule); }
 .colophon dd { margin: 8px 0 0; font-size: 14px; line-height: 1.72; color: var(--dim); }
+
+/* --- contact form --- */
+.contact-form { max-width: 620px; margin-top: 30px; display: flex; flex-direction: column; gap: 18px; }
+.cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 620px) { .cf-row { grid-template-columns: 1fr; } }
+.cf-field { display: flex; flex-direction: column; gap: 8px; }
+.cf-field input, .cf-field textarea { background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 4px; color: var(--ink); font: inherit; font-size: 15px; padding: 13px 15px;
+  width: 100%; transition: border-color .25s ease; }
+.cf-field input:focus, .cf-field textarea:focus { border-color: var(--accent); outline: none; }
+.cf-field textarea { resize: vertical; line-height: 1.6; }
+/* honeypot: off-screen, never shown, no tab stop */
+.cf-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.cf-foot { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 4px; }
+.cf-foot button[disabled] { opacity: .5; pointer-events: none; }
+.cf-err { text-transform: none; letter-spacing: .02em; color: #F4595E; }
+.cf-err a { color: var(--accent); }
+.form-done { margin-top: 30px; }
+.form-done .mono { margin-top: 10px; }
 
 /* --- work detail page --- */
 .detail { padding: 12vh 0 10vh; }
@@ -362,19 +813,6 @@ export const CSS = `
   transition: color .3s; }
 .pager a:hover strong { color: var(--accent); }
 
-/* --- custom cursor (fine-pointer, non-reduced only) --- */
-.cursor-on, .cursor-on * { cursor: none !important; }
-.cursor { position: fixed; top: 0; left: 0; z-index: 600; width: 12px; height: 12px;
-  border-radius: 50%; background: #fff; mix-blend-mode: difference; pointer-events: none;
-  opacity: 0; display: grid; place-items: center; will-change: transform;
-  transition: width .3s cubic-bezier(.2,.8,.2,1), height .3s cubic-bezier(.2,.8,.2,1),
-    background-color .3s ease, mix-blend-mode 0s; }
-.cursor.is-hover { width: 40px; height: 40px; }
-.cursor.is-view { width: 84px; height: 84px; background: var(--accent); mix-blend-mode: normal; }
-.cursor-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--bg); opacity: 0; transition: opacity .25s; white-space: nowrap; }
-.cursor.is-view .cursor-label { opacity: 1; }
-
 /* --- nav links in the bar --- */
 .nav { display: flex; gap: 22px; align-items: center; }
 .nav a { position: relative; }
@@ -383,44 +821,398 @@ export const CSS = `
   background: var(--accent); transform: scaleX(0); transform-origin: right;
   transition: transform .35s cubic-bezier(.76,0,.24,1); }
 .nav a:hover::after, .nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
-@media (max-width: 560px) { .nav { display: none; } }
+/* Four sections don't fit a phone in one row, so the bar wraps and the
+   nav sits on its own line rather than disappearing. */
+@media (max-width: 720px) {
+  .bar-in { flex-wrap: wrap; gap: 10px 14px; padding: 12px 20px; }
+  .nav { order: 3; width: 100%; gap: 16px; justify-content: space-between; }
+  .nav a { font-size: 10.5px; letter-spacing: .1em; }
+}
 
 /* --- about page --- */
 .about { padding: 12vh 0 8vh; }
 .about-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
 @media (max-width: 820px) { .about-hero { grid-template-columns: 1fr; gap: 36px; } }
+.about-kicker { margin-bottom: 22px; }
 .about-hero h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .98;
   font-size: clamp(44px, 8vw, 104px); text-wrap: balance; }
 .about-lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.6vw, 30px);
   line-height: 1.35; margin-top: 28px; max-width: 22ch; }
 .about-lead i { font-style: normal; color: var(--accent); }
+.about-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 34px; }
+.about-tags span { border: 1px solid var(--rule); border-radius: 100px; padding: 8px 16px;
+  transition: border-color .35s ease; }
+.about-tags span:hover { border-color: var(--accent); }
 .about-portrait { position: relative; overflow: hidden; border-radius: 4px;
   border: 1px solid var(--rule); aspect-ratio: 4/5; }
 .about-portrait img { will-change: transform; }
-.about-body { max-width: 62ch; margin: 12vh 0; color: var(--dim); line-height: 1.8; font-size: 16px; }
+.about-portrait figcaption { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
+  padding: 46px 16px 15px; color: var(--ink);
+  background: linear-gradient(to top, color-mix(in srgb, var(--bg) 90%, transparent), transparent); }
+
+/* --- section header: numbered label + a rule that draws in --- */
+.shead { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; }
+.shead-n { flex: none; color: var(--accent); font-variant-numeric: tabular-nums; }
+.shead-label { flex: none; white-space: nowrap; color: var(--dim); }
+.shead-rule { flex: 1 1 auto; height: 1px; background: var(--rule);
+  transform: scaleX(0); transform-origin: left; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
+.shead.in .shead-rule { transform: scaleX(1); }
+
+.about-body { max-width: 64ch; margin: 12vh 0; color: var(--dim); line-height: 1.8; font-size: 16px; }
 .about-body p + p { margin-top: 20px; }
+/* first paragraph reads as a lead-in — brighter, larger, sets the voice */
+.about-body .lead-p { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
+  font-size: clamp(19px, 2.3vw, 25px); line-height: 1.5; }
+.about-body .lead-p + p { margin-top: 30px; }
 .approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
   background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
-.approach div { background: var(--bg); padding: 30px 26px; }
+/* panels are plain <div> on the about page and <a> on the home page,
+   where each one is a door into that practice */
+.approach div, .approach a { position: relative; background: var(--bg); padding: 34px 26px 30px;
+  display: block; transition: background-color .4s ease; }
+.approach div::before, .approach a::before { content: ""; position: absolute; left: 0; right: 0; top: 0;
+  height: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+.approach div:hover::before, .approach a:hover::before { transform: scaleX(1); }
+.approach a:hover { background: var(--panel); }
+.approach a:hover h3 { color: var(--accent); }
+.approach-n { display: block; color: var(--accent); opacity: .85; margin-bottom: 18px; }
+.approach h3 { transition: color .3s ease; }
 .approach h3 { font-weight: 400; letter-spacing: -0.02em; font-size: 19px; margin-bottom: 12px; }
 .approach p { color: var(--dim); font-size: 14.5px; line-height: 1.6; }
-.timeline { margin-top: 4vh; }
-.tl-row { display: grid; grid-template-columns: 90px 1fr; gap: 24px; align-items: baseline;
-  padding: 22px 0; border-bottom: 1px solid var(--rule);
+
+/* --- timeline: a real spine with accent dot markers --- */
+.timeline { position: relative; margin-top: 4vh; }
+.timeline::before { content: ""; position: absolute; left: 6px; top: 32px; bottom: 32px;
+  width: 1px; background: var(--rule); }
+.tl-row { position: relative; display: grid; grid-template-columns: 84px 1fr; gap: 24px;
+  align-items: baseline; padding: 26px 0 26px 42px; border-bottom: 1px solid var(--rule);
   transition: padding-left .35s cubic-bezier(.2,.8,.2,1); }
+.tl-row::before { content: ""; position: absolute; left: 1px; top: 32px; width: 11px; height: 11px;
+  border-radius: 50%; background: var(--bg); border: 2px solid var(--accent);
+  transition: transform .35s ease, background-color .35s ease; }
+.tl-row:hover::before { background: var(--accent); transform: scale(1.18); }
 .tl-row:first-child { border-top: 1px solid var(--rule); }
-.tl-row:hover { padding-left: 10px; }
-.tl-row b { font-weight: 400; color: var(--accent); font-variant-numeric: tabular-nums; }
+.tl-row:hover { padding-left: 52px; }
+.tl-row b { font-weight: 400; font-size: clamp(17px, 1.8vw, 22px);
+  color: var(--accent); font-variant-numeric: tabular-nums; }
 .tl-row p { font-size: clamp(16px, 1.9vw, 21px); letter-spacing: -0.01em; }
+@media (max-width: 700px) { .tl-row { grid-template-columns: 64px 1fr; gap: 16px; } }
+
+/* ==================================================================
+   PHOTOGRAPHY PAGE
+   ================================================================== */
+
+/* --- hero slideshow ---
+   Stacked full-bleed frames crossfading with a slow Ken Burns push.
+   The caption block and the tick rail sit above them; the whole hero
+   is a link to the project currently on screen. */
+.phero { position: relative; height: min(88vh, 900px); overflow: hidden;
+  border-bottom: 1px solid var(--rule); background: var(--panel); }
+.phero-stage { position: absolute; inset: 0; }
+.phero-fr { position: absolute; inset: 0; }
+/* full-bleed cover — the frame fills the banner; object-position keeps the
+   upper-middle (faces) in view when a tall photo is cropped to fit */
+.phero-fr img { will-change: transform; object-position: center 30%; }
+.phero-fr::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--bg) 46%, transparent) 0%,
+    transparent 30%,
+    color-mix(in srgb, var(--bg) 30%, transparent) 60%,
+    color-mix(in srgb, var(--bg) 94%, transparent) 100%); }
+.phero-in { position: relative; z-index: 2; height: 100%; display: flex;
+  flex-direction: column; justify-content: flex-end; gap: 26px; padding: 8vh 28px 40px; }
+/* top labels stay pinned to the top; caption + rail sit at the bottom */
+.phero-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  margin-bottom: auto; }
+.phero-cap h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
+  font-size: clamp(44px, 9vw, 120px); text-wrap: balance; }
+.phero-cap .sub { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 18px; }
+.phero-open { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px;
+  border: 1px solid var(--rule); border-radius: 100px; padding: 10px 20px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent); backdrop-filter: blur(8px);
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .16em;
+  text-transform: uppercase; transition: border-color .35s ease, color .35s ease; }
+.phero-open:hover { border-color: var(--accent); color: var(--accent); }
+.phero-open .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.phero-open:hover .arrow { transform: translateX(5px); }
+.phero-foot { display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap; }
+/* tick rail — one bar per featured project, the active one fills with
+   the autoplay timer */
+.ticks { display: flex; gap: 10px; align-items: center; }
+.tick-btn { width: 54px; height: 26px; position: relative; }
+.tick-btn::before { content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  margin-top: -1px; height: 2px; background: var(--rule); }
+.tick-btn i { position: absolute; left: 0; right: 0; top: 50%; margin-top: -1px;
+  height: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+.tick-btn[aria-current="true"] i { animation: tickFill 5.4s linear forwards; }
+@keyframes tickFill { to { transform: scaleX(1); } }
+.tick-btn:hover i { transform: scaleX(1); opacity: .4; animation: none; }
+.phero-count { font-variant-numeric: tabular-nums; }
+.phero-count b { font-weight: 400; color: var(--accent); }
+@media (max-width: 640px) { .phero { height: 78vh; } .tick-btn { width: 32px; } }
+
+/* --- project intro band --- */
+.band { padding: 12vh 0 2vh; }
+.band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
+  font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
+.band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
+
+/* --- photo project detail --- */
+/* Fixed, capped hero so a portrait source can't blow the box up to
+   full-width-portrait height; the image covers a 16:9 frame instead. */
+.pj-hero { position: relative; overflow: hidden; border-radius: 4px;
+  border: 1px solid var(--rule); aspect-ratio: 16/9; max-height: 78vh; }
+.pj-hero img { will-change: transform; }
+.pj-intro { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.8vw, 34px);
+  line-height: 1.32; max-width: 26ch; }
+
+/* masonry-ish grid: CSS columns keep the frames' own aspect ratios */
+.pgrid { columns: 3; column-gap: 18px; margin-top: 18px; }
+@media (max-width: 900px) { .pgrid { columns: 2; } }
+@media (max-width: 560px) { .pgrid { columns: 1; } }
+.pgrid figure { break-inside: avoid; margin: 0 0 18px; position: relative;
+  overflow: hidden; border-radius: 3px; border: 1px solid var(--rule);
+  cursor: pointer; background: var(--panel); }
+.pgrid img { transition: transform 1.1s cubic-bezier(.2,.8,.2,1), filter .6s ease; }
+.pgrid figure:hover img { transform: scale(1.05); }
+.pgrid figure::after { content: ""; position: absolute; inset: 0;
+  background: var(--accent); opacity: 0; mix-blend-mode: overlay;
+  transition: opacity .4s ease; pointer-events: none; }
+.pgrid figure:hover::after { opacity: .14; }
+.pgrid .idx { position: absolute; left: 12px; top: 12px; z-index: 2; opacity: 0;
+  transform: translateY(-4px); transition: opacity .35s ease, transform .35s ease; }
+.pgrid figure:hover .idx { opacity: 1; transform: none; }
+
+/* --- carousel roll: snap-scrolling filmstrip with drag ------------- */
+.roll { position: relative; }
+.roll-track { display: flex; align-items: flex-start; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
+  padding-bottom: 18px; scrollbar-width: none; cursor: grab; }
+.roll-track::-webkit-scrollbar { display: none; }
+.roll-track.dragging { cursor: grabbing; scroll-snap-type: none; }
+.roll-fr { flex: 0 0 auto; width: min(62vw, 700px); aspect-ratio: 3/2; overflow: hidden;
+  border-radius: 4px; border: 1px solid var(--rule); scroll-snap-align: center;
+  position: relative; background: var(--panel); }
+.roll-fr img { pointer-events: none; }
+.roll-nav { display: flex; gap: 10px; margin-top: 4px; }
+.roll-btn { width: 44px; height: 44px; border: 1px solid var(--rule); border-radius: 50%;
+  display: grid; place-items: center; transition: border-color .3s ease, color .3s ease; }
+.roll-btn:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 700px) { .roll-fr { width: 84vw; } }
+
+/* --- lightbox slideshow --- */
+.lb { position: fixed; inset: 0; z-index: 400; background: color-mix(in srgb, var(--bg) 94%, #000);
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: 20px 24px 28px; }
+.lb-bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.lb-stage { position: relative; display: grid; place-items: center; overflow: hidden; }
+.lb-stage img { width: auto; height: auto; max-width: 100%; max-height: calc(100vh - 120px);
+  object-fit: contain; border-radius: 3px; }
+.lb-foot { display: flex; justify-content: center; gap: 8px; }
+.lb-x { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
+  text-transform: uppercase; transition: color .3s;
+  padding: 14px; margin: -14px; } /* bigger tap target, no layout shift */
+.lb-x:hover { color: var(--accent); }
+.lb-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
+  width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--rule); background: color-mix(in srgb, var(--bg) 60%, transparent);
+  backdrop-filter: blur(8px); transition: border-color .3s ease, color .3s ease; }
+.lb-arrow:hover { border-color: var(--accent); color: var(--accent); }
+.lb-arrow.prev { left: 8px; } .lb-arrow.next { right: 8px; }
+
+/* ==================================================================
+   WEB DESIGN PAGE
+   ================================================================== */
+
+/* --- browser-chrome card ---
+   The screenshot is taller than its frame; on hover it scrolls to its
+   own bottom, so each card previews the whole page in place. */
+.browser { border: 1px solid var(--rule); border-radius: 6px; overflow: hidden;
+  background: var(--panel); transition: border-color .4s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
+.browser:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
+.browser-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  border-bottom: 1px solid var(--rule); background: var(--bg); }
+.browser-dots { display: flex; gap: 6px; }
+.browser-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--rule); }
+.browser:hover .browser-dots i:first-child { background: var(--accent); }
+.browser-url { flex: 1; text-align: center; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.browser-view { position: relative; aspect-ratio: 16/11; overflow: hidden; }
+.browser-view img { height: auto; min-height: 100%; object-position: top;
+  transition: transform 3.2s cubic-bezier(.33,0,.2,1), filter .6s ease; }
+.browser:hover .browser-view img { transform: translateY(calc(-100% + 100cqh)); }
+.browser-view { container-type: size; }
+
+/* branded placeholder inside a browser card when a project has no real
+   cover image yet — the name + tag on the dark panel, no stock photo */
+.browser-ph { aspect-ratio: 16/11; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px; text-align: center;
+  padding: 24px; background:
+    radial-gradient(120% 90% at 50% 18%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%),
+    var(--panel); }
+.browser-ph-name { font-weight: 300; letter-spacing: -0.03em; line-height: 1;
+  font-size: clamp(28px, 4vw, 46px); }
+.browser-ph .mono { opacity: 0.7; }
+
+/* in-card live Figma preview: the prototype's starting frame renders in
+   an iframe over the name/tag fallback (which shows while it loads).
+   pointer-events:none so the whole card stays a link to the detail page,
+   where the same prototype is fully interactive. */
+.figbox { position: relative; aspect-ratio: 16/11; overflow: hidden; background: var(--panel); }
+.figbox-fallback { position: absolute; inset: 0; aspect-ratio: auto; }
+.figbox-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+  pointer-events: none; }
+
+/* live Figma prototype embed on a design detail page.
+   A tall, height-driven frame (not a short landscape aspect box) so mobile
+   prototypes render large and the visitor can scroll/click through the
+   whole flow inside the iframe rather than it being cropped. */
+.figma-embed { position: relative; height: min(82vh, 880px); background: var(--panel); }
+.figma-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+@media (max-width: 640px) { .figma-embed { height: min(80vh, 700px); } }
+
+.wgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 28px; }
+@media (max-width: 760px) { .wgrid { grid-template-columns: 1fr; } }
+.wcard-cap { display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px; padding: 20px 4px 0; }
+.wcard-cap h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(20px, 2.4vw, 27px);
+  transition: color .3s; }
+.wcard:hover .wcard-cap h3 { color: var(--accent); }
+.wcard-cap p { color: var(--dim); font-size: 14.5px; line-height: 1.6; margin-top: 10px; max-width: 40ch; }
+.tool-badge { flex: 0 0 auto; border: 1px solid var(--rule); border-radius: 100px;
+  padding: 5px 12px; }
+
+/* ==================================================================
+   DESIGN INDEX — /design (magazine-style redesign)
+
+   Masthead → one featured build (large split) → a numbered grid of the
+   rest. Reuses the shared .browser / .figbox / .pill primitives so the
+   card previews stay identical to the home page; only the surrounding
+   layout and captions are new (dz- prefix) — Home.jsx keeps .wgrid/.wcard.
+   ================================================================== */
+/* --- hero: headline (left) + featured live preview (right) --- */
+.dz-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+@media (max-width: 900px) { .dz-hero { grid-template-columns: 1fr; gap: 40px; } }
+.dz-hero-copy { min-width: 0; }
+.dz-kicker { display: flex; justify-content: space-between; align-items: baseline;
+  gap: 14px 24px; flex-wrap: wrap; margin-bottom: 30px; }
+.dz-hero-copy h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
+  font-size: clamp(42px, 6.4vw, 92px); text-wrap: balance; }
+.dz-role { margin-top: 18px; }
+.dz-hero-cta { margin-top: 28px; }
+
+/* the featured preview is a single link; a small label rides above the
+   browser frame so the slot reads as "featured", not just another card */
+.dz-hero-media { display: block; min-width: 0; }
+.dz-hero-tag { display: block; color: var(--dim); margin-bottom: 14px; }
+.dz-hero-media:hover .dz-hero-tag { color: var(--accent); }
+
+.dz-open { display: inline-flex; align-items: center; gap: 10px; color: var(--accent); }
+.dz-open .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.dz-hero-cta:hover .arrow { transform: translateX(6px); }
+
+/* --- the rest: numbered grid --- */
+.dz-work-sec { padding: 7vh 0 12vh; }
+.dz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 26px; }
+@media (max-width: 760px) { .dz-grid { grid-template-columns: 1fr; } }
+.dz-card { display: block; }
+.dz-card-cap { padding: 18px 2px 0; }
+.dz-card-line { display: flex; align-items: baseline; gap: 12px; }
+.dz-card-idx { flex: 0 0 auto; color: var(--accent); font-variant-numeric: tabular-nums; }
+.dz-card-line h3 { flex: 1; font-weight: 400; letter-spacing: -0.02em;
+  font-size: clamp(19px, 2.2vw, 24px); transition: color .3s; }
+.dz-card:hover .dz-card-line h3 { color: var(--accent); }
+.dz-arrow { flex: 0 0 auto; color: var(--dim); }
+.dz-arrow .arrow { display: inline-block; transition: transform .3s cubic-bezier(.2,.8,.2,1), color .3s; }
+.dz-card:hover .dz-arrow { color: var(--accent); }
+.dz-card:hover .dz-arrow .arrow { transform: translateX(5px); }
+.dz-card-cap p { color: var(--dim); font-size: 14px; line-height: 1.6; margin-top: 10px; max-width: 40ch; }
+
+/* stack pills */
+.stack-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { border: 1px solid var(--rule); border-radius: 100px; padding: 6px 14px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--dim); transition: border-color .3s ease, color .3s ease; }
+.pill:hover { border-color: var(--accent); color: var(--accent); }
+
+/* external link button — .pf-scoped (not bare .extlink) so its border
+   survives the .pf button { border: none; ... } reset when it's used
+   on a <button> (NotFound/ErrorBoundary), not just an <a>. */
+.pf .extlink { display: inline-flex; align-items: center; gap: 12px; border-radius: 100px;
+  border: 1px solid var(--accent); color: var(--accent); padding: 13px 24px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
+  text-transform: uppercase; transition: background-color .35s ease, color .35s ease; }
+.extlink:hover { background: var(--accent); color: var(--bg); }
+.extlink[aria-disabled="true"] { border-color: var(--rule); color: var(--dim);
+  pointer-events: none; }
+.extlink .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.extlink:hover .arrow { transform: translate(3px, -3px); }
+
+/* --- design detail screens --- */
+.screens { display: flex; flex-direction: column; gap: 24px; margin-top: 18px; }
+.screen { overflow: hidden; border-radius: 4px; border: 1px solid var(--rule);
+  background: var(--panel); }
+.screen img { will-change: transform; }
+
+/* --- cross-page teaser (home → photography / design) --- */
+.teaser { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+@media (max-width: 760px) { .teaser { grid-template-columns: 1fr; } }
+.teaser a { background: var(--bg); padding: 44px 34px; display: flex;
+  flex-direction: column; gap: 14px; min-height: 240px; justify-content: space-between;
+  transition: background-color .4s ease; }
+.teaser a:hover { background: var(--panel); }
+.teaser h3 { font-weight: 300; letter-spacing: -0.03em; font-size: clamp(26px, 3.4vw, 42px);
+  line-height: 1.05; transition: color .3s; }
+.teaser a:hover h3 { color: var(--accent); }
+.teaser p { color: var(--dim); font-size: 14.5px; line-height: 1.65; max-width: 34ch; }
+.teaser .go { display: inline-flex; align-items: center; gap: 10px; }
+.teaser a:hover .go .arrow { transform: translateX(6px); }
+.teaser .go .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+
+/* --- masthead standfirst + the two practices ---
+   The home page introduces the person, so the masthead has to state
+   both crafts above the fold. The standfirst says it in words; the
+   two doors below let a visitor pick a practice immediately. */
+.standfirst { font-weight: 300; letter-spacing: -0.02em;
+  font-size: clamp(18px, 2.2vw, 27px); line-height: 1.4;
+  max-width: 36ch; margin-top: 24px; }
+.standfirst strong { font-weight: 400; color: var(--accent); }
+.standfirst i { font-style: normal; color: var(--dim); }
+
+.disciplines { display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--rule); border: 1px solid var(--rule); border-radius: 4px;
+  overflow: hidden; margin-top: 42px; max-width: 760px; }
+@media (max-width: 640px) { .disciplines { grid-template-columns: 1fr; } }
+.disc { position: relative; background: var(--bg); padding: 24px 26px;
+  display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.disc::before { content: ""; position: absolute; inset: 0; background: var(--accent);
+  transform: translateY(101%); transition: transform .5s cubic-bezier(.76,0,.24,1); }
+.disc:hover::before { transform: translateY(0); }
+.disc > * { position: relative; z-index: 1; transition: color .35s ease .05s; }
+.disc strong { font-weight: 400; letter-spacing: -0.02em;
+  font-size: clamp(21px, 2.5vw, 30px); }
+.disc .go { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; }
+.disc .go .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.disc:hover .go .arrow { transform: translateX(6px); }
+.disc:hover strong, .disc:hover .mono { color: var(--bg); }
+
 
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1 !important; transform: none !important; }
-  .display .ch { opacity: 1 !important; transform: none !important; filter: none !important; }
+  .hero-reveal { opacity: 1 !important; transform: none !important; }
+  .logo-mark path { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; }
+  .logo-word b { opacity: 1 !important; transform: none !important; }
   .mast .drawline, .metrics::after { transform: scaleX(1) !important; }
   .shot img, .detail-fig img, .about-portrait img { transform: none !important; }
+  .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
+  .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }
   .card { position: static; }
+  /* with transitions off, an auto-hiding bar would blink in and out —
+     keep it put instead */
+  .bar.hide { transform: none !important; }
+  .roll-track { scroll-snap-type: none; }
   .iris-lens { display: none; }
-  .cursor { display: none; }
 }
 `;

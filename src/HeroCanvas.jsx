@@ -18,7 +18,7 @@ import * as THREE from "three";
 
 const COUNT = 900;
 
-function Field({ accent, reduced, pointer }) {
+function Field({ reduced, pointer }) {
   const tilt = useRef(null); // pointer parallax
   const spin = useRef(null); // perpetual rotation
 
