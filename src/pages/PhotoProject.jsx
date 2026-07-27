@@ -66,10 +66,10 @@ export default function PhotoProject() {
             </div>
             <h1>{p.t}</h1>
           </div>
-          {p.exif && <div className="mono" style={{ color: "var(--accent)" }}>{p.exif}</div>}
+          {p.role && <div className="mono" style={{ color: "var(--accent)" }}>{p.role}</div>}
         </div>
 
-        <figure className="pj-hero" style={{ aspectRatio: ratio(p.photos[0], 16, 9) }}>
+        <figure className="pj-hero">
           <img ref={heroImg} src={img(p.photos[0], 2000, 1125)} srcSet={srcSet(p.photos[0])}
             sizes="(max-width: 1180px) 100vw, 1180px" alt={p.t} />
         </figure>
@@ -79,8 +79,6 @@ export default function PhotoProject() {
             <p className="pj-intro">{p.intro}</p>
           </Reveal>
           <Reveal as="dl" className="spec" delay={0.08}>
-            {p.loc && <div><dt className="mono">Location</dt><dd>{p.loc}</dd></div>}
-            {p.exif && <div><dt className="mono">Capture</dt><dd>{p.exif}</dd></div>}
             {p.role && <div><dt className="mono">Role</dt><dd>{p.role}</dd></div>}
             <div><dt className="mono">Collection</dt><dd>{p.kind}</dd></div>
             <div><dt className="mono">Frames</dt><dd>{p.photos.length}</dd></div>

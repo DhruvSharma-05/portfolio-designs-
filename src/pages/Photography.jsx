@@ -163,7 +163,7 @@ export default function Photography() {
                   <span className="mono">
                     {[p.loc, p.year].filter(Boolean).join(" — ") || `${p.photos.length} frames`}
                   </span>
-                  {p.exif && <span className="mono" style={{ color: "var(--accent)" }}>{p.exif}</span>}
+                  {p.role && <span className="mono" style={{ color: "var(--accent)" }}>{p.role}</span>}
                 </div>
               </div>
             </div>

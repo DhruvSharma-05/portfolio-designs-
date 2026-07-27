@@ -529,14 +529,15 @@ export const CSS = `
 @media (max-width: 640px) { .pf .totop { width: 44px; height: 44px; right: 16px; bottom: 16px; } }
 
 /* --- masthead --- */
-.mast { padding: 17vh 0 10vh; position: relative; }
+.mast { padding: 13vh 0 9vh; position: relative; }
 .mast .wrap { position: relative; z-index: 1; }
 .hero-canvas { position: absolute !important; inset: 0; z-index: 0;
   pointer-events: none;
   -webkit-mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%);
           mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%); }
 .display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
-  font-size: clamp(52px, 12vw, 168px); text-wrap: balance; }
+  font-size: clamp(44px, 10.5vw, 140px); text-wrap: balance;
+  overflow-wrap: break-word; max-width: 100%; }
 .mast .drawline { height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left;
   margin-top: 40px; animation: draw 1.1s var(--line-delay, 1.5s) cubic-bezier(.76,0,.24,1) forwards; }
 @keyframes draw { to { transform: scaleX(1); } }
@@ -959,8 +960,10 @@ export const CSS = `
 .band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
 
 /* --- photo project detail --- */
+/* Fixed, capped hero so a portrait source can't blow the box up to
+   full-width-portrait height; the image covers a 16:9 frame instead. */
 .pj-hero { position: relative; overflow: hidden; border-radius: 4px;
-  border: 1px solid var(--rule); aspect-ratio: 16/9; }
+  border: 1px solid var(--rule); aspect-ratio: 16/9; max-height: 78vh; }
 .pj-hero img { will-change: transform; }
 .pj-intro { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.8vw, 34px);
   line-height: 1.32; max-width: 26ch; }

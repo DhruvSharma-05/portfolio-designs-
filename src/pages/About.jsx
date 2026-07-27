@@ -3,8 +3,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
-import { P, img, srcSet, ABOUT, INTRO, SHOTLIST, METRICS, prefersReduced } from "../data.js";
-import { Reveal, TLink, Metrics, SectionHead } from "../ui.jsx";
+import { P, img, srcSet, ABOUT, prefersReduced } from "../data.js";
+import { Reveal, TLink, SectionHead } from "../ui.jsx";
 
 const page = {
   initial: { opacity: 0, y: 12 },
@@ -78,39 +78,6 @@ export default function About() {
             <p>{t.t}</p>
           </Reveal>
         ))}
-      </section>
-
-      {/* what a client walks away with — moved here from the Work page,
-          which now stays about the work itself */}
-      <section style={{ marginTop: "10vh" }}>
-        <SectionHead n="03">What you get</SectionHead>
-        <div>
-          {INTRO.offer.map((o, i) => (
-            <Reveal className="sl-row" key={o.k} delay={i * 0.04}>
-              <span className="mono">{String(i + 1).padStart(2, "0")}</span>
-              <h3>{o.k}</h3>
-              <p>{o.v}</p>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <section style={{ marginTop: "10vh" }}>
-        <SectionHead n="04">What I'm hired for</SectionHead>
-        <div>
-          {SHOTLIST.map((s, i) => (
-            <Reveal className="sl-row" key={s.k} delay={i * 0.04}>
-              <span className="mono">{String(i + 1).padStart(2, "0")}</span>
-              <h3>{s.k}</h3>
-              <p>{s.v}</p>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <section style={{ marginTop: "10vh" }}>
-        <SectionHead n="05">The numbers</SectionHead>
-        <Metrics items={METRICS} />
       </section>
 
       <section className="end" style={{ marginTop: "12vh" }}>
