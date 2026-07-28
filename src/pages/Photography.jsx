@@ -1,10 +1,15 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import {
+  useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, lazy, Suspense,
+} from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
-import { P, img, srcSet, ratio, FEATURED, PHOTO_PROJECTS, SHEET, prefersReduced, heavyVisualsAllowed } from "../data.js";
-import { Reveal, TLink } from "../ui.jsx";
+import {
+  P, img, srcSet, ratio, FEATURED, PHOTO_PROJECTS, PHOTO_POOL,
+  prefersReduced, heavyVisualsAllowed,
+} from "../data.js";
+import { Reveal, TLink, SectionHead } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 const DistortImage = lazy(() => import("../DistortImage.jsx"));
@@ -133,57 +138,55 @@ export default function Photography() {
         </Reveal>
       </section>
 
-      {/* ---------- project stack ---------- */}
-      <section className="wrap stack" style={{ paddingTop: "6vh" }}>
-        {PHOTO_PROJECTS.map((p, n) => (
-          <Reveal className="card" key={p.slug} delay={n * 0.06}>
-            <div className="card-in">
-              <TLink to={`/photography/${p.slug}`} className="shot"
-                style={{ aspectRatio: ratio(p.photos[0], 4, 3) }}
-                aria-label={`Open ${p.t}`}>
-                {heavy ? (
-                  <Suspense fallback={
-                    <img data-par src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
-                      sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
-                  }>
-                    <DistortImage src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
-                      sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
-                  </Suspense>
-                ) : (
-                  <img data-par src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
-                    sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
-                )}
-                <span className="open">{p.photos.length} frames →</span>
-              </TLink>
-              <div className="cap">
-                <div>
-                  <span className="kind mono">{p.kind}</span>
-                  <h2>{p.t}</h2>
-                  <p>{p.note || p.intro}</p>
-                </div>
-                <div className="meta">
-                  <span className="mono">
-                    {[p.loc, p.year].filter(Boolean).join(" — ") || `${p.photos.length} frames`}
-                  </span>
-                  {p.role && <span className="mono" style={{ color: "var(--accent)" }}>{p.role}</span>}
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        ))}
+      {/* ---------- frames carousel ---------- */}
+      <section className="wrap" aria-label="Selected frames">
+        <PhotoCarousel photos={CAROUSEL} reduced={reduced} />
       </section>
 
-      {/* ---------- contact strip ---------- */}
-      <div className="strip">
-        <div className="strip-track">
-          {[...SHEET, ...SHEET].map((s, n) => (
-            <figure className="strip-fr" key={n}>
-              <img src={img(s, 400, 264)} srcSet={srcSet(s)}
-                sizes="(max-width: 640px) 160px, 210px" alt="" />
-            </figure>
+      {/* ---------- project stack ----------
+           the heading sits outside .stack, which is a flex column — inside
+           it the label would pick up the 34px card gap */}
+      <section className="wrap" style={{ paddingTop: "11vh" }}>
+        <SectionHead>Projects</SectionHead>
+        <div className="stack">
+          {PHOTO_PROJECTS.map((p, n) => (
+            <Reveal className="card" key={p.slug} delay={n * 0.06}>
+              <div className="card-in">
+                <TLink to={`/photography/${p.slug}`} className="shot"
+                  style={{ aspectRatio: ratio(p.photos[0], 4, 3) }}
+                  aria-label={`Open ${p.t}`}>
+                  {heavy ? (
+                    <Suspense fallback={
+                      <img data-par src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
+                        sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
+                    }>
+                      <DistortImage src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
+                        sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
+                    </Suspense>
+                  ) : (
+                    <img data-par src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
+                      sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
+                  )}
+                  <span className="open">{p.photos.length} frames →</span>
+                </TLink>
+                <div className="cap">
+                  <div>
+                    <span className="kind mono">{p.kind}</span>
+                    <h2>{p.t}</h2>
+                    <p>{p.note || p.intro}</p>
+                  </div>
+                  <div className="meta">
+                    <span className="mono">
+                      {[p.loc, p.year].filter(Boolean).join(" — ") || `${p.photos.length} frames`}
+                    </span>
+                    {p.role && <span className="mono" style={{ color: "var(--accent)" }}>{p.role}</span>}
+                  </div>
+                </div>
+              </div>
+            </Reveal>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* ---------- end ---------- */}
       <section className="end">
@@ -205,5 +208,148 @@ export default function Photography() {
         </div>
       </section>
     </motion.div>
+  );
+}
+
+/* ==================================================================
+   PHOTO CAROUSEL — a coverflow of the pooled frames.
+
+   The active frame sits centred at full size with its neighbours
+   peeking in from either edge, dimmed and scaled back; the arrows ride
+   over them. Clicking a neighbour brings it to the middle.
+
+   Every slide is the same HEIGHT and takes its width from the
+   photograph's own aspect ratio, so a portrait is a tall narrow card
+   and a landscape a wide one — both whole, neither cropped or zoomed.
+   Because the slides differ in width, the track can't be centred by
+   arithmetic; it's positioned from the measured offset of the active
+   slide. Scaling is done with transform only, which keeps layout width
+   constant so that measurement stays valid mid-animation.
+
+   Runs on its own and pauses while you're pointing at it or while it's
+   off screen; the arrows step through by hand.
+   ================================================================== */
+/* distinct from HOLD above, which paces the hero slideshow */
+const CAR_HOLD = 4200; // ms per carousel frame
+
+/* A short reel, not the whole library — enough to show the range without
+   turning the page into a contact sheet. PHOTO_POOL is already
+   round-robin across the collections, so a slice off the front is an
+   even mix of them rather than one set followed by the next. */
+const CAROUSEL = PHOTO_POOL.slice(0, 12);
+
+const SLIDE_MS = 800; // must match the .pcar-track transition
+
+function PhotoCarousel({ photos, reduced }) {
+  const N = photos.length;
+  /* The set is laid out three times over and we live in the middle copy,
+     so there is always another frame waiting on both sides: rolling off
+     the last picture just steps onto the first, one slide's worth of
+     travel, instead of rewinding the whole track. Once the move has
+     finished we re-seat the index into the middle copy again with the
+     transition switched off — the same photograph is already centred, so
+     the jump is invisible. */
+  const loop = useMemo(() => [...photos, ...photos, ...photos], [photos]);
+  const [idx, setIdx] = useState(N);
+  const [snap, setSnap] = useState(false); // re-seat without animating
+  const [shift, setShift] = useState(0);
+  const rootRef = useRef(null);
+  const stageRef = useRef(null);
+  const trackRef = useRef(null);
+
+  const step = useCallback((d) => setIdx((n) => n + d), []);
+
+  /* centre the active slide: measured, because slide widths vary with
+     each photograph's aspect ratio */
+  useLayoutEffect(() => {
+    const place = () => {
+      const stage = stageRef.current;
+      const slide = trackRef.current?.children[idx];
+      if (!stage || !slide) return;
+      setShift(stage.clientWidth / 2 - (slide.offsetLeft + slide.offsetWidth / 2));
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    if (stageRef.current) ro.observe(stageRef.current);
+    return () => ro.disconnect();
+  }, [idx, N]);
+
+  // drifted out of the middle copy → hop back once the slide has landed
+  useEffect(() => {
+    if (idx >= 2 * N || idx < N) {
+      const t = setTimeout(() => {
+        setSnap(true);
+        setIdx((i) => (i >= 2 * N ? i - N : i + N));
+      }, SLIDE_MS + 20);
+      return () => clearTimeout(t);
+    }
+  }, [idx, N]);
+
+  // the un-animated hop has painted; put the transition back
+  useLayoutEffect(() => {
+    if (!snap) return;
+    const r = requestAnimationFrame(() => setSnap(false));
+    return () => cancelAnimationFrame(r);
+  }, [snap]);
+
+  /* Keeps running while you look at it — an earlier version paused on
+     hover, which just made it look frozen for anyone whose cursor was
+     resting on the picture. The only thing that stops it is scrolling
+     it off screen, so it isn't burning frames in the background. */
+  useEffect(() => {
+    if (reduced || N < 2) return;
+    const el = rootRef.current;
+    let id = 0;
+    const start = () => { if (!id) id = setInterval(() => setIdx((n) => n + 1), CAR_HOLD); };
+    const stop = () => { clearInterval(id); id = 0; };
+    if (!el || typeof IntersectionObserver === "undefined") { start(); return stop; }
+    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? start() : stop()), { threshold: 0.2 });
+    io.observe(el);
+    return () => { stop(); io.disconnect(); };
+  }, [reduced, N]);
+
+  if (!N) return null;
+
+  return (
+    <div className="pcar" ref={rootRef}>
+      <div className="pcar-stage" ref={stageRef}>
+        <div className="pcar-track" ref={trackRef}
+          style={{ transform: `translateX(${shift}px)`, transition: snap ? "none" : undefined }}>
+          {loop.map((s, n) => {
+            const on = n === idx;
+            const near = Math.abs(n - idx) <= 2;   // only these are fetched
+            return (
+              <button type="button" key={s + "-" + n}
+                className={`pcar-slide${on ? " on" : ""}`}
+                style={{ aspectRatio: ratio(s, 3, 2) }}
+                aria-label={on ? undefined : `Show frame ${(n % N) + 1}`}
+                aria-current={on || undefined}
+                tabIndex={on ? -1 : 0}
+                onClick={() => setIdx(n)}>
+                {/* sizes is set for the widest case — a landscape slide runs
+                    ~995px at this height, and a 640w file visibly softens at
+                    that size. Portraits over-fetch a little; the centre frame
+                    being crisp is worth it. */}
+                {near && (
+                  <img src={img(s, 1400, 1400)} srcSet={srcSet(s)}
+                    sizes="(max-width: 900px) 92vw, 78vw"
+                    alt={on ? `Selected frame ${(n % N) + 1} of ${N}` : ""}
+                    loading={n === N ? "eager" : "lazy"} draggable="false" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <button type="button" className="pcar-arrow prev" onClick={() => step(-1)}
+          aria-label="Previous frame">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <button type="button" className="pcar-arrow next" onClick={() => step(1)}
+          aria-label="Next frame">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
+      </div>
+    </div>
   );
 }

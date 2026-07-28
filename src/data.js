@@ -67,7 +67,7 @@ export const INTRO = {
     "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling — designing intuitive digital products and capturing moments through photography.",
     "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws and ships the sites and apps those pictures end up on — so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
   ],
-  /* the two doors, mirrored in the hero strip */
+  /* the two doors — the practice cards under the home hero */
   does: [
     {
       k: "Photography",
@@ -171,20 +171,10 @@ const FRAMES_FALLBACK = [
     year: "2023", role: "Editorial · React" },
 ];
 
-const SHEET_FALLBACK = ["pf-c1", "pf-c2", "pf-c3", "pf-c4", "pf-c5", "pf-c6"];
-
-/* Prefer real synced photos; fall back to placeholders when the
-   manifest is empty. FRAMES drives the work cards + /work/:seed pages;
-   SHEET drives the contact strip + horizontal gallery — it prefers the
-   gallery bucket, then falls back to the pool of project photos (so the
-   strip still fills once photos live under collections rather than the
-   gallery bucket), then to placeholders. */
+/* Prefer real synced photos; fall back to placeholders when the manifest
+   is empty. FRAMES drives the work cards + /work/:seed pages. (SHEET,
+   which fed the marquee strip, went with it when the strip was removed.) */
 export const FRAMES = manifest.work?.length ? manifest.work : FRAMES_FALLBACK;
-export const SHEET = manifest.gallery?.length
-  ? manifest.gallery.map((p) => p.seed)
-  : manifest.projectPhotos?.length
-    ? manifest.projectPhotos.map((p) => p.seed)
-    : SHEET_FALLBACK;
 
 /* The old captioned "Gallery" grid (category tabs) was replaced by the
    per-collection photography cards — see PHOTO_PROJECTS below and
@@ -201,7 +191,7 @@ export const HAS_REAL_WEB = true;
 
    FEATURED drives the hero slideshow; PHOTO_PROJECTS drives the sticky
    stack below it and every project page. Each project owns its own set
-   of frames, so a project page can show a grid + a carousel roll.
+   of frames, so a project page can show a grid and a lightbox.
 
    PLACEHOLDER CONTENT — swap titles, notes and seeds for the real
    shoots. Seeds resolve through img(): a synced photo if the Drive
@@ -684,17 +674,6 @@ export const CSS = `
   transform-origin: left; margin-top: 40px;
   animation: draw 1.1s cubic-bezier(.76,0,.24,1) forwards; }
 @keyframes draw { to { transform: scaleX(1); } }
-
-/* --- contact strip (marquee) --- */
-.strip { overflow: hidden; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-          mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-.strip-track { display: flex; gap: 10px; padding: 14px 0; width: max-content;
-  animation: roll 48s linear infinite; }
-.strip:hover .strip-track { animation-play-state: paused; }
-.strip-fr { flex: 0 0 auto; width: 210px; height: 210px; overflow: hidden; border-radius: 2px; }
-@media (max-width: 640px) { .strip-fr { width: 160px; height: 160px; } }
-@keyframes roll { to { transform: translateX(-50%); } }
 
 /* --- thesis --- */
 .thesis-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 56px; align-items: end; }
@@ -1198,9 +1177,29 @@ export const CSS = `
 /* --- photo project detail --- */
 /* Fixed, capped hero so a portrait source can't blow the box up to
    full-width-portrait height; the image covers a 16:9 frame instead. */
+/* Shows the opening frame whole. This was aspect-ratio: 16/9 with the
+   site-wide object-fit: cover, which guillotined every portrait — heads
+   cropped off the top. Now it's a fixed-height stage with the picture
+   fitted inside it, so a portrait keeps its full height and a landscape
+   its full width, and nothing is scaled in or out.
+
+   Height is set so the whole stage clears the fold: the masthead, the
+   page's top padding, the back link and the title take ~310px above it,
+   and at 76vh the foot of the frame sat 170px below the bottom of a
+   900px window. The tightened spacing below buys most of that back. */
 .pj-hero { position: relative; overflow: hidden; border-radius: 4px;
-  border: 1px solid var(--rule); aspect-ratio: 16/9; max-height: 78vh; }
-.pj-hero img { will-change: transform; }
+  border: 1px solid var(--rule); background: var(--panel);
+  /* the third term is the one that matters on a short window: what's
+     above the stage is ~310px of largely fixed chrome, so cap the frame
+     at the space actually left rather than at a share of the height */
+  height: min(60vh, 640px, calc(100svh - 330px)); }
+/* scoped to this page — /work/:seed and /design/:slug share .detail and
+   want their original, roomier lead-in */
+.detail-pj { padding-top: 7vh; }
+.detail-pj .back { margin-bottom: 26px; }
+.detail-pj .detail-head { margin-bottom: 28px; }
+.pj-hero img { width: 100%; height: 100%; object-fit: contain;
+  transform: none; transition: none; }
 .pj-intro { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.8vw, 34px);
   line-height: 1.32; max-width: 26ch; }
 
@@ -1221,21 +1220,56 @@ export const CSS = `
   transform: translateY(-4px); transition: opacity .35s ease, transform .35s ease; }
 .pgrid figure:hover .idx { opacity: 1; transform: none; }
 
-/* --- carousel roll: snap-scrolling filmstrip with drag ------------- */
-.roll { position: relative; }
-.roll-track { display: flex; align-items: flex-start; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
-  padding-bottom: 18px; scrollbar-width: none; cursor: grab; }
-.roll-track::-webkit-scrollbar { display: none; }
-.roll-track.dragging { cursor: grabbing; scroll-snap-type: none; }
-.roll-fr { flex: 0 0 auto; width: min(62vw, 700px); aspect-ratio: 3/2; overflow: hidden;
-  border-radius: 4px; border: 1px solid var(--rule); scroll-snap-align: center;
-  position: relative; background: var(--panel); }
-.roll-fr img { pointer-events: none; }
-.roll-nav { display: flex; gap: 10px; margin-top: 4px; }
-.roll-btn { width: 44px; height: 44px; border: 1px solid var(--rule); border-radius: 50%;
-  display: grid; place-items: center; transition: border-color .3s ease, color .3s ease; }
-.roll-btn:hover { border-color: var(--accent); color: var(--accent); }
-@media (max-width: 700px) { .roll-fr { width: 84vw; } }
+/* --- frames coverflow ---------------------------------------------
+   The active photograph centred at full size, its neighbours peeking in
+   from either edge; the arrows ride over them. Every slide is the same
+   height and takes its width from the picture's own aspect ratio, so a
+   portrait is a tall narrow card and a landscape a wide one — both
+   whole, neither cropped nor zoomed.
+
+   Breaks the .wrap column to full width so the neighbours run off the
+   sides of the screen rather than stopping at the text margin. */
+.pcar { position: relative; width: 100vw; margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw); }
+.pcar-stage { position: relative; height: min(64vh, 560px); overflow: hidden; }
+/* Sizing is layout; the depth effect is transform only — that keeps
+   every slide's measured width constant, which is what the centring
+   maths reads mid-animation. */
+.pcar-track { position: absolute; top: 0; bottom: 0; left: 0;
+  display: flex; align-items: center; gap: clamp(14px, 2vw, 28px);
+  will-change: transform;
+  transition: transform .8s cubic-bezier(.22, .61, .36, 1); }
+.pf .pcar-slide { position: relative; flex: 0 0 auto; height: 100%; padding: 0;
+  border-radius: 10px; overflow: hidden; background: var(--panel);
+  cursor: pointer; transform: scale(.8); opacity: .3; filter: saturate(.55);
+  transition: transform .8s cubic-bezier(.22, .61, .36, 1),
+    opacity .8s ease, filter .8s ease; }
+.pf .pcar-slide.on { transform: scale(1); opacity: 1; filter: none; cursor: default;
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, .85); }
+.pf .pcar-slide:not(.on):hover { opacity: .55; transform: scale(.83); }
+/* the slide box already matches the picture's ratio, so contain and
+   cover agree — contain is the safe one when a seed has no dimensions
+   recorded and the box falls back to 3/2 */
+.pcar-slide img { width: 100%; height: 100%; object-fit: contain;
+  transform: none; transition: none; }
+
+.pf .pcar-arrow { position: absolute; top: 50%; z-index: 3; width: 52px; height: 52px;
+  transform: translateY(-50%); display: grid; place-items: center;
+  border-radius: 50%; color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(10px);
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease; }
+.pcar-arrow.prev { left: clamp(12px, 3vw, 40px); }
+.pcar-arrow.next { right: clamp(12px, 3vw, 40px); }
+.pf .pcar-arrow:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.pcar-arrow svg { width: 20px; height: 20px; fill: none;
+  stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+@media (max-width: 700px) {
+  .pcar-stage { height: 52vh; }
+  .pf .pcar-arrow { width: 44px; height: 44px; }
+}
 
 /* --- lightbox slideshow --- */
 .lb { position: fixed; inset: 0; z-index: 400; background: color-mix(in srgb, var(--bg) 94%, #000);
@@ -1446,7 +1480,6 @@ export const CSS = `
   /* the hero holds its first frame — see HeroFrames, which skips the
      reel entirely rather than cutting between shots */
   .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }
-  .roll-track { scroll-snap-type: none; }
   .iris-lens { display: none; }
 }
 `;
