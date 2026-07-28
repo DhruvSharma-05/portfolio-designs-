@@ -2,7 +2,7 @@ import { useRef, useMemo, useState, Suspense, Component } from "react";
 import { Canvas, useThree, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import gsap from "gsap";
-import { heavyVisualsAllowed } from "./data.js";
+import { heavyVisualsAllowed, prefersReduced } from "./data.js";
 
 /* ==================================================================
    DISTORT IMAGE — a WebGL hover-ripple on a work photo.
@@ -106,7 +106,10 @@ class CanvasGuard extends Component {
 }
 
 export default function DistortImage({ src, srcSet, sizes, alt }) {
-  const [use3d] = useState(heavyVisualsAllowed);
+  /* the reduced-motion half of this used to live inside
+     heavyVisualsAllowed; it's tested here now so that gate can be purely
+     about whether the chunk is worth loading */
+  const [use3d] = useState(() => heavyVisualsAllowed() && !prefersReduced());
   if (!use3d) return <img data-par src={src} srcSet={srcSet} sizes={sizes} alt={alt} />;
   return (
     <>

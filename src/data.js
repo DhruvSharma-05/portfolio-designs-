@@ -14,24 +14,24 @@ export const prefersReduced = () =>
   typeof matchMedia !== "undefined" &&
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/* Is a precise pointer available at all? `any-pointer`, not `pointer`:
-   `pointer` describes the *primary* input, and a Windows laptop with a
-   touchscreen reports that as coarse even with a mouse plugged in — so
-   testing `pointer: fine` silently switches cursor-driven effects off on
-   an ordinary desktop. `any-pointer` asks the question we actually mean. */
-export const finePointer = () =>
-  typeof matchMedia !== "undefined" &&
-  matchMedia("(any-pointer: fine)").matches &&
-  !matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* Should we load the three.js chunk at all? Checked BEFORE the lazy
+   import() is triggered, so phones never fetch the largest chunk in the
+   app just to decline to use it.
 
-/* Gate for the three.js-backed effects (DistortImage, ParticleSphere) —
-   checked BEFORE the lazy import() is triggered, not after, so touch
-   devices, reduced-motion, and narrow viewports never fetch the chunk
-   (the single largest in the app) at all, rather than fetching it and
-   then declining to render. Same pointer question as above, plus a width
-   floor so phones and small tablets are excluded regardless. */
+   Width only, deliberately. This used to test the pointer as well, first
+   `pointer: fine` and then `any-pointer: fine`, and both proved
+   unreliable: `pointer` describes the *primary* input, so a laptop with
+   a touchscreen reports coarse even with a mouse attached, and the whole
+   effect vanished on ordinary desktops with no way for the visitor to
+   tell why. Screen width is the thing we actually care about, and it
+   can't misreport.
+
+   Motion preference is NOT tested here — that is each effect's business:
+   the sphere renders a still frame, DistortImage falls back to the plain
+   photograph. Deciding it centrally meant "respect the preference" and
+   "show nothing at all" were the same code path. */
 export const heavyVisualsAllowed = () =>
-  finePointer() && matchMedia("(min-width: 768px)").matches;
+  typeof matchMedia !== "undefined" && matchMedia("(min-width: 900px)").matches;
 
 export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
@@ -996,11 +996,11 @@ export const CSS = `
   transform: scaleX(0); transform-origin: left; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
 .shead.in .shead-rule { transform: scaleX(1); }
 
-/* Bio left, globe right. The globe column simply isn't rendered when
-   heavy visuals are off — hence minmax on the *text* column, so it
-   spreads to the full width on its own rather than staying pinned to a
+/* Globe left, bio right. The globe column simply isn't rendered when
+   heavy visuals are off — hence the minmax on the *text* column, so it
+   spreads to a full measure on its own rather than staying pinned to a
    60ch strip with dead space beside it. */
-.about-body { display: grid; grid-template-columns: minmax(0, 60ch) 1fr;
+.about-body { display: grid; grid-template-columns: 1fr minmax(0, 60ch);
   gap: 48px; align-items: center; margin: 12vh 0; }
 .about-body:not(:has(.about-body-viz)) { grid-template-columns: minmax(0, 64ch); }
 .about-body-viz { position: relative; height: 460px; min-width: 0; }
@@ -1018,6 +1018,10 @@ export const CSS = `
 @media (max-width: 900px) {
   .about-body { grid-template-columns: 1fr; gap: 32px; }
   .about-body-viz { height: 320px; }
+  /* stacked, the bio leads and the globe follows — it's decoration, and
+     shouldn't push the reading off the top of the section */
+  .about-body-text { order: 1; }
+  .about-body-viz { order: 2; }
 }
 .approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
   background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }

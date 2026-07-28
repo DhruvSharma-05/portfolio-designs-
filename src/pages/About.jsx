@@ -66,16 +66,16 @@ export default function About() {
 
       {/* bio on the left, the globe you can push around on the right */}
       <div className="about-body">
+        {heavy && (
+          <div className="about-body-viz" aria-hidden="true">
+            <Suspense fallback={null}><ParticleSphere still={reduced} /></Suspense>
+          </div>
+        )}
         <Reveal as="div" className="about-body-text">
           {ABOUT.body.map((p, i) => (
             <p key={i} className={i === 0 ? "lead-p" : ""}>{p}</p>
           ))}
         </Reveal>
-        {heavy && (
-          <div className="about-body-viz" aria-hidden="true">
-            <Suspense fallback={null}><ParticleSphere /></Suspense>
-          </div>
-        )}
       </div>
 
       <section className="invert-band">

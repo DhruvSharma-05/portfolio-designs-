@@ -37,6 +37,11 @@ const DEFAULTS = {
   clickForce: 3,      // scatter impulse on click
   color: "#FFFFFF",   // white — the brightest it can read on near-black
   drag: true,
+  /* reduced motion: draw the globe once and leave it. The header always
+     claimed this; it never actually did it, so the effect simply vanished
+     for anyone with the preference set. A still sphere honours the
+     request without leaving a hole in the layout. */
+  still: false,
 };
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -320,13 +325,17 @@ export default function ParticleSphere(props) {
     }
     function onTouchEnd() { mouse = null; }
 
-    canvas.addEventListener("mousemove", onMove);
-    canvas.addEventListener("mouseleave", onLeave);
-    canvas.addEventListener("click", onClick);
-    if (cfg.drag) canvas.addEventListener("mousedown", onDown);
-    canvas.addEventListener("touchmove", onTouchMove, { passive: true });
-    canvas.addEventListener("touchstart", onTouchStart, { passive: true });
-    canvas.addEventListener("touchend", onTouchEnd);
+    /* a still sphere takes no input either — repulsion and scatter are
+       motion, and there's no loop running to draw their result */
+    if (!cfg.still) {
+      canvas.addEventListener("mousemove", onMove);
+      canvas.addEventListener("mouseleave", onLeave);
+      canvas.addEventListener("click", onClick);
+      if (cfg.drag) canvas.addEventListener("mousedown", onDown);
+      canvas.addEventListener("touchmove", onTouchMove, { passive: true });
+      canvas.addEventListener("touchstart", onTouchStart, { passive: true });
+      canvas.addEventListener("touchend", onTouchEnd);
+    }
 
     /* Resize off the observed box, not clientHeight. The original read
        `container.clientHeight || h`, so a single measurement of 0 — which
@@ -342,12 +351,14 @@ export default function ParticleSphere(props) {
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      // a still sphere has no loop to repaint it after the resize
+      if (cfg.still) renderer.render(scene, camera);
     });
     ro.observe(container);
 
-    // go — always animate; this piece is the point of the section
+    // one frame either way; the loop only starts if motion is wanted
     renderer.render(scene, camera);
-    raf = requestAnimationFrame(frame);
+    if (!cfg.still) raf = requestAnimationFrame(frame);
 
     return () => {
       if (raf) cancelAnimationFrame(raf);
@@ -367,7 +378,7 @@ export default function ParticleSphere(props) {
     };
     // rebuild only if the meaningful inputs change
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cfg.particlesCount, cfg.particleScale, cfg.color]);
+  }, [cfg.particlesCount, cfg.particleScale, cfg.color, cfg.still]);
 
   return <div ref={mountRef} className="psphere" aria-hidden="true" />;
 }
