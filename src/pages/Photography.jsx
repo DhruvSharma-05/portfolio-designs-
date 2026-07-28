@@ -20,8 +20,8 @@ const HOLD = 5400; // ms per hero slide — matches the tick-fill keyframe
    PHOTOGRAPHY — the photo half of the portfolio.
 
    Hero: a crossfading slideshow of each project's opening frame, so it
-   doubles as a table of contents. Below: the same sticky stacking
-   cards the home page uses, one per project, opening /photography/:slug.
+   doubles as a table of contents. Below: one card per project in plain
+   vertical flow, each opening /photography/:slug.
    ================================================================== */
 export default function Photography() {
   const { openContact } = useApp();
@@ -136,7 +136,7 @@ export default function Photography() {
       {/* ---------- project stack ---------- */}
       <section className="wrap stack" style={{ paddingTop: "6vh" }}>
         {PHOTO_PROJECTS.map((p, n) => (
-          <Reveal className="card" key={p.slug} style={{ top: `${92 + n * 12}px`, zIndex: n + 1 }}>
+          <Reveal className="card" key={p.slug} delay={n * 0.06}>
             <div className="card-in">
               <TLink to={`/photography/${p.slug}`} className="shot"
                 style={{ aspectRatio: ratio(p.photos[0], 4, 3) }}

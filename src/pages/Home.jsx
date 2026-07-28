@@ -1,17 +1,15 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, INTRO,
-  PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
+  P, img, srcSet, ratio, INTRO, HERO_FRAMES,
+  PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced,
 } from "../data.js";
 import { Reveal, TLink, FigmaFrame } from "../ui.jsx";
 import { useApp } from "../context.js";
-
-/* Three.js is code-split so the hero text (the LCP) paints first. */
-const HeroCanvas = lazy(() => import("../HeroCanvas.jsx"));
+import HeroFrames from "../HeroFrames.jsx";
 
 const page = {
   initial: { opacity: 0 },
@@ -30,12 +28,9 @@ const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
    design work. Everything about the person lives on /about.
    ================================================================== */
 export default function Home() {
-  const { theme, openContact } = useApp();
-  const [heroActive, setHeroActive] = useState(true);
+  const { openContact, go } = useApp();
   const [reduced] = useState(prefersReduced);
-  const [heavy] = useState(heavyVisualsAllowed);
   const root = useRef(null);
-  const heroRef = useRef(null);
 
   /* image parallax + hover zoom, owned by GSAP and scoped to this page
      so the ScrollTriggers are torn down when we navigate away. */
@@ -56,64 +51,63 @@ export default function Home() {
     ScrollTrigger.refresh();
   }, { scope: root, dependencies: [reduced] });
 
-  /* pause the hero canvas render loop once it scrolls off-screen */
-  useEffect(() => {
-    const el = heroRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => setHeroActive(e.isIntersecting), { threshold: 0 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
   return (
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
-      {/* masthead */}
-      <header className="mast" id="main" ref={heroRef}>
-        {heavy && (
-          <Suspense fallback={null}>
-            <HeroCanvas accent={theme.accent} active={heroActive} reduced={reduced} />
-          </Suspense>
-        )}
-        <div className="wrap">
-          <div className="mono" style={{ marginBottom: 26 }}>
-            {P.photographer} — {P.role} — {P.city} — Booking 2026
+      {/* masthead — a frame the visitor pulls focus on, carrying only the
+          studio name and one line. Everything that used to crowd it in
+          here now has its own room in .intro-sec below. */}
+      <header className="mast" id="main">
+        {/* the cue reuses the shell's hash scroll, so it lands with the
+            same easing as every other in-page jump on the site */}
+        <HeroFrames frames={HERO_FRAMES} reduced={reduced}
+          onScrollDown={() => go("/#intro")}>
+          <div className="wrap">
+            <div className="mast-copy">
+              <div className="mono" style={{ marginBottom: 22 }}>
+                {P.photographer} — {P.city}
+              </div>
+              <h1 className="display hero-reveal" style={{ "--rd": `${HEADLINE_DELAY}s` }}>
+                {P.name}
+              </h1>
+              <p className="mast-sub hero-reveal" style={{ "--rd": `${HEADLINE_DONE}s` }}>
+                Photographs, and the sites they live on. Made by the same pair of hands.
+              </p>
+            </div>
           </div>
-
-          {/* the studio name carries the masthead; the kicker and the
-              standfirst below it say who is behind it and what he does */}
-          <h1 className="display hero-reveal" style={{ "--rd": `${HEADLINE_DELAY}s` }}>
-            {P.name}
-          </h1>
-          <div className="drawline" style={{ "--line-delay": `${HEADLINE_DONE}s` }} />
-
-          {/* supporting content waits for the headline to finish composing
-              (HEADLINE_DONE) so the primary hero text resolves before the
-              secondary copy and CTAs do, not after */}
-          <p className="standfirst hero-reveal" style={{ "--rd": `${HEADLINE_DONE}s` }}>
-            Two practices, one pair of hands. Photographs made as{" "}
-            <strong>{P.photoBrand}</strong>, and the sites they live on designed
-            and built by the same person.
-            <i> Hire either. Hiring both is the point.</i>
-          </p>
-
-          {/* both doors stated above the fold, so a cold visitor can tell
-              inside three seconds that this is two crafts and not one */}
-          <div className="disciplines hero-reveal" style={{ "--rd": `${HEADLINE_DONE + 0.08}s` }}>
-            {INTRO.does.map((d, i) => (
-              <TLink key={d.to} to={d.to} className="disc">
-                <span className="mono">{String(i + 1).padStart(2, "0")} — {d.k}</span>
-                <strong>{d.brand}</strong>
-                <span className="mono go">Enter <span className="arrow">→</span></span>
-              </TLink>
-            ))}
-          </div>
-
-          <div className="role hero-reveal" style={{ "--rd": `${HEADLINE_DONE + 0.16}s` }}>
-            <span className="mono">Photography · Web design · Booking 2026</span>
-            <span className="mono">Scroll —</span>
-          </div>
-        </div>
+        </HeroFrames>
       </header>
+
+      {/* the two practices — stated immediately under the hero, so a cold
+          visitor still learns inside one scroll that this is two crafts */}
+      <section className="intro-sec" id="intro" aria-label="Practices">
+        <div className="wrap">
+          <Reveal>
+            <p className="standfirst">
+              Two practices, one pair of hands. Photographs made as{" "}
+              <strong>{P.photoBrand}</strong>, and the sites they live on designed
+              and built by the same person.
+              <i> Hire either. Hiring both is the point.</i>
+            </p>
+            <div className="drawline" />
+          </Reveal>
+
+          <Reveal delay={0.08}>
+            <div className="disciplines">
+              {INTRO.does.map((d, i) => (
+                <TLink key={d.to} to={d.to} className="disc">
+                  <span className="mono">{String(i + 1).padStart(2, "0")} — {d.k}</span>
+                  <strong>{d.brand}</strong>
+                  <span className="mono go">Enter <span className="arrow">→</span></span>
+                </TLink>
+              ))}
+            </div>
+            <div className="role">
+              <span className="mono">{P.role} · {P.city} · Booking 2026</span>
+              <span className="mono">Scroll —</span>
+            </div>
+          </Reveal>
+        </div>
+      </section>
 
       {/* photography — one card per collection, opening the gallery view */}
       <PhotoProjects />

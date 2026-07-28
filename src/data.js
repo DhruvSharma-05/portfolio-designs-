@@ -25,6 +25,16 @@ export const heavyVisualsAllowed = () =>
   !matchMedia("(prefers-reduced-motion: reduce)").matches &&
   matchMedia("(min-width: 768px)").matches;
 
+/* Is a precise pointer available at all? `any-pointer`, not `pointer`:
+   a Windows laptop with a touchscreen reports touch as its *primary*
+   pointer while a mouse is plugged in, so the stricter test above would
+   silently switch off cursor-driven effects on a plain desktop. Used for
+   effects cheap enough not to need the three.js-grade gate. */
+export const finePointer = () =>
+  typeof matchMedia !== "undefined" &&
+  matchMedia("(any-pointer: fine)").matches &&
+  !matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
   photographer: "Viraj Mehta",  // the person the home page is about
@@ -273,6 +283,53 @@ function withSyncedPhotos(projects) {
 export const PHOTO_PROJECTS = manifest.photoProjects?.length
   ? manifest.photoProjects
   : withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
+
+/* The home hero is a wide, full-bleed frame, so a portrait photo would be
+   cropped down to a vertical sliver of itself — landscape only. */
+const isLandscape = (seed) => {
+  const p = PHOTOS.get(seed);
+  return !!(p?.w && p?.h && p.w > p.h);
+};
+
+/* A hand-picked run rather than one frame per collection: two wildlife,
+   one modern, one traditional, interleaved so no two neighbours come
+   from the same set. `seed` names a specific picture where the choice
+   matters; without one, the next unused landscape frame in that
+   collection is taken, so repeats never show the same photo twice. */
+const HERO_RECIPE = [
+  { slug: "wildlife", seed: "wildlife-bighorn" },
+  { slug: "modern" },
+  { slug: "wildlife", seed: "wildlife-cheetah" },
+  { slug: "traditional" },
+];
+
+const heroByRecipe = (() => {
+  const taken = new Set();
+  return HERO_RECIPE.map(({ slug, seed }) => {
+    const proj = PHOTO_PROJECTS.find((p) => p.slug === slug);
+    if (!proj) return null;
+    const pool = (proj.photos || []).filter((s) => isLandscape(s) && !taken.has(s));
+    // a named seed that has gone from the collection falls back to the pool
+    const pick = (seed && pool.includes(seed) && seed) || pool[0];
+    if (!pick) return null;
+    taken.add(pick);
+    return { seed: pick, t: proj.t, slug: proj.slug, kind: proj.kind };
+  }).filter(Boolean);
+})();
+
+/* A fresh clone with no synced photos runs on the placeholder projects,
+   whose slugs the recipe knows nothing about — fall back to one opening
+   frame per collection there so the hero still has something to show. */
+export const HERO_FRAMES = heroByRecipe.length
+  ? heroByRecipe
+  : PHOTO_PROJECTS
+    .map((p) => ({
+      seed: (p.photos || []).find(isLandscape) || p.photos?.[0],
+      t: p.t,
+      slug: p.slug,
+      kind: p.kind,
+    }))
+    .filter((f) => f.seed);
 
 /* Hero slideshow: the opening frame of each project, so the hero doubles
    as a table of contents. */
@@ -552,27 +609,89 @@ export const CSS = `
 .pf .totop:hover .arrow { transform: translateY(-3px); }
 @media (max-width: 640px) { .pf .totop { width: 44px; height: 44px; right: 16px; bottom: 16px; } }
 
-/* --- masthead --- */
-.mast { padding: 13vh 0 9vh; position: relative; }
-.mast .wrap { position: relative; z-index: 1; }
-.hero-canvas { position: absolute !important; inset: 0; z-index: 0;
-  pointer-events: none;
-  -webkit-mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%);
-          mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%); }
+/* --- masthead: the frame hero (HeroFrames.jsx) ---
+   One full screen: the sticky bar sits above it in flow, so subtract its
+   height rather than using a bare 100svh that would push the hero's foot
+   below the fold. svh, not vh, so mobile browser chrome doesn't overshoot. */
+.mast { position: relative; overflow: hidden; display: flex;
+  min-height: calc(100svh - 64px);
+  /* how soft the picture sits behind the copy — one dial, tune here */
+  --hero-soften: 3px; }
+.mast .wrap { position: relative; z-index: 3; width: 100%; }
+.mast-stage { position: relative; flex: 1; min-width: 0;
+  display: flex; align-items: center; }
+.mast-frames { position: absolute; inset: 0; z-index: 0; }
+/* the long cross-fade is the whole transition — two frames overlap for
+   well over a second, so nothing ever cuts */
+.mast-frame { position: absolute; inset: 0; opacity: 0;
+  transition: opacity 1.1s cubic-bezier(.4, 0, .2, 1); }
+.mast-frame.on { opacity: 1; }
+/* Overscale hides the soft edge the blur leaves at the frame border, and
+   the drift keeps a held shot from reading as a stalled page. It runs on
+   every frame, not just the visible one — tying it to .on would snap the
+   outgoing frame back to its start mid-fade. */
+.mast-frame img { width: 100%; height: 100%; object-fit: cover;
+  object-position: 50% 42%; transform: scale(1.03);
+  filter: blur(var(--hero-soften)) saturate(.94) brightness(.78);
+  /* transition:none so .pf img's transform tween doesn't fight the drift */
+  transition: none;
+  animation: heroDrift 24s ease-in-out infinite alternate; }
+@keyframes heroDrift { to { transform: scale(1.08); } }
+.mast-scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(100deg,
+    color-mix(in srgb, var(--bg) 84%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 40%, transparent) 48%,
+    color-mix(in srgb, var(--bg) 70%, transparent) 100%); }
+
+/* Scroll cue — the only thing in the hero you can act on, parked in the
+   bottom-right corner the frame counter used to hold. .pf-scoped so its
+   colour beats .mono's var(--dim). */
+.pf .mast-scroll { position: absolute; z-index: 3;
+  right: clamp(18px, 4vw, 46px); bottom: clamp(22px, 4vw, 40px);
+  display: inline-flex; align-items: center; gap: 10px; padding: 8px 6px;
+  color: color-mix(in srgb, var(--ink) 62%, transparent);
+  transition: color .3s ease; }
+.pf .mast-scroll:hover { color: var(--accent); }
+.mast-arrow { display: inline-block; font-size: 13px;
+  animation: scrollNudge 2.4s cubic-bezier(.4, 0, .2, 1) infinite; }
+@keyframes scrollNudge {
+  0%, 100% { transform: translateY(0); opacity: .55; }
+  50% { transform: translateY(5px); opacity: 1; }
+}
+
 .display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
   font-size: clamp(44px, 10.5vw, 140px); text-wrap: balance;
   overflow-wrap: break-word; max-width: 100%; }
-.mast .drawline { height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left;
-  margin-top: 40px; animation: draw 1.1s var(--line-delay, 1.5s) cubic-bezier(.76,0,.24,1) forwards; }
-@keyframes draw { to { transform: scaleX(1); } }
+.mast .display { text-shadow: 0 4px 44px color-mix(in srgb, var(--bg) 82%, transparent); }
+/* No ch-based cap here: ch resolves against this box's 16px font, not the
+   140px headline inside it, so 22ch squeezed the h1 into ~180px — and
+   .display's overflow-wrap then broke words mid-syllable (Cra/fte/d).
+   The headline wraps on the 1180px .wrap instead, which sets its rhythm. */
+.mast-copy { max-width: 100%; }
+.mast-sub { margin-top: 22px; max-width: 34ch; font-weight: 300;
+  letter-spacing: -0.015em; line-height: 1.45; font-size: clamp(15px, 1.7vw, 20px);
+  color: color-mix(in srgb, var(--ink) 78%, transparent); }
+/* the bar wraps to two rows below 720px, so it eats more of the screen */
+@media (max-width: 720px) { .mast { min-height: calc(100svh - 96px); } }
+@media (max-width: 640px) {
+  .pf .mast-scroll { right: 16px; bottom: 20px; }
+}
+
 /* standfirst / disciplines / role: fade+rise in after the headline
    resolves (--rd, set inline per element), so the primary hero text
    settles before the supporting copy and CTAs do. */
 .hero-reveal { opacity: 0; transform: translateY(14px);
   animation: heroUp .6s cubic-bezier(.16,1,.3,1) var(--rd, 0s) forwards; }
 @keyframes heroUp { to { opacity: 1; transform: none; } }
-.mast .role { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
-  margin-top: 18px; }
+
+/* --- the two practices, moved out of the hero and given their own room --- */
+.intro-sec { padding: 12vh 0 2vh; }
+.intro-sec .role { display: flex; justify-content: space-between; gap: 20px;
+  flex-wrap: wrap; margin-top: 34px; }
+.intro-sec .drawline { height: 1px; background: var(--accent); transform: scaleX(0);
+  transform-origin: left; margin-top: 40px;
+  animation: draw 1.1s cubic-bezier(.76,0,.24,1) forwards; }
+@keyframes draw { to { transform: scaleX(1); } }
 
 /* --- contact strip (marquee) --- */
 .strip { overflow: hidden; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
@@ -594,14 +713,19 @@ export const CSS = `
 .aside { max-width: 400px; color: var(--dim); line-height: 1.72; font-size: 15px; }
 .aside p + p { margin-top: 16px; }
 
-/* --- work: sticky stacking cards --- */
-.stack { padding-bottom: 18vh; }
-.card { position: sticky; top: 92px; background: var(--panel); border: 1px solid var(--rule);
-  border-radius: 4px; margin-bottom: 24px; overflow: hidden;
-  transition: border-color .4s ease; }
+/* --- photography: one card per project --- */
+.stack { padding-bottom: 18vh; display: flex; flex-direction: column; gap: 34px; }
+/* These were sticky, which piled the projects up on top of each other as
+   you scrolled. Plain flow instead: one project after another, each read
+   on its own. */
+.card { position: relative; background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 4px; overflow: hidden; transition: border-color .4s ease; }
 .card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
 .card-in { display: grid; grid-template-columns: 1.25fr 1fr; }
-@media (max-width: 860px) { .card-in { grid-template-columns: 1fr; } .card { top: 72px; } }
+@media (max-width: 860px) {
+  .card-in { grid-template-columns: 1fr; }
+  .stack { gap: 26px; }
+}
 .shot { position: relative; overflow: hidden; aspect-ratio: 4/3; display: block; }
 .shot img { transition: filter .6s ease; will-change: transform; }
 /* WebGL distortion layer: the real photo sits underneath, the canvas on
@@ -1258,11 +1382,12 @@ export const CSS = `
   .hero-reveal { opacity: 1 !important; transform: none !important; }
   .logo-mark path { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; }
   .logo-word b { opacity: 1 !important; transform: none !important; }
-  .mast .drawline, .metrics::after { transform: scaleX(1) !important; }
+  .intro-sec .drawline, .metrics::after { transform: scaleX(1) !important; }
   .shot img, .detail-fig img, .about-portrait img { transform: none !important; }
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
+  /* the hero holds its first frame — see HeroFrames, which skips the
+     reel entirely rather than cutting between shots */
   .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }
-  .card { position: static; }
   .roll-track { scroll-snap-type: none; }
   .iris-lens { display: none; }
 }

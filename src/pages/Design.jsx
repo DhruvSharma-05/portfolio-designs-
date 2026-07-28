@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
-import { Reveal, TLink, SectionHead, FigmaFrame } from "../ui.jsx";
+import { Reveal, Stagger, TLink, SectionHead, FigmaFrame } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 const page = {
@@ -123,15 +123,17 @@ export default function Design() {
       <section className="sec">
         <div className="sec-grid">
           <div className="sec-label mono">How a build goes</div>
-          <div>
+          {/* one trigger for the whole list, so the four steps cascade
+              as a single movement rather than arriving one per scroll */}
+          <Stagger>
             {PROCESS.map((s, i) => (
-              <Reveal className="sl-row" key={s.k} delay={i * 0.04}>
+              <div className="sl-row" key={s.k}>
                 <span className="mono">{String(i + 1).padStart(2, "0")}</span>
                 <h3>{s.k}</h3>
                 <p>{s.v}</p>
-              </Reveal>
+              </div>
             ))}
-          </div>
+          </Stagger>
         </div>
       </section>
 

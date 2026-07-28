@@ -287,6 +287,32 @@ export function Reveal({ children, className = "", delay = 0, y = 18, as: Tag = 
   return <Tag ref={ref} className={`rv ${className}`} {...rest}>{children}</Tag>;
 }
 
+/* ---------------- staggered list reveal ----------------
+   For a tight list, one Reveal per row is the wrong tool: each row gets
+   its own ScrollTrigger, so they arrive one at a time as you happen to
+   scroll past them and the per-row delay is swamped. The result reads as
+   nothing happening.
+
+   This puts a single trigger on the group and times the children itself,
+   so the cascade plays as one movement, at the same speed, every time —
+   whether you scroll to it slowly or land on it already in view. */
+export function Stagger({
+  children, className = "", y = 30, each = 0.11, duration = 0.8,
+  as: Tag = "div", ...rest
+}) {
+  const ref = useRef(null);
+  useGSAP(() => {
+    const items = ref.current?.children;
+    if (!items?.length) return;
+    if (prefersReduced()) { gsap.set(items, { opacity: 1, y: 0 }); return; }
+    gsap.from(items, {
+      opacity: 0, y, duration, ease: "power3.out", stagger: each,
+      scrollTrigger: { trigger: ref.current, start: "top 82%", once: true },
+    });
+  }, { scope: ref });
+  return <Tag ref={ref} className={className} {...rest}>{children}</Tag>;
+}
+
 /* ---------------- figures block ----------------
    Counting is only worth doing if it happens in front of the reader.
 
