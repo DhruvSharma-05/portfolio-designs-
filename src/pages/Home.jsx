@@ -2,12 +2,12 @@ import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, INTRO, SHEET,
-  PHOTO_PROJECTS, PHOTO_POOL, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
+  P, img, srcSet, ratio, INTRO,
+  PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
-import { Reveal, TLink, Lightbox, FigmaFrame, ContactForm } from "../ui.jsx";
+import { Reveal, TLink, FigmaFrame, ContactForm } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 /* Three.js is code-split so the hero text (the LCP) paints first. */
@@ -114,18 +114,6 @@ export default function Home() {
           </div>
         </div>
       </header>
-
-      {/* contact strip */}
-      <div className="strip">
-        <div className="strip-track">
-          {[...SHEET, ...SHEET].map((s, i) => (
-            <figure className="strip-fr" key={i}>
-              <img src={img(s, 400, 264)} srcSet={srcSet(s)}
-                sizes="(max-width: 640px) 160px, 210px" alt="" />
-            </figure>
-          ))}
-        </div>
-      </div>
 
       {/* photography — one card per collection, opening the gallery view */}
       <PhotoProjects />
@@ -256,13 +244,11 @@ export default function Home() {
 
 /* ==================================================================
    PHOTOGRAPHY — one card per collection (wildlife / traditional / …),
-   each opening its full gallery at /photography/:slug. The frames are
-   the content; the card just names the set and its size.
+   each opening its full gallery at /photography/:slug. The card just
+   names the set and its size; the frames themselves live on the
+   collection page rather than being previewed here.
    ================================================================== */
 function PhotoProjects() {
-  const [lb, setLb] = useState(-1); // lightbox index into PHOTO_POOL, -1 = closed
-  const [reduced] = useState(prefersReduced);
-
   return (
     <section className="gwork" id="gallery" aria-label="Photography">
       <div className="wrap">
@@ -291,33 +277,7 @@ function PhotoProjects() {
             </Reveal>
           ))}
         </div>
-
-        {/* selected frames — a mix from every collection, click to enlarge */}
-        {PHOTO_POOL.length > 0 && (
-          <>
-            <div className="mono gwork-sub">Selected frames</div>
-            <div className="pgrid">
-              {PHOTO_POOL.map((s, n) => (
-                <figure key={s + n} onClick={() => setLb(n)}
-                  role="button" tabIndex={0} aria-label={`Preview photo ${n + 1}`}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLb(n); } }}>
-                  <span className="idx mono">{String(n + 1).padStart(2, "0")}</span>
-                  <img src={img(s, 640)} srcSet={srcSet(s)}
-                    sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
-                    alt="" loading="lazy" style={{ aspectRatio: ratio(s, 3, 4) }} />
-                </figure>
-              ))}
-            </div>
-          </>
-        )}
       </div>
-
-      <AnimatePresence>
-        {lb > -1 && (
-          <Lightbox photos={PHOTO_POOL} title="Selected frames"
-            index={lb} setIndex={setLb} reduced={reduced} single />
-        )}
-      </AnimatePresence>
     </section>
   );
 }
