@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
-import { Reveal, Stagger, TLink, SectionHead, FigmaFrame } from "../ui.jsx";
+import { Reveal, TLink, SectionHead, FigmaFrame } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 const page = {
@@ -123,9 +123,9 @@ export default function Design() {
       <section className="sec">
         <div className="sec-grid">
           <div className="sec-label mono">How a build goes</div>
-          {/* one trigger for the whole list, so the four steps cascade
-              as a single movement rather than arriving one per scroll */}
-          <Stagger>
+          {/* no reveal on these — the rows just sit there, and the only
+              motion is the hover lift */}
+          <div>
             {PROCESS.map((s, i) => (
               <div className="sl-row" key={s.k}>
                 <span className="mono">{String(i + 1).padStart(2, "0")}</span>
@@ -133,7 +133,7 @@ export default function Design() {
                 <p>{s.v}</p>
               </div>
             ))}
-          </Stagger>
+          </div>
         </div>
       </section>
 
