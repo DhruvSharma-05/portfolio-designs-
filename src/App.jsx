@@ -125,10 +125,20 @@ export default function App() {
       // a programmatic jump to the top may not emit a scroll update, so
       // reveal the bar explicitly on every navigation
       barRef.current?.classList.remove("hide");
-      // after the new page mounts, honour a #hash by scrolling to it
-      if (hash) requestAnimationFrame(() => scrollToId(hash, lenisRef, reduced));
     };
-    if (reduced || !irisRef.current) { finish(); return; }
+    /* Honour a #hash only *after* the new page has mounted and
+       ScrollTrigger has re-measured it: a refresh restores the scroll
+       position it recorded, so a scroll started before it gets snapped
+       back. The jump itself is instant — it happens behind the closed
+       iris, so the section is simply what the iris opens onto. */
+    const jump = () => {
+      if (hash) scrollToId(hash, lenisRef, reduced, { immediate: true });
+    };
+    if (reduced || !irisRef.current) {
+      finish();
+      requestAnimationFrame(() => { ScrollTrigger.refresh(); jump(); });
+      return;
+    }
     if (busy.current) return;
     busy.current = true;
     const lens = irisRef.current;
@@ -136,7 +146,7 @@ export default function App() {
       .fromTo(lens, { scale: 0 }, { scale: 1.1, duration: 0.45, ease: "power3.in" })
       .add(finish)
       .to(lens, { duration: 0.08 })              // hold while the new page mounts
-      .add(() => ScrollTrigger.refresh())
+      .add(() => { ScrollTrigger.refresh(); jump(); })
       .to(lens, { scale: 0, duration: 0.6, ease: "power3.out" });
   }, [navigate, location.pathname, reduced]);
 
