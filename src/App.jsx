@@ -29,15 +29,30 @@ const NAV = [
 /* Scroll to an in-page section by id, using Lenis when it's running so
    the motion matches the rest of the site; falls back to native. Retries
    briefly because the target may still be mounting right after a route
-   change. Reduced motion jumps instantly. */
-function scrollToId(id, lenisRef, reduced, tries = 10) {
+   change. Reduced motion jumps instantly, and so does `immediate` — used
+   when the jump happens behind the closed iris, where an animated scroll
+   would be both invisible and fragile. */
+function scrollToId(id, lenisRef, reduced, { immediate = false, tries = 20 } = {}) {
   const el = document.getElementById(id);
   if (!el) {
-    if (tries > 0) requestAnimationFrame(() => scrollToId(id, lenisRef, reduced, tries - 1));
+    if (tries > 0) {
+      requestAnimationFrame(() => scrollToId(id, lenisRef, reduced, { immediate, tries: tries - 1 }));
+    }
     return;
   }
-  if (lenisRef.current && !reduced) lenisRef.current.scrollTo(el, { offset: -70 });
-  else el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+  const now = immediate || reduced;
+  // Lenis caches the page dimensions and clamps every scrollTo to that
+  // cached limit. Straight after a route change the limit is still the
+  // *previous* page's, so a jump deep into a taller page gets clipped to
+  // the old page's bottom — re-measure first.
+  lenisRef.current?.resize();
+  if (lenisRef.current && !reduced) {
+    lenisRef.current.scrollTo(el, { offset: -70, immediate: now });
+  } else {
+    // same -70 as the Lenis path, so the heading clears the masthead
+    const top = el.getBoundingClientRect().top + window.scrollY - 70;
+    window.scrollTo({ top, behavior: now ? "auto" : "smooth" });
+  }
 }
 
 /* ==================================================================
@@ -111,10 +126,20 @@ export default function App() {
       // a programmatic jump to the top may not emit a scroll update, so
       // reveal the bar explicitly on every navigation
       barRef.current?.classList.remove("hide");
-      // after the new page mounts, honour a #hash by scrolling to it
-      if (hash) requestAnimationFrame(() => scrollToId(hash, lenisRef, reduced));
     };
-    if (reduced || !irisRef.current) { finish(); return; }
+    /* Honour a #hash only *after* the new page has mounted and
+       ScrollTrigger has re-measured it: a refresh restores the scroll
+       position it recorded, so a scroll started before it gets snapped
+       back. The jump itself is instant — it happens behind the closed
+       iris, so the section is simply what the iris opens onto. */
+    const jump = () => {
+      if (hash) scrollToId(hash, lenisRef, reduced, { immediate: true });
+    };
+    if (reduced || !irisRef.current) {
+      finish();
+      requestAnimationFrame(() => { ScrollTrigger.refresh(); jump(); });
+      return;
+    }
     if (busy.current) return;
     busy.current = true;
     const lens = irisRef.current;
@@ -122,7 +147,7 @@ export default function App() {
       .fromTo(lens, { scale: 0 }, { scale: 1.1, duration: 0.45, ease: "power3.in" })
       .add(finish)
       .to(lens, { duration: 0.08 })              // hold while the new page mounts
-      .add(() => ScrollTrigger.refresh())
+      .add(() => { ScrollTrigger.refresh(); jump(); })
       .to(lens, { scale: 0, duration: 0.6, ease: "power3.out" });
   }, [navigate, location.pathname, reduced]);
 
