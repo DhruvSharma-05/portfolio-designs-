@@ -77,9 +77,9 @@ export default function Photography() {
         <div className="wrap phero-in">
           <div className="phero-top">
             <span className="mono" style={{ color: "var(--accent)" }}>
-              {P.photoBrand} — the photography practice
+              {P.photoBrand} · the photography practice
             </span>
-            <span className="mono">{P.city} — booking 2026</span>
+            <span className="mono">{P.city} · booking 2026</span>
           </div>
 
           <div className="phero-cap">

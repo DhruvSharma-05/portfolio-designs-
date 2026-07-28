@@ -27,17 +27,31 @@ const NAV = [
 ];
 
 /* Scroll to an in-page section by id, using Lenis when it's running so
-   the motion matches the rest of the site; falls back to native. Retries
-   briefly because the target may still be mounting right after a route
-   change. Reduced motion jumps instantly. */
-function scrollToId(id, lenisRef, reduced, tries = 10) {
-  const el = document.getElementById(id);
-  if (!el) {
-    if (tries > 0) requestAnimationFrame(() => scrollToId(id, lenisRef, reduced, tries - 1));
-    return;
-  }
-  if (lenisRef.current && !reduced) lenisRef.current.scrollTo(el, { offset: -70 });
-  else el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+   the motion matches the rest of the site; falls back to native.
+
+   The target (e.g. #contact) sits below lazy-loaded images: the moment
+   we navigate, those images have no height yet, so the section's
+   position keeps moving DOWN as they load — a single scroll lands short.
+   So we re-anchor several times over ~1.5s as the layout settles, and
+   bail the instant the visitor scrolls themselves. Reduced motion jumps. */
+function scrollToId(id, lenisRef, reduced) {
+  let cancelled = false;
+  const stop = () => { cancelled = true; };
+  // any real user scroll/keypress cancels the auto-correction
+  addEventListener("wheel", stop, { passive: true, once: true });
+  addEventListener("touchmove", stop, { passive: true, once: true });
+  addEventListener("keydown", stop, { once: true });
+
+  const jump = () => {
+    if (cancelled) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (lenisRef.current && !reduced) lenisRef.current.scrollTo(el, { offset: -70, duration: 0.7 });
+    else el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+  };
+
+  // initial attempt + corrections as images/iframes below the fold load in
+  [0, 150, 400, 800, 1300].forEach((t) => setTimeout(jump, t));
 }
 
 /* ==================================================================

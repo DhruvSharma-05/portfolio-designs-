@@ -76,7 +76,7 @@ export default function Home() {
         )}
         <div className="wrap">
           <div className="mono" style={{ marginBottom: 26 }}>
-            {P.photographer} — {P.role} — {P.city} — Booking 2026
+            {P.photographer} · {P.role} · {P.city} · Booking 2026
           </div>
 
           {/* the studio name carries the masthead; the kicker and the
@@ -101,7 +101,7 @@ export default function Home() {
           <div className="disciplines hero-reveal" style={{ "--rd": `${HEADLINE_DONE + 0.08}s` }}>
             {INTRO.does.map((d, i) => (
               <TLink key={d.to} to={d.to} className="disc">
-                <span className="mono">{String(i + 1).padStart(2, "0")} — {d.k}</span>
+                <span className="mono">{String(i + 1).padStart(2, "0")} · {d.k}</span>
                 <strong>{d.brand}</strong>
                 <span className="mono go">Enter <span className="arrow">→</span></span>
               </TLink>
@@ -110,7 +110,7 @@ export default function Home() {
 
           <div className="role hero-reveal" style={{ "--rd": `${HEADLINE_DONE + 0.16}s` }}>
             <span className="mono">Photography · Web design · Booking 2026</span>
-            <span className="mono">Scroll —</span>
+            <span className="mono">Scroll ↓</span>
           </div>
         </div>
       </header>
@@ -147,7 +147,7 @@ export default function Home() {
                           <div className="browser-bar">
                             <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
                             <span className="browser-url mono">
-                              {w.embed ? `${w.t} — Figma prototype` : `${w.slug}.com`}
+                              {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
                             </span>
                             <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
                           </div>
@@ -155,7 +155,7 @@ export default function Home() {
                             <div className="browser-view">
                               <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
                                 sizes="(max-width: 760px) 100vw, 50vw"
-                                alt={`${w.t} — full page`} loading="lazy" />
+                                alt={`${w.t} · full page`} loading="lazy" />
                             </div>
                           ) : w.embed && w.href ? (
                             <FigmaFrame w={w} />
@@ -188,7 +188,7 @@ export default function Home() {
                 <span className="mono">Reserved</span>
                 <h3>The design work is on its way.</h3>
                 <p>
-                  This space is held for the design &amp; build side — identities,
+                  This space is held for the design &amp; build side: identities,
                   layouts and shipped sites. Projects appear here as they are
                   published.
                 </p>
@@ -207,7 +207,7 @@ export default function Home() {
           <Reveal>
             <h2 className="display">Bring me<br />the difficult one.</h2>
             <p className="standfirst" style={{ marginTop: 20 }}>
-              Tell me about the shoot, the site, or both — a few lines is enough to start.
+              Tell me about the shoot, the site, or both. A few lines is enough to start.
             </p>
             <ContactForm email={P.email} />
             <div className="mono" style={{ marginTop: 20 }}>
@@ -235,7 +235,7 @@ export default function Home() {
                 {P.socials.map((s) => (
                   <span key={s.href} style={{ display: "block" }}>
                     <a href={s.href} target="_blank" rel="noreferrer">
-                      {s.k} — {s.v}
+                      {s.k} · {s.v}
                     </a>
                   </span>
                 ))}
@@ -246,7 +246,7 @@ export default function Home() {
           <hr className="rule" style={{ marginTop: 44 }} />
           <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, paddingTop: 18 }}>
             <span className="mono">© 2026 {P.name}</span>
-            <span className="mono">{P.city}, {P.region} — Booking 2026</span>
+            <span className="mono">{P.city}, {P.region} · Booking 2026</span>
           </div>
         </div>
       </section>

@@ -60,7 +60,7 @@ export default function DesignProject() {
 
       <div className="detail-head">
         <div>
-          <div className="mono" style={{ marginBottom: 16 }}>{w.tag}{w.year ? ` — ${w.year}` : ""}</div>
+          <div className="mono" style={{ marginBottom: 16 }}>{w.tag}{w.year ? ` · ${w.year}` : ""}</div>
           <h1>{w.t}</h1>
         </div>
         <div className="mono" style={{ color: "var(--accent)" }}>{w.role}</div>
@@ -73,11 +73,11 @@ export default function DesignProject() {
         <div className="browser">
           <div className="browser-bar">
             <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
-            <span className="browser-url mono">{w.t} — Figma prototype</span>
+            <span className="browser-url mono">{w.t} · Figma prototype</span>
             <span className="mono" style={{ opacity: 0.5 }}>{w.tool}</span>
           </div>
           <div className="figma-embed">
-            <iframe title={`${w.t} — Figma prototype`} src={figmaEmbed(w.href)}
+            <iframe title={`${w.t} · Figma prototype`} src={figmaEmbed(w.href)}
               allowFullScreen loading="lazy" />
           </div>
         </div>
@@ -90,7 +90,7 @@ export default function DesignProject() {
           </div>
           <div className="browser-view">
             <img src={img(w.cover, 1600, reduced ? 1100 : 2800)} srcSet={srcSet(w.cover)}
-              sizes="(max-width: 1180px) 100vw, 1180px" alt={`${w.t} — full page`} />
+              sizes="(max-width: 1180px) 100vw, 1180px" alt={`${w.t} · full page`} />
           </div>
         </div>
       )}
@@ -104,7 +104,7 @@ export default function DesignProject() {
           <div style={{ marginTop: 30 }}>
             <a className="extlink" href={w.href || undefined} target="_blank" rel="noreferrer noopener"
               aria-disabled={w.href ? undefined : "true"}>
-              {w.href ? `Open in ${w.tool}` : `${w.tool} file — private`} <span className="arrow">↗</span>
+              {w.href ? `Open in ${w.tool}` : `${w.tool} file · private`} <span className="arrow">↗</span>
             </a>
           </div>
           {w.live && (
