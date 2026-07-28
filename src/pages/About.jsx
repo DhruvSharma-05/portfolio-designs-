@@ -49,7 +49,7 @@ export default function About() {
       variants={page} initial="initial" animate="animate">
       <div className="about-hero">
         <div>
-          <div className="mono about-kicker">About — {P.city}</div>
+          <div className="mono about-kicker">About · {P.city}</div>
           <h1>{P.photographer}</h1>
           <p className="about-lead">
             {ABOUT.lead.split(" ").map((w, i) =>
@@ -60,7 +60,7 @@ export default function About() {
         <figure className="about-portrait">
           <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} srcSet={srcSet(ABOUT.portrait)}
             sizes="(max-width: 820px) 100vw, 45vw" alt={`${P.photographer}, portrait`} />
-          <figcaption className="mono">{P.city}, {P.region} — Lensofviraj</figcaption>
+          <figcaption className="mono">{P.city}, {P.region} · Lensofviraj</figcaption>
         </figure>
       </div>
 
@@ -139,7 +139,7 @@ export default function About() {
               {P.socials.map((s) => (
                 <span key={s.href} style={{ display: "block" }}>
                   <a href={s.href} target="_blank" rel="noreferrer">
-                    {s.k} — {s.v}
+                    {s.k} · {s.v}
                   </a>
                 </span>
               ))}

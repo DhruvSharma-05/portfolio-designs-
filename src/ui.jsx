@@ -98,7 +98,7 @@ export function FigmaFrame({ w, eager = false }) {
         <span className="mono">{w.tag}</span>
       </div>
       {show && (
-        <iframe className="figbox-frame" title={`${w.t} — Figma preview`}
+        <iframe className="figbox-frame" title={`${w.t} Figma preview`}
           src={figmaEmbed(w.href)} loading="lazy" tabIndex={-1} />
       )}
     </div>
@@ -164,7 +164,7 @@ export function ContactForm({ email }) {
   if (status === "ok") {
     return (
       <div className="form-done" role="status">
-        <p className="pj-intro">Thanks — your message is in.</p>
+        <p className="pj-intro">Thanks. Your message is in.</p>
         <p className="mono">Viraj usually replies within a day or two.</p>
       </div>
     );
@@ -172,7 +172,7 @@ export function ContactForm({ email }) {
 
   return (
     <form className="contact-form" onSubmit={onSubmit}>
-      <input type="hidden" name="_subject" value="New enquiry — Crafted & Captured" />
+      <input type="hidden" name="_subject" value="New enquiry · Crafted & Captured" />
       <div className="cf-row">
         <label className="cf-field">
           <span className="mono">Your name</span>
@@ -186,7 +186,7 @@ export function ContactForm({ email }) {
       <label className="cf-field">
         <span className="mono">What do you need?</span>
         <textarea name="message" rows={4} required
-          placeholder="A shoot, a site, or both — a few lines is plenty." />
+          placeholder="A shoot, a site, or both. A few lines is plenty." />
       </label>
       {/* honeypot — hidden from people, tempting to bots */}
       <input type="text" name="_gotcha" tabIndex={-1} autoComplete="off"
@@ -197,7 +197,7 @@ export function ContactForm({ email }) {
         </button>
         {status === "error" && (
           <span className="mono cf-err">
-            That didn't send — please email <a href={`mailto:${email}`}>{email}</a> instead.
+            That didn't send. Please email <a href={`mailto:${email}`}>{email}</a> instead.
           </span>
         )}
       </div>
@@ -414,13 +414,13 @@ export function Lightbox({ photos, title, index, setIndex, reduced, single = fal
   }, [close, shift, single]);
 
   return (
-    <motion.div className="lb" ref={boxRef} role="dialog" aria-modal="true" aria-label={`${title} — photo viewer`}
+    <motion.div className="lb" ref={boxRef} role="dialog" aria-modal="true" aria-label={`${title} photo viewer`}
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       transition={{ duration: reduced ? 0 : 0.3 }}
       onClick={single ? (e) => { if (e.target === e.currentTarget) close(); } : undefined}>
       <div className="lb-bar">
         <span className="mono">
-          {single ? title : `${title} — ${String(index + 1).padStart(2, "0")} / ${String(photos.length).padStart(2, "0")}`}
+          {single ? title : `${title} · ${String(index + 1).padStart(2, "0")} / ${String(photos.length).padStart(2, "0")}`}
         </span>
         <button className="lb-x" onClick={close} aria-label="Close viewer">Close ✕</button>
       </div>

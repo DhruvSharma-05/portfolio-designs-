@@ -52,7 +52,7 @@ export default function PhotoProject() {
         <div className="detail-head">
           <div>
             <div className="mono" style={{ marginBottom: 16 }}>
-              {p.kind}{p.year ? ` — ${p.year}` : ""}
+              {p.kind}{p.year ? ` · ${p.year}` : ""}
             </div>
             <h1>{p.t}</h1>
           </div>
@@ -83,7 +83,7 @@ export default function PhotoProject() {
 
         {/* ---------- grid ---------- */}
         <section className="sec">
-          <div className="mono" style={{ marginBottom: 24 }}>Full set — click any frame</div>
+          <div className="mono" style={{ marginBottom: 24 }}>Full set · click any frame</div>
           <div className="pgrid">
             {p.photos.map((s, n) => (
               <figure key={s + n} onClick={() => setLb(n)}

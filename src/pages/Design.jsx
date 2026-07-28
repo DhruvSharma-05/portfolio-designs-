@@ -28,14 +28,14 @@ function Preview({ w, reduced, sizes, eager = false }) {
       <div className="browser-bar">
         <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
         <span className="browser-url mono">
-          {w.embed ? `${w.t} — Figma prototype` : `${w.slug}.com`}
+          {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
         </span>
         <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
       </div>
       {hasPhoto(w.cover) ? (
         <div className="browser-view">
           <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
-            sizes={sizes} alt={`${w.t} — full page`} loading="lazy" />
+            sizes={sizes} alt={`${w.t} full page`} loading="lazy" />
         </div>
       ) : w.embed && w.href ? (
         <FigmaFrame w={w} eager={eager} />
@@ -72,7 +72,7 @@ export default function Design() {
       <header className="dz-hero">
         <div className="dz-hero-copy">
           <div className="dz-kicker">
-            <span className="mono">Design &amp; Build — {P.city}</span>
+            <span className="mono">Design &amp; Build · {P.city}</span>
             <span className="mono">{total} selected projects</span>
           </div>
           <h1>Sites &amp; apps,<br />drawn and<br />shipped whole.</h1>
@@ -89,7 +89,7 @@ export default function Design() {
 
         {feat && (
           <TLink to={`/design/${feat.slug}`} className="dz-hero-media" aria-label={`Open ${feat.t}`}>
-            <span className="mono dz-hero-tag">Featured — {feat.tag}</span>
+            <span className="mono dz-hero-tag">Featured · {feat.tag}</span>
             <Preview w={feat} reduced={reduced} sizes="(max-width: 900px) 100vw, 50vw" eager />
           </TLink>
         )}
@@ -143,7 +143,7 @@ export default function Design() {
           <TLink to="/photography">
             <span className="mono">The other half</span>
             <h3>{P.photoBrand}</h3>
-            <p>Editorial, portrait and event sets — the full edits.</p>
+            <p>Editorial, portrait and event sets. The full edits.</p>
             <span className="go mono">See the projects <span className="arrow">→</span></span>
           </TLink>
           <TLink to="/about">

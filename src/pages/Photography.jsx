@@ -84,9 +84,9 @@ export default function Photography() {
         <div className="wrap phero-in">
           <div className="phero-top">
             <span className="mono" style={{ color: "var(--accent)" }}>
-              {P.photoBrand} — the photography practice
+              {P.photoBrand} · the photography practice
             </span>
-            <span className="mono">{P.city} — booking 2026</span>
+            <span className="mono">{P.city} · booking 2026</span>
           </div>
 
           <div className="phero-cap">
@@ -133,7 +133,7 @@ export default function Photography() {
           <h2>{P.photoBrand}</h2>
           <p>
             The photography half of {P.name}. Each set below is a single body of
-            work — shot, selected and graded as one. Open any of them for the full edit.
+            work, shot, selected and graded as one. Open any of them for the full edit.
           </p>
         </Reveal>
       </section>
@@ -177,7 +177,7 @@ export default function Photography() {
                   </div>
                   <div className="meta">
                     <span className="mono">
-                      {[p.loc, p.year].filter(Boolean).join(" — ") || `${p.photos.length} frames`}
+                      {[p.loc, p.year].filter(Boolean).join(" · ") || `${p.photos.length} frames`}
                     </span>
                     {p.role && <span className="mono" style={{ color: "var(--accent)" }}>{p.role}</span>}
                   </div>

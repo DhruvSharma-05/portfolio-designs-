@@ -64,8 +64,8 @@ export const P = {
 export const INTRO = {
   lead: "Engineering taught him how things work. Design and photography taught him how they feel.",
   body: [
-    "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling — designing intuitive digital products and capturing moments through photography.",
-    "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws and ships the sites and apps those pictures end up on — so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
+    "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling, designing intuitive digital products and capturing moments through photography.",
+    "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws and ships the sites and apps those pictures end up on, so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
   ],
   /* the two doors — the practice cards under the home hero */
   does: [
@@ -79,13 +79,13 @@ export const INTRO = {
       k: "Web design & build",
       brand: "Design & Build",
       to: "/design",
-      v: "Apps and sites designed and shipped end to end — UI/UX through to a live, fast, editable page.",
+      v: "Apps and sites designed and shipped end to end, from UI/UX through to a live, fast, editable page.",
     },
   ],
   /* what a client actually walks away with */
   offer: [
     { k: "A finished set", v: "Graded, consistent, delivered in web and print sizes. Not a folder of raws." },
-    { k: "A site that ships", v: "Designed, built and deployed — not a mockup you then have to find a developer for." },
+    { k: "A site that ships", v: "Designed, built and deployed. Not a mockup you then have to find a developer for." },
     { k: "One point of contact", v: "The person who shot it is the person who built it. No handover, no translation loss." },
     { k: "Something you can edit", v: "You leave with the source file and a way to change the words yourself." },
   ],
@@ -155,7 +155,7 @@ export const THEME = { ...BASE, accent: "#E4E4E7" };
 
 const FRAMES_FALLBACK = [
   { seed: "pf-01", t: "Selected Work 01", loc: "Location, XX", exif: "35mm · f/8 · 1/500", kind: "Photography",
-    note: "Short description of the project. Replace with your own — what it was, why it mattered, what shipped.",
+    note: "Short description of the project. Replace with your own: what it was, why it mattered, what shipped.",
     year: "2025", role: "Photography · Grade" },
   { seed: "pf-02", t: "Selected Work 02", loc: "Location, XX", exif: "50mm · f/1.4 · 1/60", kind: "Photography",
     note: "One line about the shoot and the outcome. Keep it plain; let the picture carry the weight.",
@@ -209,7 +209,7 @@ const PHOTO_PROJECTS_FALLBACK = [
     year: "2025",
     exif: "35mm · f/1.8 · 1/125",
     role: "Photography · Grade",
-    note: "A night series shot entirely on available light. Replace this with the real brief — who it was for and what the pictures had to carry.",
+    note: "A night series shot entirely on available light. Replace this with the real brief: who it was for and what the pictures had to carry.",
     intro: "Two nights, one lens, no flash. The city did the lighting.",
     photos: photoSeeds("after-hours", 9),
   },
@@ -246,7 +246,7 @@ const PHOTO_PROJECTS_FALLBACK = [
     exif: "50mm · f/1.4 · 1/60",
     role: "Event · Documentary",
     note: "A full-day event covered documentary-style. Describe the day and what the client used the set for.",
-    intro: "Documentary coverage — nobody looked at the camera on purpose.",
+    intro: "Documentary coverage. Nobody looked at the camera on purpose.",
     photos: photoSeeds("the-long-table", 8),
   },
 ];
@@ -362,7 +362,7 @@ const WEB_PROJECTS_FALLBACK = [
     tag: "Product design · Prototype",
     year: "",
     role: "UX/UI · Interactive prototype",
-    intro: "An interactive Figma prototype — click through the full product flow.",
+    intro: "An interactive Figma prototype. Click through the full product flow.",
     note: "Add the real brief here: what TrackHer is, who it's for, the problem it solves, and your role on the team.",
     tool: "Figma",
     href: "https://www.figma.com/proto/8OtvqxlfWmw36HoDlRMTMa/Final-Presentation---Prototype?node-id=2-1928&page-id=0%3A1&starting-point-node-id=2%3A1917",
@@ -382,7 +382,7 @@ const WEB_PROJECTS_FALLBACK = [
     tag: "Product design · Prototype",
     year: "",
     role: "UX/UI · Interactive prototype",
-    intro: "An interactive Figma prototype — click through the full product flow.",
+    intro: "An interactive Figma prototype. Click through the full product flow.",
     note: "Add the real brief here: what WingWise is, who it's for, and your role on Team Yuva.",
     tool: "Figma",
     href: "https://www.figma.com/proto/5ucSXSWGvoeBuQraNImByn/Team-Yuva?node-id=3280-10661&page-id=1408%3A17032&starting-point-node-id=3280%3A10661",
@@ -402,7 +402,7 @@ const WEB_PROJECTS_FALLBACK = [
     tag: "Product design · Prototype",
     year: "",
     role: "UX/UI · Interactive prototype",
-    intro: "An interactive Figma prototype — click through the full product flow.",
+    intro: "An interactive Figma prototype. Click through the full product flow.",
     note: "Add the real brief here: what MOMents is, who it's for, and your role on team Spark.",
     tool: "Figma",
     href: "https://www.figma.com/proto/I4AYMtK2LPSuUrbMnd8vy9/MOMents-by-team-Spark?node-id=1909-5686&page-id=1902%3A3830&starting-point-node-id=1909%3A5686",
@@ -422,7 +422,7 @@ const WEB_PROJECTS_FALLBACK = [
     tag: "Product design · Prototype",
     year: "",
     role: "UX/UI · Interactive prototype",
-    intro: "An interactive Figma prototype — click through the full product flow.",
+    intro: "An interactive Figma prototype. Click through the full product flow.",
     note: "Add the real brief here: what ArtAsta is, who it's for, and your role on the project.",
     tool: "Figma",
     href: "https://www.figma.com/proto/XDD143AWWhkegVelp4z8sC/Art-Asta-Design?node-id=10153-950&page-id=1%3A43&starting-point-node-id=10490%3A3702&scaling=scale-down&content-scaling=fixed",
@@ -470,20 +470,20 @@ export const SHOTLIST = [
 /* Viraj's real bio — condensed from his own words. */
 export const ABOUT = {
   portrait: manifest.portrait?.seed ?? "pf-about",
-  lead: "I create meaningful visual experiences — digital products designed with intent, and moments captured through a lens.",
+  lead: "I create meaningful visual experiences: digital products designed with intent, and moments captured through a lens.",
   body: [
-    "My creative journey started with technology. While studying Computer Science Engineering I built a foundation in programming and problem-solving, working as a developer and building solutions through code. But I kept being drawn to the creative side of technology — not just how things work, but how they look, feel and connect with people. That curiosity led me into UI/UX design, and to designing applications and websites that pair functionality with meaningful experiences.",
-    "Photography has run alongside all of it. In 2014 I held my first point-and-shoot camera, and what started as simple curiosity grew into a passion for visual storytelling. In 2018 I bought my first DSLR and went deeper — eventually sharing what I'd learned by teaching others, and leading a photography group in college: organising shoots, collaborating with fellow creators, and helping people find their own perspective.",
-    "Today, based in Vancouver, I bring engineering, design and photography together — creating digital experiences and capturing visual stories that connect technology with human emotion.",
+    "My creative journey started with technology. While studying Computer Science Engineering I built a foundation in programming and problem-solving, working as a developer and building solutions through code. But I kept being drawn to the creative side of technology: not just how things work, but how they look, feel and connect with people. That curiosity led me into UI/UX design, and to designing applications and websites that pair functionality with meaningful experiences.",
+    "Photography has run alongside all of it. In 2014 I held my first point-and-shoot camera, and what started as simple curiosity grew into a passion for visual storytelling. In 2018 I bought my first DSLR and went deeper, eventually sharing what I'd learned by teaching others, and leading a photography group in college: organising shoots, collaborating with fellow creators, and helping people find their own perspective.",
+    "Today, based in Vancouver, I bring engineering, design and photography together, creating digital experiences and capturing visual stories that connect technology with human emotion.",
   ],
   approach: [
-    { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs — analytical where it helps, intuitive where it matters." },
+    { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs: analytical where it helps, intuitive where it matters." },
     { k: "One pair of hands", v: "Shot, designed and built by the same person, so nothing gets lost in a handover." },
     { k: "Technology with emotion", v: "Products people can use without thinking; pictures people feel before they think." },
   ],
   timeline: [
     { y: "2014", t: "First point-and-shoot camera. Curiosity becomes a habit." },
-    { y: "2018", t: "First DSLR. Photography turns serious — and he starts teaching it." },
+    { y: "2018", t: "First DSLR. Photography turns serious, and he starts teaching it." },
     { y: "2019", t: "Leads the college photography group: shoots, collabs, mentoring." },
     { y: "2026", t: "Vancouver. Designing digital products, shooting as Lensofviraj." },
   ],

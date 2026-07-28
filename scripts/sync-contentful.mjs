@@ -145,7 +145,7 @@ async function main() {
   const environment = process.env.CONTENTFUL_ENVIRONMENT || "master";
 
   if (!spaceId || !token) {
-    warn("Skipping Contentful sync — missing CONTENTFUL_SPACE_ID or CONTENTFUL_ACCESS_TOKEN.");
+    warn("Skipping Contentful sync: missing CONTENTFUL_SPACE_ID or CONTENTFUL_ACCESS_TOKEN.");
     warn("Build will use the existing manifest (placeholder images).");
     return;
   }
@@ -335,7 +335,7 @@ async function main() {
       year: "",
       exif: firstExif,
       role: "Photography",
-      intro: `Selected ${title.toLowerCase()} photography — the full set, shot and graded as one.`,
+      intro: `Selected ${title.toLowerCase()} photography. The full set, shot and graded as one.`,
       note: "",
       photos,
     });
@@ -357,7 +357,7 @@ async function main() {
   await writeFile(MANIFEST, JSON.stringify(manifest, null, 2) + "\n");
   await writeFile(CACHE, JSON.stringify(nextCache, null, 2) + "\n");
   log(
-    `done — work:${manifest.work.length} gallery:${manifest.gallery.length}` +
+    `done: work:${manifest.work.length} gallery:${manifest.gallery.length}` +
       ` portrait:${manifest.portrait ? 1 : 0}` +
       ` projects:${photoProjects.length} (${projectPhotos.length} photos)`,
   );

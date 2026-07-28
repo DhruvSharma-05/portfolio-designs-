@@ -111,7 +111,7 @@ async function main() {
       try {
         covers.push(await shoot(page, p));
       } catch (e) {
-        console.log(`FAILED — ${e.message} (keeps live embed)`);
+        console.log(`FAILED: ${e.message} (keeps live embed)`);
       }
     }
   } finally {
