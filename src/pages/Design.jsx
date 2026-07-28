@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
 import { Reveal, TLink, SectionHead, FigmaFrame } from "../ui.jsx";
+import { useApp } from "../context.js";
 
 const page = {
   initial: { opacity: 0 },
@@ -57,6 +58,7 @@ function Preview({ w, reduced, sizes, eager = false }) {
    single link into /design/:slug.
    ================================================================== */
 export default function Design() {
+  const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
 
@@ -156,9 +158,9 @@ export default function Design() {
         <Reveal>
           <h2 className="display">Got a site<br />that deserves better?</h2>
           <div style={{ marginTop: 30 }}>
-            <TLink to="/#contact" className="extlink">
-              Start an enquiry <span className="arrow">→</span>
-            </TLink>
+            <button type="button" className="extlink" onClick={openContact}>
+              Contact me <span className="arrow">→</span>
+            </button>
           </div>
           <div className="mono" style={{ marginTop: 18 }}>
             or email <a href={`mailto:${P.email}`} style={{ color: "var(--accent)" }}>{P.email}</a>

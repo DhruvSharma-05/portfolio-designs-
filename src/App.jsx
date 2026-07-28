@@ -4,9 +4,10 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import Lenis from "lenis";
+import { AnimatePresence } from "motion/react";
 import { CSS, THEME, P, prefersReduced } from "./data.js";
 import { AppProvider } from "./context.js";
-import { TLink, Logo } from "./ui.jsx";
+import { TLink, Logo, ContactModal } from "./ui.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import Home from "./pages/Home.jsx";
 import WorkDetail from "./pages/WorkDetail.jsx";
@@ -61,6 +62,9 @@ function scrollToId(id, lenisRef, reduced, { immediate = false, tries = 20 } = {
    ================================================================== */
 export default function App() {
   const [reduced] = useState(prefersReduced);
+  /* the enquiry form is a modal owned by the shell, so every page can
+     open it through `openContact` without mounting its own copy */
+  const [contactOpen, setContactOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const progRef = useRef(null);
@@ -145,13 +149,20 @@ export default function App() {
       .to(lens, { scale: 0, duration: 0.6, ease: "power3.out" });
   }, [navigate, location.pathname, reduced]);
 
+  const openContact = useCallback(() => setContactOpen(true), []);
+  const closeContact = useCallback(() => setContactOpen(false), []);
+
+  /* a route change behind the modal (browser back, say) shouldn't leave
+     it hanging over the new page */
+  useEffect(() => { setContactOpen(false); }, [location.pathname]);
+
   const vars = {
     "--bg": THEME.bg, "--panel": THEME.panel, "--ink": THEME.ink, "--dim": THEME.dim,
     "--rule": THEME.rule, "--accent": THEME.accent, "--filter": THEME.filter,
   };
 
   return (
-    <AppProvider value={{ theme: THEME, go }}>
+    <AppProvider value={{ theme: THEME, go, openContact }}>
       <div className="pf" style={vars}>
         <style>{CSS}</style>
 
@@ -177,10 +188,19 @@ export default function App() {
                 </TLink>
               ))}
             </nav>
-            <span className="mono barmeta">{P.city} — Booking 2026</span>
+            <button type="button" className="mono barcta" onClick={openContact}>
+              Contact me
+            </button>
           </div>
           <div className="prog" ref={progRef} style={{ width: "0%" }} />
         </div>
+
+        {/* enquiry form — one shared modal for the whole site */}
+        <AnimatePresence>
+          {contactOpen && (
+            <ContactModal email={P.email} onClose={closeContact} reduced={reduced} />
+          )}
+        </AnimatePresence>
 
         {/* back to top — fades in once you're a scroll past the fold */}
         <button type="button" className="totop" ref={topRef} aria-label="Back to top"

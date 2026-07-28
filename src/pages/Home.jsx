@@ -7,7 +7,7 @@ import {
   P, img, srcSet, ratio, INTRO,
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
-import { Reveal, TLink, FigmaFrame, ContactForm } from "../ui.jsx";
+import { Reveal, TLink, FigmaFrame } from "../ui.jsx";
 import { useApp } from "../context.js";
 
 /* Three.js is code-split so the hero text (the LCP) paints first. */
@@ -30,7 +30,7 @@ const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
    design work. Everything about the person lives on /about.
    ================================================================== */
 export default function Home() {
-  const { theme } = useApp();
+  const { theme, openContact } = useApp();
   const [heroActive, setHeroActive] = useState(true);
   const [reduced] = useState(prefersReduced);
   const [heavy] = useState(heavyVisualsAllowed);
@@ -197,7 +197,11 @@ export default function Home() {
             <p className="standfirst" style={{ marginTop: 20 }}>
               Tell me about the shoot, the site, or both — a few lines is enough to start.
             </p>
-            <ContactForm email={P.email} />
+            <div style={{ marginTop: 30 }}>
+              <button type="button" className="extlink" onClick={openContact}>
+                Contact me <span className="arrow">→</span>
+              </button>
+            </div>
             <div className="mono" style={{ marginTop: 20 }}>
               Prefer email? <a href={`mailto:${P.email}`} style={{ color: "var(--accent)" }}>{P.email}</a>
               {" · "}{P.phone} · {P.city}, {P.region}

@@ -5,6 +5,7 @@ import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import { P, img, srcSet, ABOUT, prefersReduced } from "../data.js";
 import { Reveal, TLink, SectionHead } from "../ui.jsx";
+import { useApp } from "../context.js";
 
 const page = {
   initial: { opacity: 0, y: 12 },
@@ -12,6 +13,7 @@ const page = {
 };
 
 export default function About() {
+  const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
   const portrait = useRef(null);
@@ -84,9 +86,9 @@ export default function About() {
         <Reveal>
           <h2 className="display">Let's make<br />something.</h2>
           <div style={{ marginTop: 30 }}>
-            <TLink to="/#contact" className="extlink">
-              Start an enquiry <span className="arrow">→</span>
-            </TLink>
+            <button type="button" className="extlink" onClick={openContact}>
+              Contact me <span className="arrow">→</span>
+            </button>
           </div>
         </Reveal>
 

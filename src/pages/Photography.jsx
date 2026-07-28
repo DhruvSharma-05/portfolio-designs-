@@ -5,6 +5,7 @@ import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import { P, img, srcSet, ratio, FEATURED, PHOTO_PROJECTS, SHEET, prefersReduced, heavyVisualsAllowed } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
+import { useApp } from "../context.js";
 
 const DistortImage = lazy(() => import("../DistortImage.jsx"));
 
@@ -23,6 +24,7 @@ const HOLD = 5400; // ms per hero slide — matches the tick-fill keyframe
    cards the home page uses, one per project, opening /photography/:slug.
    ================================================================== */
 export default function Photography() {
+  const { openContact } = useApp();
   const [i, setI] = useState(0);
   const [reduced] = useState(prefersReduced);
   const [heavy] = useState(heavyVisualsAllowed);
@@ -189,9 +191,9 @@ export default function Photography() {
           <Reveal>
             <h2 className="display">Shooting<br />this year?</h2>
             <div style={{ marginTop: 30 }}>
-              <TLink to="/#contact" className="extlink">
-                Start an enquiry <span className="arrow">→</span>
-              </TLink>
+              <button type="button" className="extlink" onClick={openContact}>
+                Contact me <span className="arrow">→</span>
+              </button>
             </div>
             <div className="mono" style={{ marginTop: 18 }}>
               or email <a href={`mailto:${P.email}`} style={{ color: "var(--accent)" }}>{P.email}</a>

@@ -509,9 +509,28 @@ export const CSS = `
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
-/* sits where the accent switcher used to be */
-.barmeta { text-align: right; }
-@media (max-width: 860px) { .barmeta { display: none; } }
+/* the masthead CTA — sits where the city/booking line used to, and is
+   the one way into the enquiry form from anywhere on the site. Stays
+   visible at every width: on a phone it is the primary action. */
+/* Quiet by default — a hairline pill in the bar's own rule colour, led by
+   a small accent dot standing in for the "booking" note it replaced. A
+   full accent-filled button here would have shouted over the nav; the
+   accent only arrives on hover. */
+.pf .barcta { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 9px;
+  border: 1px solid var(--rule); border-radius: 100px; color: var(--ink);
+  padding: 9px 17px; white-space: nowrap;
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  transition: border-color .35s ease, color .35s ease, background-color .35s ease; }
+.pf .barcta::before { content: ""; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent); flex: 0 0 auto;
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease; }
+.pf .barcta:hover { color: var(--accent); border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.pf .barcta:hover::before { transform: scale(1.35);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+@media (max-width: 560px) {
+  .pf .barcta { padding: 8px 14px; gap: 7px; letter-spacing: .1em; }
+}
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
@@ -789,6 +808,33 @@ export const CSS = `
 .form-done { margin-top: 30px; }
 .form-done .mono { margin-top: 10px; }
 
+/* --- contact modal ---
+   Sized to the form rather than the screen: wide enough for the two-up
+   name/email row, capped so it never sprawls on a desktop, and it
+   scrolls internally instead of growing past the viewport. Below the
+   lightbox (400) but above the masthead (80). */
+.cmodal { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center;
+  padding: 24px; overflow-y: auto;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  backdrop-filter: blur(18px) saturate(.9); -webkit-backdrop-filter: blur(18px) saturate(.9); }
+.cmodal-panel { width: min(100%, 560px); max-height: calc(100vh - 48px); overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
+  padding: 30px 32px 32px; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+@media (max-width: 560px) { .cmodal { padding: 14px; } .cmodal-panel { padding: 24px 20px 26px; } }
+.cmodal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.cmodal-head h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.05;
+  font-size: clamp(26px, 4vw, 34px); margin-top: 12px; }
+.cmodal-x { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center;
+  border: 1px solid var(--rule); border-radius: 50%; color: var(--dim); font-size: 13px;
+  transition: border-color .3s ease, color .3s ease; }
+.cmodal-x:hover { border-color: var(--accent); color: var(--accent); }
+/* the form fills the panel here, unlike the wide page version */
+.cmodal-panel .contact-form { max-width: none; margin-top: 24px; }
+.cmodal-panel .form-done { margin-top: 24px; }
+.cmodal-foot { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--rule);
+  text-transform: none; letter-spacing: .04em; }
+.cmodal-foot a { color: var(--accent); }
+
 /* --- work detail page --- */
 .detail { padding: 12vh 0 10vh; }
 .back { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 40px; }
@@ -819,7 +865,10 @@ export const CSS = `
 .pager a:hover strong { color: var(--accent); }
 
 /* --- nav links in the bar --- */
-.nav { display: flex; gap: 22px; align-items: center; }
+/* Generous, viewport-tracking gaps so the four sections read as four
+   separate destinations rather than one run of text; clamped so they
+   neither crowd at 900px nor drift apart on a wide desktop. */
+.nav { display: flex; gap: clamp(24px, 3.4vw, 44px); align-items: center; }
 .nav a { position: relative; }
 .nav a[aria-current="page"] { color: var(--accent); }
 .nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
