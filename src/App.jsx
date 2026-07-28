@@ -64,7 +64,6 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const progRef = useRef(null);
-  const barRef = useRef(null);
   const irisRef = useRef(null);
   const lenisRef = useRef(null);
   const topRef = useRef(null);
@@ -88,8 +87,6 @@ export default function App() {
       start: 0, end: "max",
       onUpdate: (self) => {
         if (progRef.current) progRef.current.style.width = `${self.progress * 100}%`;
-        /* The bar stays visible the whole way down — nav is always one
-           click away — so no hide-on-scroll toggle here. */
         topRef.current?.classList.toggle("show", self.scroll() > 600);
       },
     });
@@ -123,9 +120,6 @@ export default function App() {
       navigate(dest);
       lenisRef.current?.scrollTo(0, { immediate: true });
       window.scrollTo(0, 0);
-      // a programmatic jump to the top may not emit a scroll update, so
-      // reveal the bar explicitly on every navigation
-      barRef.current?.classList.remove("hide");
     };
     /* Honour a #hash only *after* the new page has mounted and
        ScrollTrigger has re-measured it: a refresh restores the scroll
@@ -168,8 +162,8 @@ export default function App() {
           <div className="iris-lens" ref={irisRef} />
         </div>
 
-        {/* masthead bar */}
-        <div className="bar" ref={barRef}>
+        {/* masthead bar — sticky, always on screen */}
+        <div className="bar">
           <div className="bar-in">
             <TLink to="/" className="mono brand" aria-label={`${P.name} — home`}><Logo /></TLink>
             <nav className="nav mono" aria-label="Primary">

@@ -457,7 +457,12 @@ export const CSS = `
 .pf { background: var(--bg); color: var(--ink);
   font-family: 'Inter', system-ui, sans-serif; font-weight: 400;
   -webkit-font-smoothing: antialiased; letter-spacing: -0.01em;
-  transition: color .5s ease; overflow-x: hidden; position: relative; min-height: 100vh; }
+  transition: color .5s ease; position: relative; min-height: 100vh;
+  /* clip, not hidden: hidden would compute overflow-y to auto and turn
+     .pf into a scroll container, which silently kills every position:sticky
+     inside it (the bar, .card, .sec-label). clip contains the same
+     horizontal overflow without creating a scrollport. */
+  overflow-x: clip; }
 .pf a { color: inherit; text-decoration: none; }
 .pf button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 .pf img { display: block; width: 100%; height: 100%; object-fit: cover;
@@ -493,14 +498,14 @@ export const CSS = `
 .rv { will-change: opacity, transform; }
 
 /* --- bar --- */
-/* Hides while reading down, returns the moment you scroll up (driven
-   from App.jsx) — so the page is uninterrupted, but navigation is one
-   flick away from anywhere, including the bottom. */
+/* Always on screen — it never hides on scroll, on any route, so navigation
+   is one click away from anywhere including the bottom of a long gallery.
+   Sticky (not fixed) so it keeps its place in flow and needs no spacer;
+   this relies on .pf using overflow-x: clip rather than hidden. */
 .bar { position: sticky; top: 0; z-index: 80;
   background: color-mix(in srgb, var(--bg) 80%, transparent);
   backdrop-filter: blur(16px); border-bottom: 1px solid var(--rule);
-  transition: transform .42s cubic-bezier(.2,.8,.2,1); }
-.bar.hide { transform: translateY(-101%); }
+  transform: none !important; }
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
@@ -1209,9 +1214,6 @@ export const CSS = `
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
   .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }
   .card { position: static; }
-  /* with transitions off, an auto-hiding bar would blink in and out —
-     keep it put instead */
-  .bar.hide { transform: none !important; }
   .roll-track { scroll-snap-type: none; }
   .iris-lens { display: none; }
 }
