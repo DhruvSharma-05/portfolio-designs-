@@ -1,20 +1,36 @@
-import { useRef, useState } from "react";
+import { useRef, useState, lazy, Suspense } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion } from "motion/react";
-import { P, img, srcSet, ABOUT, prefersReduced } from "../data.js";
+import { motion, AnimatePresence } from "motion/react";
+import { P, img, srcSet, ABOUT, SHOTLIST, prefersReduced, heavyVisualsAllowed } from "../data.js";
 import { Reveal, TLink, SectionHead } from "../ui.jsx";
 import { useApp } from "../context.js";
+
+/* three.js is code-split and gated, same as DistortImage — the bio text
+   is the content here, the globe is decoration. */
+const ParticleSphere = lazy(() => import("../ParticleSphere.jsx"));
 
 const page = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
+/* ==================================================================
+   ABOUT — the long-form half of the site.
+
+   Structure follows the personal-version build: bio beside a particle
+   globe, then how-I-work, the timeline and what-I'm-hired-for. This page
+   is about the person; what a client walks away with and the headline
+   numbers are a sales argument, so they live on the Work page instead.
+
+   The closing block is deliberately left as it was — the same contact
+   CTA and colophon as the rest of this site uses.
+   ================================================================== */
 export default function About() {
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
+  const [heavy] = useState(heavyVisualsAllowed);
   const root = useRef(null);
   const portrait = useRef(null);
 
@@ -40,11 +56,6 @@ export default function About() {
               i === 0 ? <i key={i}>{w} </i> : w + " "
             )}
           </p>
-          <div className="about-tags">
-            <span className="mono">Designer</span>
-            <span className="mono">Photographer</span>
-            <span className="mono" style={{ color: "var(--accent)" }}>Booking 2026</span>
-          </div>
         </div>
         <figure className="about-portrait">
           <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} srcSet={srcSet(ABOUT.portrait)}
@@ -53,23 +64,33 @@ export default function About() {
         </figure>
       </div>
 
-      <Reveal as="div" className="about-body">
-        {ABOUT.body.map((p, i) => (
-          <p key={i} className={i === 0 ? "lead-p" : ""}>{p}</p>
-        ))}
-      </Reveal>
-
-      <section>
-        <SectionHead n="01">How I work</SectionHead>
-        <Reveal className="approach">
-          {ABOUT.approach.map((a, i) => (
-            <div key={a.k}>
-              <span className="approach-n mono">{String(i + 1).padStart(2, "0")}</span>
-              <h3>{a.k}</h3>
-              <p>{a.v}</p>
-            </div>
+      {/* bio on the left, the globe you can push around on the right */}
+      <div className="about-body">
+        <Reveal as="div" className="about-body-text">
+          {ABOUT.body.map((p, i) => (
+            <p key={i} className={i === 0 ? "lead-p" : ""}>{p}</p>
           ))}
         </Reveal>
+        {heavy && (
+          <div className="about-body-viz" aria-hidden="true">
+            <Suspense fallback={null}><ParticleSphere /></Suspense>
+          </div>
+        )}
+      </div>
+
+      <section className="invert-band">
+        <div className="wrap">
+          <SectionHead n="01">How I work</SectionHead>
+          <Reveal className="approach">
+            {ABOUT.approach.map((a, i) => (
+              <div key={a.k}>
+                <span className="approach-n mono">{String(i + 1).padStart(2, "0")}</span>
+                <h3>{a.k}</h3>
+                <p>{a.v}</p>
+              </div>
+            ))}
+          </Reveal>
+        </div>
       </section>
 
       <section className="timeline">
@@ -82,6 +103,13 @@ export default function About() {
         ))}
       </section>
 
+      {/* the services — an interactive pill cloud with a live caption */}
+      <section style={{ marginTop: "10vh" }}>
+        <SectionHead n="03">What I'm hired for</SectionHead>
+        <HiredFor />
+      </section>
+
+      {/* closing block — unchanged from the rest of the site */}
       <section className="end" style={{ marginTop: "12vh" }}>
         <Reveal>
           <h2 className="display">Let's make<br />something.</h2>
@@ -124,5 +152,39 @@ export default function About() {
         </div>
       </section>
     </motion.main>
+  );
+}
+
+/* HiredFor — the services as a wrapping pill cloud. Hovering or tapping a
+   pill selects it and swaps the large caption below to that service's
+   description (crossfaded). Defaults to the first service so the caption
+   is never empty on load. */
+function HiredFor() {
+  const [active, setActive] = useState(0);
+  return (
+    <div className="hire">
+      <div className="hire-tags" role="tablist" aria-label="Services">
+        {SHOTLIST.map((s, i) => (
+          <button key={s.k} type="button" role="tab" aria-selected={i === active}
+            className={`hire-tag ${i === active ? "on" : ""}`}
+            onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)}
+            onClick={() => setActive(i)}>
+            <span className="mono">{String(i + 1).padStart(2, "0")}</span>
+            {s.k}
+          </button>
+        ))}
+      </div>
+      <div className="hire-desc">
+        <AnimatePresence mode="wait">
+          <motion.p key={active}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}>
+            <b>{SHOTLIST[active].k}.</b> {SHOTLIST[active].v}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+    </div>
   );
 }

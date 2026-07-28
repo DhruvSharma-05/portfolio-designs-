@@ -14,26 +14,24 @@ export const prefersReduced = () =>
   typeof matchMedia !== "undefined" &&
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/* Gate for the two three.js-backed effects (HeroCanvas, DistortImage) —
-   checked BEFORE the lazy import() is triggered, not after, so touch
-   devices, reduced-motion, and narrow viewports never fetch the chunk
-   (881KB/234KB gzip, the single largest chunk in the app) at all, rather
-   than fetching it and then declining to render. */
-export const heavyVisualsAllowed = () =>
-  typeof matchMedia !== "undefined" &&
-  matchMedia("(pointer: fine)").matches &&
-  !matchMedia("(prefers-reduced-motion: reduce)").matches &&
-  matchMedia("(min-width: 768px)").matches;
-
 /* Is a precise pointer available at all? `any-pointer`, not `pointer`:
-   a Windows laptop with a touchscreen reports touch as its *primary*
-   pointer while a mouse is plugged in, so the stricter test above would
-   silently switch off cursor-driven effects on a plain desktop. Used for
-   effects cheap enough not to need the three.js-grade gate. */
+   `pointer` describes the *primary* input, and a Windows laptop with a
+   touchscreen reports that as coarse even with a mouse plugged in — so
+   testing `pointer: fine` silently switches cursor-driven effects off on
+   an ordinary desktop. `any-pointer` asks the question we actually mean. */
 export const finePointer = () =>
   typeof matchMedia !== "undefined" &&
   matchMedia("(any-pointer: fine)").matches &&
   !matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Gate for the three.js-backed effects (DistortImage, ParticleSphere) —
+   checked BEFORE the lazy import() is triggered, not after, so touch
+   devices, reduced-motion, and narrow viewports never fetch the chunk
+   (the single largest in the app) at all, rather than fetching it and
+   then declining to render. Same pointer question as above, plus a width
+   floor so phones and small tablets are excluded regardless. */
+export const heavyVisualsAllowed = () =>
+  finePointer() && matchMedia("(min-width: 768px)").matches;
 
 export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
@@ -470,12 +468,6 @@ export const METRICS = [
   { v: 4, s: "wks", k: "Shoot to live site" },
 ];
 
-export const QUOTES = [
-  { q: "A short, specific line about the work. Replace with a real quote once you have one.", a: "Client Name", r: "Role, Company" },
-  { q: "Another testimonial goes here. Two sentences at most — the shorter, the better.", a: "Client Name", r: "Role, Company" },
-  { q: "One more placeholder quote. Swap these three out and delete the rest.", a: "Client Name", r: "Role, Company" },
-];
-
 export const SHOTLIST = [
   { k: "Editorial & campaign", v: "Shoot, select, grade, deliver. Usually two weeks." },
   { k: "Events & nightlife", v: "Available light. No flash unless you ask twice." },
@@ -881,13 +873,9 @@ export const CSS = `
 .sl-row:hover .mono { color: var(--accent); }
 @media (max-width: 700px) { .sl-row { grid-template-columns: 30px 1fr; } .sl-row p { grid-column: 2; } }
 
-/* --- quotes slideshow --- */
-.slide { position: relative; min-height: 200px; }
-.q p { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(21px, 2.7vw, 32px);
-  line-height: 1.35; max-width: 24ch; }
-.q footer { margin-top: 22px; }
-/* Each dot is a 26px-tall tap target; the 2px bar centred in it is the visual. */
-.dots { display: flex; gap: 8px; margin-top: 16px; }
+/* --- carousel dot rail (the lightbox's frame picker) ---
+   Each dot is a 26px-tall tap target; the 2px bar centred in it is the
+   visual. Laid out by .lb-foot, so there's no container rule here. */
 .dot { width: 26px; height: 26px; position: relative; }
 .dot::before { content: ""; position: absolute; left: 0; right: 0; top: 50%;
   margin-top: -1px; height: 2px; background: var(--rule); transition: background-color .4s; }
@@ -1029,12 +1017,29 @@ export const CSS = `
   transform: scaleX(0); transform-origin: left; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
 .shead.in .shead-rule { transform: scaleX(1); }
 
-.about-body { max-width: 64ch; margin: 12vh 0; color: var(--dim); line-height: 1.8; font-size: 16px; }
-.about-body p + p { margin-top: 20px; }
+/* Bio left, globe right. The globe column simply isn't rendered when
+   heavy visuals are off — hence minmax on the *text* column, so it
+   spreads to the full width on its own rather than staying pinned to a
+   60ch strip with dead space beside it. */
+.about-body { display: grid; grid-template-columns: minmax(0, 60ch) 1fr;
+  gap: 48px; align-items: center; margin: 12vh 0; }
+.about-body:not(:has(.about-body-viz)) { grid-template-columns: minmax(0, 64ch); }
+.about-body-viz { position: relative; height: 460px; min-width: 0; }
+/* ParticleSphere mounts its canvas into this, not into .about-body-viz —
+   without inset:0 it has no height of its own and the globe sizes itself
+   from the component's 400px bootstrap instead of the column. */
+.psphere { position: absolute; inset: 0; cursor: grab; }
+.psphere:active { cursor: grabbing; }
+.about-body-text { color: var(--dim); line-height: 1.8; font-size: 16px; }
+.about-body-text p + p { margin-top: 20px; }
 /* first paragraph reads as a lead-in — brighter, larger, sets the voice */
-.about-body .lead-p { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
+.about-body-text .lead-p { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
   font-size: clamp(19px, 2.3vw, 25px); line-height: 1.5; }
-.about-body .lead-p + p { margin-top: 30px; }
+.about-body-text .lead-p + p { margin-top: 30px; }
+@media (max-width: 900px) {
+  .about-body { grid-template-columns: 1fr; gap: 32px; }
+  .about-body-viz { height: 320px; }
+}
 .approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
   background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
 /* panels are plain <div> on the about page and <a> on the home page,
@@ -1069,6 +1074,66 @@ export const CSS = `
   color: var(--accent); font-variant-numeric: tabular-nums; }
 .tl-row p { font-size: clamp(16px, 1.9vw, 21px); letter-spacing: -0.01em; }
 @media (max-width: 700px) { .tl-row { grid-template-columns: 64px 1fr; gap: 16px; } }
+
+/* --- full-bleed band ---
+   The version this came from is a cream site, where these bands were a
+   true colour inversion to black. Inverting a dark site would drop a
+   white slab into the middle of it, so here the band is a lift instead:
+   the panel tone, ruled top and bottom. Same job — it breaks the page
+   into rooms — in this palette. Breaks out of the centred .wrap column,
+   so put a plain .wrap inside to re-centre the content. */
+.invert-band { width: 100vw; margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw); padding: 11vh 0;
+  background: var(--panel);
+  border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+/* the approach panels sit on the band, so they take its tone, not the page's */
+.invert-band .approach div, .invert-band .approach a { background: var(--panel); }
+
+/* --- "What you get" — offset card grid ---
+   Two columns with the even one dropped 44px so the pairs stagger.
+   Number-led: an oversized outlined index as a graphic element, which
+   fills to the accent as the card lifts. */
+/* no top margin: this sits in the right-hand column of .sec-grid, level
+   with its label, not stacked under a heading */
+.get-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.get-card { position: relative; border: 1px solid var(--rule); border-radius: 7px;
+  padding: 32px 30px 30px; background: var(--panel); overflow: hidden;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), border-color .4s ease, box-shadow .45s ease; }
+.get-card:nth-child(even) { margin-top: 44px; }
+.get-card:hover { transform: translateY(-5px); border-color: var(--accent);
+  box-shadow: 0 22px 44px -28px rgba(0, 0, 0, .75); }
+/* Inter 600, not the personal version's Anton — this site has one
+   typeface family and an outlined 300 would read as a hairline smudge. */
+.get-num { display: block; font-weight: 600; font-size: 62px; line-height: 1;
+  letter-spacing: -0.04em; color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--ink) 26%, transparent);
+  margin-bottom: 16px; transition: -webkit-text-stroke-color .4s ease; }
+.get-card:hover .get-num { -webkit-text-stroke-color: var(--accent); }
+.get-card h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(20px, 2.4vw, 28px);
+  margin-bottom: 10px; }
+.get-card p { color: var(--dim); font-size: 14.5px; line-height: 1.6; max-width: 42ch; }
+@media (max-width: 720px) {
+  .get-grid { grid-template-columns: 1fr; gap: 14px; }
+  .get-card:nth-child(even) { margin-top: 0; }
+}
+
+/* --- "What I'm hired for" — capability pills + live caption ---
+   The services wrap like a keyword cloud; hovering or tapping one fills
+   it and swaps the large caption below to that service's description. */
+.hire { margin-top: 34px; }
+.hire-tags { display: flex; flex-wrap: wrap; gap: 12px; }
+.pf .hire-tag { display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px;
+  border: 1px solid var(--rule); border-radius: 100px; letter-spacing: -0.01em;
+  font-size: clamp(16px, 1.8vw, 22px); color: var(--ink);
+  transition: color .35s ease, background-color .35s ease, border-color .35s ease; }
+.hire-tag .mono { color: var(--accent); font-size: 11px; transition: color .35s ease; }
+.pf .hire-tag:hover, .pf .hire-tag.on { background: var(--accent);
+  border-color: var(--accent); color: var(--bg); }
+.hire-tag:hover .mono, .hire-tag.on .mono { color: var(--bg); }
+.hire-desc { margin-top: 28px; min-height: 3em; }
+.hire-desc p { font-weight: 300; letter-spacing: -0.02em; color: var(--dim);
+  font-size: clamp(18px, 2.3vw, 27px); line-height: 1.4; max-width: 40ch; }
+.hire-desc b { font-weight: 400; color: var(--ink); font-style: normal; }
 
 /* ==================================================================
    PHOTOGRAPHY PAGE

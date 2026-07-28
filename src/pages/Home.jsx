@@ -4,10 +4,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, INTRO, HERO_FRAMES,
+  P, img, srcSet, ratio, INTRO, HERO_FRAMES, METRICS,
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced,
 } from "../data.js";
-import { Reveal, TLink, FigmaFrame } from "../ui.jsx";
+import { Reveal, TLink, FigmaFrame, Metrics } from "../ui.jsx";
 import { useApp } from "../context.js";
 import HeroFrames from "../HeroFrames.jsx";
 
@@ -179,6 +179,33 @@ export default function Home() {
                 </TLink>
               </Reveal>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* what a client walks away with — moved here from /about, which is
+          about the person; this is the sales argument, so it belongs
+          alongside the work it's arguing for */}
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">What you get</div>
+          <div className="get-grid">
+            {INTRO.offer.map((o, i) => (
+              <Reveal className="get-card" key={o.k} delay={i * 0.06}>
+                <span className="get-num">{String(i + 1).padStart(2, "0")}</span>
+                <h3>{o.k}</h3>
+                <p>{o.v}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">The numbers</div>
+          <div>
+            <Metrics items={METRICS} />
           </div>
         </div>
       </section>
