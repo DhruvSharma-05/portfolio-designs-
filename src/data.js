@@ -548,28 +548,22 @@ export const CSS = `
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
-/* the masthead CTA — sits where the city/booking line used to, and is
-   the one way into the enquiry form from anywhere on the site. Stays
-   visible at every width: on a phone it is the primary action. */
-/* Quiet by default — a hairline pill in the bar's own rule colour, led by
-   a small accent dot standing in for the "booking" note it replaced. A
-   full accent-filled button here would have shouted over the nav; the
-   accent only arrives on hover. */
-.pf .barcta { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 9px;
-  border: 1px solid var(--rule); border-radius: 100px; color: var(--ink);
-  padding: 9px 17px; white-space: nowrap;
-  background: color-mix(in srgb, var(--ink) 4%, transparent);
-  transition: border-color .35s ease, color .35s ease, background-color .35s ease; }
+/* the masthead CTA — the one way into the enquiry form from anywhere on
+   the site. Reads as a text link like the rest of the nav (no pill, no
+   fill), just marked out as the action by a small accent dot + accent
+   ink and the same underline-on-hover the nav links use. */
+.pf .barcta { flex: 0 0 auto; position: relative; display: inline-flex; align-items: center;
+  gap: 8px; padding: 0; border: 0; background: none; color: var(--accent);
+  white-space: nowrap; transition: opacity .3s ease; }
 .pf .barcta::before { content: ""; width: 5px; height: 5px; border-radius: 50%;
   background: var(--accent); flex: 0 0 auto;
-  transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease; }
-.pf .barcta:hover { color: var(--accent); border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 9%, transparent); }
-.pf .barcta:hover::before { transform: scale(1.35);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
-@media (max-width: 560px) {
-  .pf .barcta { padding: 8px 14px; gap: 7px; letter-spacing: .1em; }
-}
+  transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+/* underline sweeps in under just the text (offset past the dot + gap) */
+.pf .barcta::after { content: ""; position: absolute; left: 13px; right: 0; bottom: -4px;
+  height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: right;
+  transition: transform .35s cubic-bezier(.76,0,.24,1); }
+.pf .barcta:hover::after { transform: scaleX(1); transform-origin: left; }
+.pf .barcta:hover::before { transform: scale(1.3); }
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
@@ -728,7 +722,7 @@ export const CSS = `
 .logo-mark { height: 34px; width: auto; aspect-ratio: 13113 / 11894; color: var(--ink);
   overflow: visible; transition: transform .5s cubic-bezier(.2,.8,.2,1), color .3s ease;
   transform-origin: 50% 50%; }
-.logo-mark path { fill: currentColor; stroke: currentColor; stroke-width: 220;
+.logo-mark path { fill: currentColor; fill-rule: evenodd; stroke: currentColor; stroke-width: 220;
   stroke-dasharray: 1; stroke-dashoffset: 1; fill-opacity: 0;
   animation: logoDraw 1.4s cubic-bezier(.4,0,.2,1) .2s forwards,
              logoFill .7s ease 1.2s forwards; }
