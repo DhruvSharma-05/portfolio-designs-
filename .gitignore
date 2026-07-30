@@ -13,7 +13,20 @@ dist-ssr
 *.local
 
 # Contentful photo sync — secrets, cache, and generated images
+# .env.* too: backups (.env.bak) and per-environment files (.env.local,
+# .env.production) all hold the same secrets and were previously tracked.
+# .env.example is the committed template and must stay visible.
 .env
+.env.*
+!.env.example
+
+# Google service-account keys. The downloaded file is a long-lived
+# credential with no expiry — it belongs outside the repo entirely, and
+# in .env as base64 (npm run key). These patterns are a backstop for the
+# names Google hands out, in case one gets dropped in here by accident.
+project-*.json
+*service-account*.json
+*-key.json
 .drive-cache.json
 public/photos/*
 # ...but keep the design-project cover screenshots (npm run shoot): they're

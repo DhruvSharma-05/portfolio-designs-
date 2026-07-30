@@ -7,6 +7,8 @@
     "predev": "npm run sync",
     "dev": "vite",
     "sync": "node scripts/sync-contentful.mjs",
+    "check:delivery": "node scripts/check-delivery.mjs",
+    "key": "node scripts/install-delivery-key.mjs",
     "shoot": "node scripts/shoot-figma.mjs",
     "prebuild": "npm run sync",
     "build": "vite build",
