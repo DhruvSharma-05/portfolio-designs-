@@ -11,7 +11,11 @@
    _lib/delivery.js), or a client could see "Download ZIP" and then hit
    a wall, or vice versa.                                                */
 
-import archiver from "archiver";
+/* archiver 8 is ESM and exports format classes — there is no default
+   export and no archiver("zip", …) factory any more. The restored code
+   used the v7 CJS form, which throws at import against the version this
+   project has always pinned, so /api/download could never have run. */
+import { ZipArchive } from "archiver";
 import { driveClient, listImages, fileStream } from "./_lib/drive.js";
 import { resolveDelivery, MAX_FILES, MAX_BYTES } from "./_lib/delivery.js";
 import { makeLimiter, clientIp } from "./_lib/ratelimit.js";
@@ -65,7 +69,7 @@ export default async function handler(req, res) {
   // photos are already JPEG-compressed — re-deflating them burns CPU
   // time for near-zero size benefit, and time is the scarce resource
   // inside one serverless function call.
-  const archive = archiver("zip", { zlib: { level: 0 } });
+  const archive = new ZipArchive({ zlib: { level: 0 } });
   archive.on("error", () => res.destroy());
   archive.pipe(res);
 

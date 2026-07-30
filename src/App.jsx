@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, lazy, Suspense } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -17,6 +17,12 @@ import PhotoProject from "./pages/PhotoProject.jsx";
 import Design from "./pages/Design.jsx";
 import DesignProject from "./pages/DesignProject.jsx";
 import NotFound from "./pages/NotFound.jsx";
+
+/* Client delivery (see CLIENT-DELIVERY-POA.md). Both are code-split so
+   none of the admin tooling or the delivery page ships to a normal
+   visitor — the portfolio's bundle is unchanged by their presence. */
+const Admin = lazy(() => import("./pages/Admin.jsx"));
+const Client = lazy(() => import("./pages/Client.jsx"));
 
 /* Primary navigation. `/` matches exactly; the others also light up on
    their detail pages (/photography/:slug, /design/:slug). */
@@ -152,6 +158,12 @@ export default function App() {
   const openContact = useCallback(() => setContactOpen(true), []);
   const closeContact = useCallback(() => setContactOpen(false), []);
 
+  /* The admin is a tool, not part of the portfolio: it gets none of the
+     public chrome — no nav, no "Contact me" CTA, no back-to-top. The
+     client delivery page keeps the bar so it still reads as Viraj's
+     site, which is the whole point of delivering from his own domain. */
+  const isAdmin = location.pathname.startsWith("/admin");
+
   /* a route change behind the modal (browser back, say) shouldn't leave
      it hanging over the new page */
   useEffect(() => { setContactOpen(false); }, [location.pathname]);
@@ -174,7 +186,7 @@ export default function App() {
         </div>
 
         {/* masthead bar — sticky, always on screen */}
-        <div className="bar">
+        <div className="bar" hidden={isAdmin}>
           <div className="bar-in">
             <TLink to="/" className="mono brand" aria-label={`${P.name} home`}><Logo /></TLink>
             <nav className="nav mono" aria-label="Primary">
@@ -203,16 +215,18 @@ export default function App() {
         </AnimatePresence>
 
         {/* back to top — fades in once you're a scroll past the fold */}
-        <button type="button" className="totop" ref={topRef} aria-label="Back to top"
-          onClick={() => {
-            if (reduced || !lenisRef.current) {
-              window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
-              return;
-            }
-            lenisRef.current.scrollTo(0, { duration: 1 });
-          }}>
-          <span className="arrow" aria-hidden="true">↑</span>
-        </button>
+        {!isAdmin && (
+          <button type="button" className="totop" ref={topRef} aria-label="Back to top"
+            onClick={() => {
+              if (reduced || !lenisRef.current) {
+                window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+                return;
+              }
+              lenisRef.current.scrollTo(0, { duration: 1 });
+            }}>
+            <span className="arrow" aria-hidden="true">↑</span>
+          </button>
+        )}
 
         <ErrorBoundary key={location.pathname}>
           <Routes>
@@ -223,6 +237,23 @@ export default function App() {
             <Route path="/design" element={<Design />} />
             <Route path="/design/:slug" element={<DesignProject />} />
             <Route path="/about" element={<About />} />
+            {/* client delivery — /client asks for a code, /client/:code
+                opens that gallery straight from a link */}
+            <Route path="/client" element={
+              <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
+                <Client />
+              </Suspense>
+            } />
+            <Route path="/client/:code" element={
+              <Suspense fallback={<main className="client wrap"><p className="mono">Loading…</p></main>}>
+                <Client />
+              </Suspense>
+            } />
+            <Route path="/admin" element={
+              <Suspense fallback={<main className="admin wrap"><p className="mono">Loading…</p></main>}>
+                <Admin />
+              </Suspense>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </ErrorBoundary>
