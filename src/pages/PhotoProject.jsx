@@ -59,7 +59,9 @@ export default function PhotoProject() {
           {p.role && <div className="mono" style={{ color: "var(--accent)" }}>{p.role}</div>}
         </div>
 
-        <figure className="pj-hero">
+        {/* the frame carries the photo's own ratio so it hugs the picture
+            instead of parking it in the middle of a black panel */}
+        <figure className="pj-hero" style={{ aspectRatio: ratio(p.photos[0], 16, 9) }}>
           <img src={img(p.photos[0], 2000, 1125)} srcSet={srcSet(p.photos[0])}
             sizes="(max-width: 1180px) 100vw, 1180px" alt={p.t} />
         </figure>

@@ -279,6 +279,18 @@ const isLandscape = (seed) => {
   return !!(p?.w && p?.h && p.w > p.h);
 };
 
+/* projectCover(p): the frame to put in a card.
+
+   Cards frame their cover in a fixed landscape box so every card in the
+   stack is the same size — otherwise each one inherits its cover photo's
+   native ratio and a portrait opening frame turns into an ~870px-tall
+   card next to a ~330px landscape one. Given a fixed box, prefer a
+   landscape frame from the collection: a portrait cropped to 4:3 is a
+   sliver of itself. photos[0] stays the project's opening frame
+   everywhere it's shown whole (the detail hero, the grid). */
+export const projectCover = (p) =>
+  (p.photos || []).find(isLandscape) || p.photos?.[0];
+
 /* A hand-picked run rather than one frame per collection: two wildlife,
    one modern, one traditional, interleaved so no two neighbours come
    from the same set. `seed` names a specific picture where the choice
@@ -686,24 +698,45 @@ export const CSS = `
 .card { position: relative; background: var(--panel); border: 1px solid var(--rule);
   border-radius: 4px; overflow: hidden; transition: border-color .4s ease; }
 .card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
-.card-in { display: grid; grid-template-columns: 1.25fr 1fr; }
+/* align-items: stretch is the default, but it's load-bearing here: the
+   caption column matches the cover's height rather than the other way
+   round, so the card's height comes from one fixed ratio. */
+.card-in { display: grid; grid-template-columns: 1.15fr 1fr; }
 @media (max-width: 860px) {
   .card-in { grid-template-columns: 1fr; }
   .stack { gap: 26px; }
 }
-.shot { position: relative; overflow: hidden; aspect-ratio: 4/3; display: block; }
-.shot img { transition: filter .6s ease; will-change: transform; }
+/* 3/2 and fixed. The ratio used to be set inline per card from the cover
+   photo's own dimensions, which made every card a different height — a
+   portrait cover ran to ~870px against a landscape's ~330px, and the
+   stack had no rhythm at all. One ratio for every card instead, so the
+   covers line up down the page; projectCover() picks a landscape frame
+   so the fixed box crops as little as possible. */
+.shot { position: relative; overflow: hidden; aspect-ratio: 3/2; display: block; }
+/* the cover is a crop, so bias it above centre — horizons and faces sit
+   in the upper half far more often than the lower */
+.shot img { object-position: 50% 42%;
+  transition: filter .6s ease; will-change: transform; }
 /* WebGL distortion layer: the real photo sits underneath, the canvas on
    top — if WebGL/texture fails, the canvas is transparent and the photo
    shows through. */
 .shot .distort-fallback { position: absolute; inset: 0; }
-.shot .distort-canvas { position: absolute !important; inset: 0; display: block; }
+/* the canvas takes the same grade as .pf img — a WebGL layer gets none of
+   the site-wide filter otherwise, and the card would sit brighter than
+   every other photo on the page */
+.shot .distort-canvas { position: absolute !important; inset: 0; display: block;
+  filter: var(--filter); }
 .shot .open { position: absolute; right: 14px; bottom: 14px; z-index: 2;
   background: color-mix(in srgb, var(--bg) 55%, transparent); color: var(--ink);
   backdrop-filter: blur(8px); border: 1px solid var(--rule); border-radius: 100px;
   padding: 7px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
   letter-spacing: .14em; text-transform: uppercase; }
 .cap { padding: 34px 32px; display: flex; flex-direction: column; justify-content: space-between; gap: 26px; }
+/* The copy used to sit hard against the top of a 400px column with the
+   meta pinned to the bottom, leaving a hollow band between them. Auto
+   margins centre the copy in whatever space is left over; the meta keeps
+   its place on the bottom rule. */
+.cap > :first-child { margin-block: auto; }
 .cap .kind { display: inline-block; border: 1px solid var(--rule); border-radius: 100px;
   padding: 4px 12px; margin-bottom: 18px; }
 .cap h2 { font-weight: 400; letter-spacing: -0.03em; font-size: clamp(24px, 3vw, 38px); line-height: 1.05; }
@@ -1177,9 +1210,16 @@ export const CSS = `
    full-width-portrait height; the image covers a 16:9 frame instead. */
 /* Shows the opening frame whole. This was aspect-ratio: 16/9 with the
    site-wide object-fit: cover, which guillotined every portrait — heads
-   cropped off the top. Now it's a fixed-height stage with the picture
-   fitted inside it, so a portrait keeps its full height and a landscape
-   its full width, and nothing is scaled in or out.
+   cropped off the top. Then it was a full-width fixed-height stage with
+   the picture contained inside it, which read as a black slab with a
+   sliver of photograph in the middle: a portrait at this height only
+   fills about a quarter of the 1180px column, and .pj-hero's panel
+   background filled the rest.
+
+   Now the frame takes the photograph's own aspect ratio (set inline from
+   the manifest) and shrinks to fit it, centred. Height stays capped, so a
+   portrait is a tall narrow frame and a landscape a wide one — the whole
+   picture either way, and no letterbox around it.
 
    Height is set so the whole stage clears the fold: the masthead, the
    page's top padding, the back link and the title take ~310px above it,
@@ -1190,7 +1230,13 @@ export const CSS = `
   /* the third term is the one that matters on a short window: what's
      above the stage is ~310px of largely fixed chrome, so cap the frame
      at the space actually left rather than at a share of the height */
-  height: min(60vh, 640px, calc(100svh - 330px)); }
+  height: min(60vh, 640px, calc(100svh - 330px));
+  /* fit-content, not auto: a block-level box with width:auto stretches to
+     the column and ignores aspect-ratio, which is what left the black
+     margins. max-width keeps a very wide frame inside the column, and the
+     frame stays hard-left so a narrow portrait lines up with the title
+     above it and the grid below rather than floating in the middle. */
+  width: fit-content; max-width: 100%; }
 /* scoped to this page — /work/:seed and /design/:slug share .detail and
    want their original, roomier lead-in */
 .detail-pj { padding-top: 7vh; }

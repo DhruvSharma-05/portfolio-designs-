@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  P, img, srcSet, ratio, FEATURED, PHOTO_PROJECTS, PHOTO_POOL,
+  P, img, srcSet, ratio, FEATURED, PHOTO_PROJECTS, PHOTO_POOL, projectCover,
   prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
 import { Reveal, TLink, SectionHead } from "../ui.jsx";
@@ -149,22 +149,25 @@ export default function Photography() {
       <section className="wrap" style={{ paddingTop: "11vh" }}>
         <SectionHead>Projects</SectionHead>
         <div className="stack">
-          {PHOTO_PROJECTS.map((p, n) => (
+          {PHOTO_PROJECTS.map((p, n) => {
+            /* no inline aspect-ratio: every .shot uses the one fixed 3/2
+               from the stylesheet, so the cards match down the page */
+            const cover = projectCover(p);
+            return (
             <Reveal className="card" key={p.slug} delay={n * 0.06}>
               <div className="card-in">
                 <TLink to={`/photography/${p.slug}`} className="shot"
-                  style={{ aspectRatio: ratio(p.photos[0], 4, 3) }}
                   aria-label={`Open ${p.t}`}>
                   {heavy ? (
                     <Suspense fallback={
-                      <img data-par src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
+                      <img data-par src={img(cover, 1200, 800)} srcSet={srcSet(cover)}
                         sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
                     }>
-                      <DistortImage src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
+                      <DistortImage src={img(cover, 1200, 800)} srcSet={srcSet(cover)}
                         sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
                     </Suspense>
                   ) : (
-                    <img data-par src={img(p.photos[0], 1200, 900)} srcSet={srcSet(p.photos[0])}
+                    <img data-par src={img(cover, 1200, 800)} srcSet={srcSet(cover)}
                       sizes="(max-width: 860px) 100vw, 55vw" alt={p.t} />
                   )}
                   <span className="open">{p.photos.length} frames →</span>
@@ -184,7 +187,8 @@ export default function Photography() {
                 </div>
               </div>
             </Reveal>
-          ))}
+            );
+          })}
         </div>
       </section>
 

@@ -47,7 +47,17 @@ const FRAG = /* glsl */ `
     float r = texture2D(uTex, uv + vec2(shift, 0.0)).r;
     float g = texture2D(uTex, uv).g;
     float b = texture2D(uTex, uv - vec2(shift, 0.0)).b;
-    gl_FragColor = vec4(vec3(r, g, b) * 0.97, 1.0);
+    /* No hand-rolled dimming here — the canvas carries the site-wide
+       var(--filter) grade in CSS, same as every <img>, so the card matches
+       the rest of the page instead of approximating it. */
+    gl_FragColor = vec4(r, g, b, 1.0);
+
+    /* The texture is tagged SRGBColorSpace, so texture2D() returns LINEAR
+       values. three.js appends this conversion automatically to its own
+       materials but not to a raw ShaderMaterial — without it the linear
+       values go straight to an sRGB display and the photo renders about
+       45% too dark (measured: luma 57 against the plain <img>'s 101). */
+    #include <colorspace_fragment>
   }
 `;
 
