@@ -5,10 +5,65 @@ uploads a shoot to a private Google Drive folder, picks that folder in an admin
 screen, and generates a **custom access code / link**. Only that client can use the
 code to view and download their photos.
 
-**Status:** not built in the current site. It *was* built previously and removed;
-the complete version is recoverable from git commit **`761ec6e`** (branch
-`bacckend`). This document is the plan to bring it back and wire it into the
-current codebase.
+**Status:** the **code is restored and wired in** (backend + admin + client pages
+build clean). The **configuration is not done** — the Google service account, the
+Drive folders, and the env vars still need to be set up before anything works. See
+the status board below.
+
+---
+
+## 0. Current status — what's done vs. what's left
+
+_Last updated: 2026-07-30. Branch: `gurkirat1`._
+
+### ✅ Done (code — builds clean, lint passes)
+- `api/` backend restored: `auth`, `client`, `content`, `download`, `library`,
+  `mail`, `publish`, `share`, `thumb` + `_lib/` (`auth`, `delivery`, `drive`, `mail`,
+  `ratelimit`).
+- `src/pages/Admin.jsx` and `src/pages/Client.jsx` restored.
+- Routes registered in `src/App.jsx`: `/admin`, `/client`, `/client/:code`
+  (code-split; `isAdmin` hides the public bar on `/admin`).
+- Deps installed: `googleapis`, `archiver`, `nodemailer`.
+- `vercel.json`: `api/` excluded from the SPA rewrite + `api/download.js`
+  `maxDuration: 60`.
+- Admin/client CSS restored in `src/data.js`.
+- `.env.example` documents all delivery vars.
+
+### ⛔ Not done — **required before it works** (owner: Viraj / whoever has the Drive)
+1. **Create the Google Cloud service account** + enable Drive API, download the JSON
+   key. → §5.1
+2. **Create the `Clients` root folder** in Drive and share it with the service
+   account as **Editor**. → §5.2
+3. **Create the empty `content.json`** in that folder, share as Editor, note its file
+   ID. → §5.2
+4. **Fill the 5 env vars in `.env`** (all currently empty):
+   `GOOGLE_SERVICE_ACCOUNT_JSON`, `DRIVE_ROOT_FOLDER_ID`, `DRIVE_CONTENT_FILE_ID`,
+   `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`
+   (generate the last with `node -e "console.log(crypto.randomUUID())"`).
+5. **Add the same 5 vars to Vercel** → Settings → Environment Variables.
+
+### ⚠️ Not done — **verification & polish** (owner: next dev)
+- **End-to-end test.** The `api/` functions do **not** run under plain `npm run dev`
+  (that's Vite only). Test with **`vercel dev`** once the env vars exist. Full test
+  script in §8.
+- **Untested since restore** — the backend compiles but has **not** been exercised
+  against a real Drive since it was brought back into the current codebase. Confirm:
+  admin login, Drive folder picker, code generation, `/client/<code>` load, ZIP
+  download, wrong-code rejection.
+- **Optional SMTP** (emailing codes) — env vars blank; codes are copy-paste until set.
+- **`sync-drive.mjs` was not restored** — it isn't needed for live delivery (the
+  `api/` reads Drive at request time), but confirm nothing references it.
+- **Reconcile with current UI** — the pages were removed while the site was simpler;
+  give `/admin` and `/client` a visual once-over against the current design (contact
+  modal, nav, theme) and fix any drift.
+
+### Quick "is it configured?" check
+```bash
+for v in GOOGLE_SERVICE_ACCOUNT_JSON DRIVE_ROOT_FOLDER_ID DRIVE_CONTENT_FILE_ID \
+         ADMIN_PASSWORD ADMIN_SESSION_SECRET; do
+  grep -qE "^$v=." .env && echo "$v: set" || echo "$v: EMPTY"; done
+```
+All five must read `set` before `/admin` can sign in.
 
 ---
 
