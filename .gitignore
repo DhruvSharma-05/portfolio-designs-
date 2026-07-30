@@ -44,3 +44,5 @@ public/photos/*
 *.njsproj
 *.sln
 *.sw?
+.vercel
+.env*

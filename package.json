@@ -6,6 +6,7 @@
   "scripts": {
     "predev": "npm run sync",
     "dev": "vite",
+    "dev:api": "npx vercel dev --listen 3001",
     "sync": "node scripts/sync-contentful.mjs",
     "check:delivery": "node scripts/check-delivery.mjs",
     "key": "node scripts/install-delivery-key.mjs",
