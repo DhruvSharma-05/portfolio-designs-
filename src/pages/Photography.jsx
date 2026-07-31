@@ -10,6 +10,7 @@ import {
   prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
 import { Reveal, TLink, SectionHead } from "../ui.jsx";
+import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
 const DistortImage = lazy(() => import("../DistortImage.jsx"));
@@ -29,6 +30,7 @@ const HOLD = 5400; // ms per hero slide — matches the tick-fill keyframe
    vertical flow, each opening /photography/:slug.
    ================================================================== */
 export default function Photography() {
+  useSeo("Photography", "Portrait, event and visual-story photography by Viraj Mehta (Lensofviraj), Vancouver — traditional, wildlife and modern collections, each shown as a complete edit.");
   const { openContact } = useApp();
   const [i, setI] = useState(0);
   const [reduced] = useState(prefersReduced);

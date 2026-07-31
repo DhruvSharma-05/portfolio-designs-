@@ -8,6 +8,7 @@ import {
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced,
 } from "../data.js";
 import { Reveal, TLink, FigmaFrame, Metrics } from "../ui.jsx";
+import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 import HeroFrames from "../HeroFrames.jsx";
 
@@ -28,6 +29,7 @@ const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
    design work. Everything about the person lives on /about.
    ================================================================== */
 export default function Home() {
+  useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus web design and build — shot, designed and shipped by the same person. Booking 2026.");
   const { openContact, go } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);

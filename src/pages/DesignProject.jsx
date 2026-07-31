@@ -6,6 +6,7 @@ import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import { WEB_PROJECTS, img, srcSet, ratio, figmaEmbed, hasPhoto, prefersReduced } from "../data.js";
 import { Reveal, TLink } from "../ui.jsx";
+import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
 const page = {
@@ -32,6 +33,11 @@ export default function DesignProject() {
   useEffect(() => {
     if (i === -1) go("/design");
   }, [i, go]);
+
+  useSeo(
+    w ? `${w.t} — Design` : "Web Design & Build",
+    w ? (w.intro || w.note || `${w.t} — a design project by Viraj Mehta.`) : "",
+  );
 
   /* gentle parallax on each screen as it passes through the viewport */
   useGSAP(() => {

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { PHOTO_PROJECTS, img, srcSet, ratio, prefersReduced } from "../data.js";
 import { Reveal, TLink, Lightbox } from "../ui.jsx";
+import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
 const page = {
@@ -31,6 +32,11 @@ export default function PhotoProject() {
   useEffect(() => {
     if (i === -1) go("/photography");
   }, [i, go]);
+
+  useSeo(
+    p ? `${p.t} — Photography` : "Photography",
+    p ? (p.note || p.intro || `${p.t} — a photography set by Viraj Mehta, Vancouver.`) : "",
+  );
 
   /* No parallax on the hero: it worked by scaling the picture to 1.12 and
      sliding it, which is a zoom, and only reads at all when the frame is

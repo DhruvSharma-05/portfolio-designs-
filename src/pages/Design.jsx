@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
 import { Reveal, TLink, SectionHead, FigmaFrame } from "../ui.jsx";
+import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
 const page = {
@@ -58,6 +59,7 @@ function Preview({ w, reduced, sizes, eager = false }) {
    single link into /design/:slug.
    ================================================================== */
 export default function Design() {
+  useSeo("Web Design & Build", "UI/UX and web design by Viraj Mehta — interactive product prototypes and sites, designed and built end to end in Vancouver.");
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);

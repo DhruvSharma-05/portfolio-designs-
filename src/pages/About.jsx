@@ -5,6 +5,7 @@ import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import { P, img, srcSet, ABOUT, SHOTLIST, prefersReduced, heavyVisualsAllowed } from "../data.js";
 import { Reveal, TLink, SectionHead } from "../ui.jsx";
+import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
 /* three.js is code-split and gated, same as DistortImage — the bio text
@@ -28,6 +29,7 @@ const page = {
    CTA and colophon as the rest of this site uses.
    ================================================================== */
 export default function About() {
+  useSeo("About Viraj Mehta", "Viraj Mehta is a designer and photographer in Vancouver, blending engineering, design and photography into digital products and visual stories.");
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const [heavy] = useState(heavyVisualsAllowed);
