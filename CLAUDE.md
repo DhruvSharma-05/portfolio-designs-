@@ -40,10 +40,15 @@ within it.
   changing photos. Wire a **Contentful webhook → that Deploy Hook** to make
   publishing (new photos *and* new collections) auto-deploy — full steps in
   [PRODUCTION.md](PRODUCTION.md) → "Auto-publishing".
-- **Google Drive is fully removed.** The admin panel, the `/client`
-  delivery area, the entire `api/` serverless backend, and
-  `scripts/sync-drive.mjs` were all deleted — the site is now a pure static
-  portfolio. `googleapis` / `archiver` / `nodemailer` are gone from deps.
+- **Google Drive is used for one thing only: client photo delivery,**
+  not portfolio content. `/admin` + `/client` + the `api/` serverless
+  functions exist and are **client-delivery only** — see
+  [CLIENT-DELIVERY-POA.md](CLIENT-DELIVERY-POA.md) and `README.md` →
+  "The admin panel". Work/Gallery/Portrait/project photos are never
+  touched by `/admin`; they come exclusively from Contentful, above.
+  `scripts/sync-drive.mjs` (which used to pull *portfolio* photos from
+  Drive) is gone — `googleapis`/`archiver`/`nodemailer` remain in deps
+  only for the delivery feature.
 
 ## Production readiness & scaling
 

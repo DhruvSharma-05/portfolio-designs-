@@ -1,14 +1,13 @@
-/* GET  /api/library                 → folders + photos under the root
-   GET  /api/library?folder=<id>     → folders + photos inside that folder
+/* GET  /api/library                 → folders under the root
+   GET  /api/library?folder=<id>     → folders inside that folder
    POST /api/library { parentId, name } → create a new folder
 
-   The photo picker in /admin runs on GET: pick a folder, tick the frames
-   that belong to the project. The client-delivery folder picker in
-   /admin also runs on GET (to drill into nested folders) and on POST
-   (to create a fresh delivery folder without leaving the admin UI).    */
+   Backs the client-delivery folder picker in /admin: drill into nested
+   folders on GET, create a fresh delivery folder without leaving the
+   admin UI on POST.                                                   */
 
 import { requireAuth } from "./_lib/auth.js";
-import { driveClient, listFolders, listImages, folderMeta, createFolder } from "./_lib/drive.js";
+import { driveClient, listFolders, folderMeta, createFolder } from "./_lib/drive.js";
 
 export default async function handler(req, res) {
   if (!requireAuth(req, res)) return;
@@ -54,11 +53,8 @@ export default async function handler(req, res) {
     const folder = req.query.folder;
     const parent = folder || root;
 
-    const [folders, photos] = await Promise.all([
-      listFolders(drive, parent),
-      listImages(drive, parent),
-    ]);
-    return res.status(200).json({ root, folders, photos });
+    const folders = await listFolders(drive, parent);
+    return res.status(200).json({ root, folders });
   } catch (e) {
     return res.status(500).json({ error: e.message || "Drive request failed" });
   }

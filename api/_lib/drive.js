@@ -162,14 +162,30 @@ export async function countImages(drive, folderId) {
 export const folderUrl = (id) => `https://drive.google.com/drive/folders/${id}`;
 
 /* ---- content.json -------------------------------------------------
-   The shape the admin edits and the build consumes. Kept deliberately
-   flat and boring so it stays readable if anyone opens it in Drive. */
+   The client list /admin edits — deliberately flat and boring so it
+   stays readable if anyone opens it in Drive. */
 
 export const EMPTY_CONTENT = {
   version: 1,
   updatedAt: null,
-  photoProjects: [],
-  webProjects: [],
+  deliveries: [],
+};
+
+/* One-time read-side migration from the old shape (`photoProjects` /
+   `webProjects`, each optionally carrying a `client` sub-object) to the
+   flat `deliveries` list. Only runs if a file predates this change —
+   the next Save rewrites it in the new shape, so this can be deleted
+   once every real content.json has been saved at least once. */
+const migrateLegacy = (parsed) => {
+  if (parsed.deliveries || (!parsed.photoProjects && !parsed.webProjects)) return parsed;
+  const deliveries = [...(parsed.photoProjects || []), ...(parsed.webProjects || [])]
+    .filter((p) => p.client?.on && p.client?.code)
+    .map((p) => ({
+      code: p.client.code, title: p.t || "", name: p.client.name || "",
+      email: p.client.email || "", folderId: p.client.folderId || "",
+      note: p.client.note || "", revoked: Boolean(p.client.revoked),
+    }));
+  return { ...parsed, deliveries };
 };
 
 export async function readContent(drive) {
@@ -179,7 +195,7 @@ export async function readContent(drive) {
   const text = buf.toString("utf8").trim();
   if (!text) return { ...EMPTY_CONTENT };          // freshly created empty file
   try {
-    return { ...EMPTY_CONTENT, ...JSON.parse(text) };
+    return { ...EMPTY_CONTENT, ...migrateLegacy(JSON.parse(text)) };
   } catch {
     // never let a corrupt file wipe the site — surface it instead
     throw new Error("content.json in Drive is not valid JSON");

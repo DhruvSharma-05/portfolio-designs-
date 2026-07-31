@@ -133,14 +133,10 @@ try {
 console.log("\ncontent.json");
 try {
   const content = await readContent(drive);
-  const photo = content.photoProjects?.length || 0;
-  const web = content.webProjects?.length || 0;
-  ok("readable and valid JSON", `${photo} photo project(s), ${web} web project(s)`);
-
-  const codes = [...(content.photoProjects || []), ...(content.webProjects || [])]
-    .filter((p) => p.client?.on && p.client?.code);
-  ok(`${codes.length} delivery code(s) configured`,
-    codes.length ? codes.map((p) => p.client.code).join(", ") : "(none yet — make one in /admin)");
+  const deliveries = (content.deliveries || []).filter((d) => d.code);
+  ok("readable and valid JSON", `${deliveries.length} client(s) configured`);
+  ok(`${deliveries.length} delivery code(s) configured`,
+    deliveries.length ? deliveries.map((d) => d.code).join(", ") : "(none yet — make one in /admin)");
 
   if (WRITE) {
     await writeContent(drive, content);   // byte-identical round-trip
@@ -169,8 +165,6 @@ console.log("\nOptional");
 const smtp = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"].every((k) => process.env[k]);
 if (smtp) ok("SMTP configured", "codes can be emailed from /admin");
 else warn("SMTP not configured", "fine — codes are copy-paste (WhatsApp) instead");
-if (process.env.VERCEL_DEPLOY_HOOK_URL) ok("deploy hook set", "Publish will trigger a rebuild");
-else warn("VERCEL_DEPLOY_HOOK_URL not set", "the Publish button will report no hook configured");
 
 console.log("\n" + "─".repeat(52));
 if (failed) {

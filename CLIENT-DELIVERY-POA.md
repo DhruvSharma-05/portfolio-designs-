@@ -10,6 +10,17 @@ build clean). The **configuration is not done** — the Google service account, 
 Drive folders, and the env vars still need to be set up before anything works. See
 the status board below.
 
+> **2026-07-31 update:** `/admin` has been trimmed to **client-delivery only** —
+> the portfolio-project CMS half described in §3-§4 below (project metadata, the
+> Drive photo picker, the "Publish" button) has been removed, matching what
+> `README.md` → "The admin panel" already documented as the intended design.
+> `content.json`'s shape changed accordingly: it's now `{ deliveries: [...] }`
+> (each record: `code`, `title`, `name`, `email`, `folderId`, `note`, `revoked`)
+> instead of `{ photoProjects, webProjects }` with a `client` sub-object bolted
+> on. The decision rationale, security model, and Drive setup steps below
+> (§1-§2, §5-§9) are unaffected — only the "what's restored" file lists in §3-§4
+> and the status board's file names (`publish`/`thumb` are gone) are now stale.
+
 ---
 
 ## 0. Current status — what's done vs. what's left
