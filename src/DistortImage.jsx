@@ -2,7 +2,7 @@ import { useRef, useMemo, useState, Suspense, Component } from "react";
 import { Canvas, useThree, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import gsap from "gsap";
-import { heavyVisualsAllowed } from "./data.js";
+import { heavyVisualsAllowed, prefersReduced } from "./data.js";
 
 /* ==================================================================
    DISTORT IMAGE — a WebGL hover-ripple on a work photo.
@@ -47,7 +47,17 @@ const FRAG = /* glsl */ `
     float r = texture2D(uTex, uv + vec2(shift, 0.0)).r;
     float g = texture2D(uTex, uv).g;
     float b = texture2D(uTex, uv - vec2(shift, 0.0)).b;
-    gl_FragColor = vec4(vec3(r, g, b) * 0.97, 1.0);
+    /* No hand-rolled dimming here — the canvas carries the site-wide
+       var(--filter) grade in CSS, same as every <img>, so the card matches
+       the rest of the page instead of approximating it. */
+    gl_FragColor = vec4(r, g, b, 1.0);
+
+    /* The texture is tagged SRGBColorSpace, so texture2D() returns LINEAR
+       values. three.js appends this conversion automatically to its own
+       materials but not to a raw ShaderMaterial — without it the linear
+       values go straight to an sRGB display and the photo renders about
+       45% too dark (measured: luma 57 against the plain <img>'s 101). */
+    #include <colorspace_fragment>
   }
 `;
 
@@ -106,7 +116,10 @@ class CanvasGuard extends Component {
 }
 
 export default function DistortImage({ src, srcSet, sizes, alt }) {
-  const [use3d] = useState(heavyVisualsAllowed);
+  /* the reduced-motion half of this used to live inside
+     heavyVisualsAllowed; it's tested here now so that gate can be purely
+     about whether the chunk is worth loading */
+  const [use3d] = useState(() => heavyVisualsAllowed() && !prefersReduced());
   if (!use3d) return <img data-par src={src} srcSet={srcSet} sizes={sizes} alt={alt} />;
   return (
     <>

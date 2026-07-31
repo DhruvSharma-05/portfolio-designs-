@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
 import { Reveal, TLink, SectionHead, FigmaFrame } from "../ui.jsx";
+import { useApp } from "../context.js";
 
 const page = {
   initial: { opacity: 0 },
@@ -27,14 +28,14 @@ function Preview({ w, reduced, sizes, eager = false }) {
       <div className="browser-bar">
         <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
         <span className="browser-url mono">
-          {w.embed ? `${w.t} — Figma prototype` : `${w.slug}.com`}
+          {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
         </span>
         <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
       </div>
       {hasPhoto(w.cover) ? (
         <div className="browser-view">
           <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
-            sizes={sizes} alt={`${w.t} — full page`} loading="lazy" />
+            sizes={sizes} alt={`${w.t} full page`} loading="lazy" />
         </div>
       ) : w.embed && w.href ? (
         <FigmaFrame w={w} eager={eager} />
@@ -57,6 +58,7 @@ function Preview({ w, reduced, sizes, eager = false }) {
    single link into /design/:slug.
    ================================================================== */
 export default function Design() {
+  const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
 
@@ -70,7 +72,7 @@ export default function Design() {
       <header className="dz-hero">
         <div className="dz-hero-copy">
           <div className="dz-kicker">
-            <span className="mono">Design &amp; Build — {P.city}</span>
+            <span className="mono">Design &amp; Build · {P.city}</span>
             <span className="mono">{total} selected projects</span>
           </div>
           <h1>Sites &amp; apps,<br />drawn and<br />shipped whole.</h1>
@@ -87,7 +89,7 @@ export default function Design() {
 
         {feat && (
           <TLink to={`/design/${feat.slug}`} className="dz-hero-media" aria-label={`Open ${feat.t}`}>
-            <span className="mono dz-hero-tag">Featured — {feat.tag}</span>
+            <span className="mono dz-hero-tag">Featured · {feat.tag}</span>
             <Preview w={feat} reduced={reduced} sizes="(max-width: 900px) 100vw, 50vw" eager />
           </TLink>
         )}
@@ -121,13 +123,15 @@ export default function Design() {
       <section className="sec">
         <div className="sec-grid">
           <div className="sec-label mono">How a build goes</div>
+          {/* no reveal on these — the rows just sit there, and the only
+              motion is the hover lift */}
           <div>
             {PROCESS.map((s, i) => (
-              <Reveal className="sl-row" key={s.k} delay={i * 0.04}>
+              <div className="sl-row" key={s.k}>
                 <span className="mono">{String(i + 1).padStart(2, "0")}</span>
                 <h3>{s.k}</h3>
                 <p>{s.v}</p>
-              </Reveal>
+              </div>
             ))}
           </div>
         </div>
@@ -139,7 +143,7 @@ export default function Design() {
           <TLink to="/photography">
             <span className="mono">The other half</span>
             <h3>{P.photoBrand}</h3>
-            <p>Editorial, portrait and event sets — the full edits.</p>
+            <p>Editorial, portrait and event sets. The full edits.</p>
             <span className="go mono">See the projects <span className="arrow">→</span></span>
           </TLink>
           <TLink to="/about">
@@ -156,9 +160,9 @@ export default function Design() {
         <Reveal>
           <h2 className="display">Got a site<br />that deserves better?</h2>
           <div style={{ marginTop: 30 }}>
-            <TLink to="/#contact" className="extlink">
-              Start an enquiry <span className="arrow">→</span>
-            </TLink>
+            <button type="button" className="extlink" onClick={openContact}>
+              Contact me <span className="arrow">→</span>
+            </button>
           </div>
           <div className="mono" style={{ marginTop: 18 }}>
             or email <a href={`mailto:${P.email}`} style={{ color: "var(--accent)" }}>{P.email}</a>

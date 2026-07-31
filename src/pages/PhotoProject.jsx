@@ -1,8 +1,5 @@
 import { useRef, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import { PHOTO_PROJECTS, img, srcSet, ratio, prefersReduced } from "../data.js";
 import { Reveal, TLink, Lightbox } from "../ui.jsx";
@@ -26,7 +23,6 @@ export default function PhotoProject() {
   const [reduced] = useState(prefersReduced);
   const [lb, setLb] = useState(-1); // lightbox index, -1 = closed
   const root = useRef(null);
-  const heroImg = useRef(null);
 
   const i = PHOTO_PROJECTS.findIndex((p) => p.slug === slug);
   const p = PHOTO_PROJECTS[i];
@@ -36,15 +32,9 @@ export default function PhotoProject() {
     if (i === -1) go("/photography");
   }, [i, go]);
 
-  useGSAP(() => {
-    if (reduced || !heroImg.current) return;
-    gsap.set(heroImg.current, { scale: 1.12, transformOrigin: "50% 50%" });
-    gsap.fromTo(heroImg.current, { yPercent: -5 }, {
-      yPercent: 5, ease: "none",
-      scrollTrigger: { trigger: heroImg.current, start: "top bottom", end: "bottom top", scrub: true },
-    });
-    ScrollTrigger.refresh();
-  }, { scope: root, dependencies: [reduced, slug] });
+  /* No parallax on the hero: it worked by scaling the picture to 1.12 and
+     sliding it, which is a zoom, and only reads at all when the frame is
+     cropped. The frame is shown whole now, so both go. */
 
   if (!p) return null;
 
@@ -53,7 +43,7 @@ export default function PhotoProject() {
 
   return (
     <>
-      <motion.main ref={root} id="main" className="detail wrap"
+      <motion.main ref={root} id="main" className="detail detail-pj wrap"
         variants={page} initial="initial" animate="animate">
         <TLink to="/photography" className="mono back">
           <span className="arrow">←</span> All photography
@@ -62,15 +52,17 @@ export default function PhotoProject() {
         <div className="detail-head">
           <div>
             <div className="mono" style={{ marginBottom: 16 }}>
-              {p.kind}{p.year ? ` — ${p.year}` : ""}
+              {p.kind}{p.year ? ` · ${p.year}` : ""}
             </div>
             <h1>{p.t}</h1>
           </div>
           {p.role && <div className="mono" style={{ color: "var(--accent)" }}>{p.role}</div>}
         </div>
 
-        <figure className="pj-hero">
-          <img ref={heroImg} src={img(p.photos[0], 2000, 1125)} srcSet={srcSet(p.photos[0])}
+        {/* the frame carries the photo's own ratio so it hugs the picture
+            instead of parking it in the middle of a black panel */}
+        <figure className="pj-hero" style={{ aspectRatio: ratio(p.photos[0], 16, 9) }}>
+          <img src={img(p.photos[0], 2000, 1125)} srcSet={srcSet(p.photos[0])}
             sizes="(max-width: 1180px) 100vw, 1180px" alt={p.t} />
         </figure>
 
@@ -93,7 +85,7 @@ export default function PhotoProject() {
 
         {/* ---------- grid ---------- */}
         <section className="sec">
-          <div className="mono" style={{ marginBottom: 24 }}>Full set — click any frame</div>
+          <div className="mono" style={{ marginBottom: 24 }}>Full set · click any frame</div>
           <div className="pgrid">
             {p.photos.map((s, n) => (
               <figure key={s + n} onClick={() => setLb(n)}

@@ -1,17 +1,15 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, INTRO, SHEET,
-  PHOTO_PROJECTS, PHOTO_POOL, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed,
+  P, img, srcSet, ratio, INTRO, HERO_FRAMES, METRICS,
+  PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced,
 } from "../data.js";
-import { Reveal, TLink, Lightbox, FigmaFrame, ContactForm } from "../ui.jsx";
+import { Reveal, TLink, FigmaFrame, Metrics } from "../ui.jsx";
 import { useApp } from "../context.js";
-
-/* Three.js is code-split so the hero text (the LCP) paints first. */
-const HeroCanvas = lazy(() => import("../HeroCanvas.jsx"));
+import HeroFrames from "../HeroFrames.jsx";
 
 const page = {
   initial: { opacity: 0 },
@@ -30,12 +28,9 @@ const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
    design work. Everything about the person lives on /about.
    ================================================================== */
 export default function Home() {
-  const { theme } = useApp();
-  const [heroActive, setHeroActive] = useState(true);
+  const { openContact, go } = useApp();
   const [reduced] = useState(prefersReduced);
-  const [heavy] = useState(heavyVisualsAllowed);
   const root = useRef(null);
-  const heroRef = useRef(null);
 
   /* image parallax + hover zoom, owned by GSAP and scoped to this page
      so the ScrollTriggers are torn down when we navigate away. */
@@ -56,76 +51,63 @@ export default function Home() {
     ScrollTrigger.refresh();
   }, { scope: root, dependencies: [reduced] });
 
-  /* pause the hero canvas render loop once it scrolls off-screen */
-  useEffect(() => {
-    const el = heroRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => setHeroActive(e.isIntersecting), { threshold: 0 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
   return (
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
-      {/* masthead */}
-      <header className="mast" id="main" ref={heroRef}>
-        {heavy && (
-          <Suspense fallback={null}>
-            <HeroCanvas accent={theme.accent} active={heroActive} reduced={reduced} />
-          </Suspense>
-        )}
-        <div className="wrap">
-          <div className="mono" style={{ marginBottom: 26 }}>
-            {P.photographer} — {P.role} — {P.city} — Booking 2026
+      {/* masthead — a frame the visitor pulls focus on, carrying only the
+          studio name and one line. Everything that used to crowd it in
+          here now has its own room in .intro-sec below. */}
+      <header className="mast" id="main">
+        {/* the cue reuses the shell's hash scroll, so it lands with the
+            same easing as every other in-page jump on the site */}
+        <HeroFrames frames={HERO_FRAMES} reduced={reduced}
+          onScrollDown={() => go("/#intro")}>
+          <div className="wrap">
+            <div className="mast-copy">
+              <div className="mono" style={{ marginBottom: 22 }}>
+                {P.photographer} · {P.city}
+              </div>
+              <h1 className="display hero-reveal" style={{ "--rd": `${HEADLINE_DELAY}s` }}>
+                {P.name}
+              </h1>
+              <p className="mast-sub hero-reveal" style={{ "--rd": `${HEADLINE_DONE}s` }}>
+                Photographs, and the sites they live on. Made by the same pair of hands.
+              </p>
+            </div>
           </div>
-
-          {/* the studio name carries the masthead; the kicker and the
-              standfirst below it say who is behind it and what he does */}
-          <h1 className="display hero-reveal" style={{ "--rd": `${HEADLINE_DELAY}s` }}>
-            {P.name}
-          </h1>
-          <div className="drawline" style={{ "--line-delay": `${HEADLINE_DONE}s` }} />
-
-          {/* supporting content waits for the headline to finish composing
-              (HEADLINE_DONE) so the primary hero text resolves before the
-              secondary copy and CTAs do, not after */}
-          <p className="standfirst hero-reveal" style={{ "--rd": `${HEADLINE_DONE}s` }}>
-            Two practices, one pair of hands. Photographs made as{" "}
-            <strong>{P.photoBrand}</strong>, and the sites they live on designed
-            and built by the same person.
-            <i> Hire either. Hiring both is the point.</i>
-          </p>
-
-          {/* both doors stated above the fold, so a cold visitor can tell
-              inside three seconds that this is two crafts and not one */}
-          <div className="disciplines hero-reveal" style={{ "--rd": `${HEADLINE_DONE + 0.08}s` }}>
-            {INTRO.does.map((d, i) => (
-              <TLink key={d.to} to={d.to} className="disc">
-                <span className="mono">{String(i + 1).padStart(2, "0")} — {d.k}</span>
-                <strong>{d.brand}</strong>
-                <span className="mono go">Enter <span className="arrow">→</span></span>
-              </TLink>
-            ))}
-          </div>
-
-          <div className="role hero-reveal" style={{ "--rd": `${HEADLINE_DONE + 0.16}s` }}>
-            <span className="mono">Photography · Web design · Booking 2026</span>
-            <span className="mono">Scroll —</span>
-          </div>
-        </div>
+        </HeroFrames>
       </header>
 
-      {/* contact strip */}
-      <div className="strip">
-        <div className="strip-track">
-          {[...SHEET, ...SHEET].map((s, i) => (
-            <figure className="strip-fr" key={i}>
-              <img src={img(s, 400, 264)} srcSet={srcSet(s)}
-                sizes="(max-width: 640px) 160px, 210px" alt="" />
-            </figure>
-          ))}
+      {/* the two practices — stated immediately under the hero, so a cold
+          visitor still learns inside one scroll that this is two crafts */}
+      <section className="intro-sec" id="intro" aria-label="Practices">
+        <div className="wrap">
+          <Reveal>
+            <p className="standfirst">
+              Two practices, one pair of hands. Photographs made as{" "}
+              <strong>{P.photoBrand}</strong>, and the sites they live on designed
+              and built by the same person.
+              <i> Hire either. Hiring both is the point.</i>
+            </p>
+            <div className="drawline" />
+          </Reveal>
+
+          <Reveal delay={0.08}>
+            <div className="disciplines">
+              {INTRO.does.map((d, i) => (
+                <TLink key={d.to} to={d.to} className="disc">
+                  <span className="mono">{String(i + 1).padStart(2, "0")} · {d.k}</span>
+                  <strong>{d.brand}</strong>
+                  <span className="mono go">Enter <span className="arrow">→</span></span>
+                </TLink>
+              ))}
+            </div>
+            <div className="role">
+              <span className="mono">{P.role} · {P.city} · Booking 2026</span>
+              <span className="mono">Scroll</span>
+            </div>
+          </Reveal>
         </div>
-      </div>
+      </section>
 
       {/* photography — one card per collection, opening the gallery view */}
       <PhotoProjects />
@@ -147,7 +129,7 @@ export default function Home() {
                           <div className="browser-bar">
                             <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
                             <span className="browser-url mono">
-                              {w.embed ? `${w.t} — Figma prototype` : `${w.slug}.com`}
+                              {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
                             </span>
                             <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
                           </div>
@@ -155,7 +137,7 @@ export default function Home() {
                             <div className="browser-view">
                               <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
                                 sizes="(max-width: 760px) 100vw, 50vw"
-                                alt={`${w.t} — full page`} loading="lazy" />
+                                alt={`${w.t} full page`} loading="lazy" />
                             </div>
                           ) : w.embed && w.href ? (
                             <FigmaFrame w={w} />
@@ -188,7 +170,7 @@ export default function Home() {
                 <span className="mono">Reserved</span>
                 <h3>The design work is on its way.</h3>
                 <p>
-                  This space is held for the design &amp; build side — identities,
+                  This space is held for the design &amp; build side: identities,
                   layouts and shipped sites. Projects appear here as they are
                   published.
                 </p>
@@ -201,15 +183,46 @@ export default function Home() {
         </div>
       </section>
 
+      {/* what a client walks away with — moved here from /about, which is
+          about the person; this is the sales argument, so it belongs
+          alongside the work it's arguing for */}
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">What you get</div>
+          <div className="get-grid">
+            {INTRO.offer.map((o, i) => (
+              <Reveal className="get-card" key={o.k} delay={i * 0.06}>
+                <span className="get-num">{String(i + 1).padStart(2, "0")}</span>
+                <h3>{o.k}</h3>
+                <p>{o.v}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">The numbers</div>
+          <div>
+            <Metrics items={METRICS} />
+          </div>
+        </div>
+      </section>
+
       {/* end */}
       <section className="end" id="contact">
         <div className="wrap">
           <Reveal>
             <h2 className="display">Bring me<br />the difficult one.</h2>
             <p className="standfirst" style={{ marginTop: 20 }}>
-              Tell me about the shoot, the site, or both — a few lines is enough to start.
+              Tell me about the shoot, the site, or both. A few lines is enough to start.
             </p>
-            <ContactForm email={P.email} />
+            <div style={{ marginTop: 30 }}>
+              <button type="button" className="extlink" onClick={openContact}>
+                Contact me <span className="arrow">→</span>
+              </button>
+            </div>
             <div className="mono" style={{ marginTop: 20 }}>
               Prefer email? <a href={`mailto:${P.email}`} style={{ color: "var(--accent)" }}>{P.email}</a>
               {" · "}{P.phone} · {P.city}, {P.region}
@@ -235,7 +248,7 @@ export default function Home() {
                 {P.socials.map((s) => (
                   <span key={s.href} style={{ display: "block" }}>
                     <a href={s.href} target="_blank" rel="noreferrer">
-                      {s.k} — {s.v}
+                      {s.k} · {s.v}
                     </a>
                   </span>
                 ))}
@@ -246,7 +259,7 @@ export default function Home() {
           <hr className="rule" style={{ marginTop: 44 }} />
           <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, paddingTop: 18 }}>
             <span className="mono">© 2026 {P.name}</span>
-            <span className="mono">{P.city}, {P.region} — Booking 2026</span>
+            <span className="mono">{P.city}, {P.region} · Booking 2026</span>
           </div>
         </div>
       </section>
@@ -256,13 +269,11 @@ export default function Home() {
 
 /* ==================================================================
    PHOTOGRAPHY — one card per collection (wildlife / traditional / …),
-   each opening its full gallery at /photography/:slug. The frames are
-   the content; the card just names the set and its size.
+   each opening its full gallery at /photography/:slug. The card just
+   names the set and its size; the frames themselves live on the
+   collection page rather than being previewed here.
    ================================================================== */
 function PhotoProjects() {
-  const [lb, setLb] = useState(-1); // lightbox index into PHOTO_POOL, -1 = closed
-  const [reduced] = useState(prefersReduced);
-
   return (
     <section className="gwork" id="gallery" aria-label="Photography">
       <div className="wrap">
@@ -291,33 +302,7 @@ function PhotoProjects() {
             </Reveal>
           ))}
         </div>
-
-        {/* selected frames — a mix from every collection, click to enlarge */}
-        {PHOTO_POOL.length > 0 && (
-          <>
-            <div className="mono gwork-sub">Selected frames</div>
-            <div className="pgrid">
-              {PHOTO_POOL.map((s, n) => (
-                <figure key={s + n} onClick={() => setLb(n)}
-                  role="button" tabIndex={0} aria-label={`Preview photo ${n + 1}`}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLb(n); } }}>
-                  <span className="idx mono">{String(n + 1).padStart(2, "0")}</span>
-                  <img src={img(s, 640)} srcSet={srcSet(s)}
-                    sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
-                    alt="" loading="lazy" style={{ aspectRatio: ratio(s, 3, 4) }} />
-                </figure>
-              ))}
-            </div>
-          </>
-        )}
       </div>
-
-      <AnimatePresence>
-        {lb > -1 && (
-          <Lightbox photos={PHOTO_POOL} title="Selected frames"
-            index={lb} setIndex={setLb} reduced={reduced} single />
-        )}
-      </AnimatePresence>
     </section>
   );
 }

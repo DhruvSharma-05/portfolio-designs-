@@ -14,16 +14,24 @@ export const prefersReduced = () =>
   typeof matchMedia !== "undefined" &&
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/* Gate for the two three.js-backed effects (HeroCanvas, DistortImage) —
-   checked BEFORE the lazy import() is triggered, not after, so touch
-   devices, reduced-motion, and narrow viewports never fetch the chunk
-   (881KB/234KB gzip, the single largest chunk in the app) at all, rather
-   than fetching it and then declining to render. */
+/* Should we load the three.js chunk at all? Checked BEFORE the lazy
+   import() is triggered, so phones never fetch the largest chunk in the
+   app just to decline to use it.
+
+   Width only, deliberately. This used to test the pointer as well, first
+   `pointer: fine` and then `any-pointer: fine`, and both proved
+   unreliable: `pointer` describes the *primary* input, so a laptop with
+   a touchscreen reports coarse even with a mouse attached, and the whole
+   effect vanished on ordinary desktops with no way for the visitor to
+   tell why. Screen width is the thing we actually care about, and it
+   can't misreport.
+
+   Motion preference is NOT tested here — that is each effect's business:
+   the sphere renders a still frame, DistortImage falls back to the plain
+   photograph. Deciding it centrally meant "respect the preference" and
+   "show nothing at all" were the same code path. */
 export const heavyVisualsAllowed = () =>
-  typeof matchMedia !== "undefined" &&
-  matchMedia("(pointer: fine)").matches &&
-  !matchMedia("(prefers-reduced-motion: reduce)").matches &&
-  matchMedia("(min-width: 768px)").matches;
+  typeof matchMedia !== "undefined" && matchMedia("(min-width: 900px)").matches;
 
 export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
@@ -56,10 +64,10 @@ export const P = {
 export const INTRO = {
   lead: "Engineering taught him how things work. Design and photography taught him how they feel.",
   body: [
-    "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling — designing intuitive digital products and capturing moments through photography.",
-    "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws and ships the sites and apps those pictures end up on — so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
+    "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling, designing intuitive digital products and capturing moments through photography.",
+    "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws and ships the sites and apps those pictures end up on, so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
   ],
-  /* the two doors, mirrored in the hero strip */
+  /* the two doors — the practice cards under the home hero */
   does: [
     {
       k: "Photography",
@@ -71,13 +79,13 @@ export const INTRO = {
       k: "Web design & build",
       brand: "Design & Build",
       to: "/design",
-      v: "Apps and sites designed and shipped end to end — UI/UX through to a live, fast, editable page.",
+      v: "Apps and sites designed and shipped end to end, from UI/UX through to a live, fast, editable page.",
     },
   ],
   /* what a client actually walks away with */
   offer: [
     { k: "A finished set", v: "Graded, consistent, delivered in web and print sizes. Not a folder of raws." },
-    { k: "A site that ships", v: "Designed, built and deployed — not a mockup you then have to find a developer for." },
+    { k: "A site that ships", v: "Designed, built and deployed. Not a mockup you then have to find a developer for." },
     { k: "One point of contact", v: "The person who shot it is the person who built it. No handover, no translation loss." },
     { k: "Something you can edit", v: "You leave with the source file and a way to change the words yourself." },
   ],
@@ -147,7 +155,7 @@ export const THEME = { ...BASE, accent: "#E4E4E7" };
 
 const FRAMES_FALLBACK = [
   { seed: "pf-01", t: "Selected Work 01", loc: "Location, XX", exif: "35mm · f/8 · 1/500", kind: "Photography",
-    note: "Short description of the project. Replace with your own — what it was, why it mattered, what shipped.",
+    note: "Short description of the project. Replace with your own: what it was, why it mattered, what shipped.",
     year: "2025", role: "Photography · Grade" },
   { seed: "pf-02", t: "Selected Work 02", loc: "Location, XX", exif: "50mm · f/1.4 · 1/60", kind: "Photography",
     note: "One line about the shoot and the outcome. Keep it plain; let the picture carry the weight.",
@@ -163,20 +171,10 @@ const FRAMES_FALLBACK = [
     year: "2023", role: "Editorial · React" },
 ];
 
-const SHEET_FALLBACK = ["pf-c1", "pf-c2", "pf-c3", "pf-c4", "pf-c5", "pf-c6"];
-
-/* Prefer real synced photos; fall back to placeholders when the
-   manifest is empty. FRAMES drives the work cards + /work/:seed pages;
-   SHEET drives the contact strip + horizontal gallery — it prefers the
-   gallery bucket, then falls back to the pool of project photos (so the
-   strip still fills once photos live under collections rather than the
-   gallery bucket), then to placeholders. */
+/* Prefer real synced photos; fall back to placeholders when the manifest
+   is empty. FRAMES drives the work cards + /work/:seed pages. (SHEET,
+   which fed the marquee strip, went with it when the strip was removed.) */
 export const FRAMES = manifest.work?.length ? manifest.work : FRAMES_FALLBACK;
-export const SHEET = manifest.gallery?.length
-  ? manifest.gallery.map((p) => p.seed)
-  : manifest.projectPhotos?.length
-    ? manifest.projectPhotos.map((p) => p.seed)
-    : SHEET_FALLBACK;
 
 /* The old captioned "Gallery" grid (category tabs) was replaced by the
    per-collection photography cards — see PHOTO_PROJECTS below and
@@ -193,7 +191,7 @@ export const HAS_REAL_WEB = true;
 
    FEATURED drives the hero slideshow; PHOTO_PROJECTS drives the sticky
    stack below it and every project page. Each project owns its own set
-   of frames, so a project page can show a grid + a carousel roll.
+   of frames, so a project page can show a grid and a lightbox.
 
    PLACEHOLDER CONTENT — swap titles, notes and seeds for the real
    shoots. Seeds resolve through img(): a synced photo if the Drive
@@ -211,7 +209,7 @@ const PHOTO_PROJECTS_FALLBACK = [
     year: "2025",
     exif: "35mm · f/1.8 · 1/125",
     role: "Photography · Grade",
-    note: "A night series shot entirely on available light. Replace this with the real brief — who it was for and what the pictures had to carry.",
+    note: "A night series shot entirely on available light. Replace this with the real brief: who it was for and what the pictures had to carry.",
     intro: "Two nights, one lens, no flash. The city did the lighting.",
     photos: photoSeeds("after-hours", 9),
   },
@@ -248,7 +246,7 @@ const PHOTO_PROJECTS_FALLBACK = [
     exif: "50mm · f/1.4 · 1/60",
     role: "Event · Documentary",
     note: "A full-day event covered documentary-style. Describe the day and what the client used the set for.",
-    intro: "Documentary coverage — nobody looked at the camera on purpose.",
+    intro: "Documentary coverage. Nobody looked at the camera on purpose.",
     photos: photoSeeds("the-long-table", 8),
   },
 ];
@@ -273,6 +271,65 @@ function withSyncedPhotos(projects) {
 export const PHOTO_PROJECTS = manifest.photoProjects?.length
   ? manifest.photoProjects
   : withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
+
+/* The home hero is a wide, full-bleed frame, so a portrait photo would be
+   cropped down to a vertical sliver of itself — landscape only. */
+const isLandscape = (seed) => {
+  const p = PHOTOS.get(seed);
+  return !!(p?.w && p?.h && p.w > p.h);
+};
+
+/* projectCover(p): the frame to put in a card.
+
+   Cards frame their cover in a fixed landscape box so every card in the
+   stack is the same size — otherwise each one inherits its cover photo's
+   native ratio and a portrait opening frame turns into an ~870px-tall
+   card next to a ~330px landscape one. Given a fixed box, prefer a
+   landscape frame from the collection: a portrait cropped to 4:3 is a
+   sliver of itself. photos[0] stays the project's opening frame
+   everywhere it's shown whole (the detail hero, the grid). */
+export const projectCover = (p) =>
+  (p.photos || []).find(isLandscape) || p.photos?.[0];
+
+/* A hand-picked run rather than one frame per collection: two wildlife,
+   one modern, one traditional, interleaved so no two neighbours come
+   from the same set. `seed` names a specific picture where the choice
+   matters; without one, the next unused landscape frame in that
+   collection is taken, so repeats never show the same photo twice. */
+const HERO_RECIPE = [
+  { slug: "wildlife", seed: "wildlife-bighorn" },
+  { slug: "modern" },
+  { slug: "wildlife", seed: "wildlife-cheetah" },
+  { slug: "traditional" },
+];
+
+const heroByRecipe = (() => {
+  const taken = new Set();
+  return HERO_RECIPE.map(({ slug, seed }) => {
+    const proj = PHOTO_PROJECTS.find((p) => p.slug === slug);
+    if (!proj) return null;
+    const pool = (proj.photos || []).filter((s) => isLandscape(s) && !taken.has(s));
+    // a named seed that has gone from the collection falls back to the pool
+    const pick = (seed && pool.includes(seed) && seed) || pool[0];
+    if (!pick) return null;
+    taken.add(pick);
+    return { seed: pick, t: proj.t, slug: proj.slug, kind: proj.kind };
+  }).filter(Boolean);
+})();
+
+/* A fresh clone with no synced photos runs on the placeholder projects,
+   whose slugs the recipe knows nothing about — fall back to one opening
+   frame per collection there so the hero still has something to show. */
+export const HERO_FRAMES = heroByRecipe.length
+  ? heroByRecipe
+  : PHOTO_PROJECTS
+    .map((p) => ({
+      seed: (p.photos || []).find(isLandscape) || p.photos?.[0],
+      t: p.t,
+      slug: p.slug,
+      kind: p.kind,
+    }))
+    .filter((f) => f.seed);
 
 /* Hero slideshow: the opening frame of each project, so the hero doubles
    as a table of contents. */
@@ -317,7 +374,7 @@ const WEB_PROJECTS_FALLBACK = [
     tag: "Product design · Prototype",
     year: "",
     role: "UX/UI · Interactive prototype",
-    intro: "An interactive Figma prototype — click through the full product flow.",
+    intro: "An interactive Figma prototype. Click through the full product flow.",
     note: "Add the real brief here: what TrackHer is, who it's for, the problem it solves, and your role on the team.",
     tool: "Figma",
     href: "https://www.figma.com/proto/8OtvqxlfWmw36HoDlRMTMa/Final-Presentation---Prototype?node-id=2-1928&page-id=0%3A1&starting-point-node-id=2%3A1917",
@@ -337,7 +394,7 @@ const WEB_PROJECTS_FALLBACK = [
     tag: "Product design · Prototype",
     year: "",
     role: "UX/UI · Interactive prototype",
-    intro: "An interactive Figma prototype — click through the full product flow.",
+    intro: "An interactive Figma prototype. Click through the full product flow.",
     note: "Add the real brief here: what WingWise is, who it's for, and your role on Team Yuva.",
     tool: "Figma",
     href: "https://www.figma.com/proto/5ucSXSWGvoeBuQraNImByn/Team-Yuva?node-id=3280-10661&page-id=1408%3A17032&starting-point-node-id=3280%3A10661",
@@ -357,7 +414,7 @@ const WEB_PROJECTS_FALLBACK = [
     tag: "Product design · Prototype",
     year: "",
     role: "UX/UI · Interactive prototype",
-    intro: "An interactive Figma prototype — click through the full product flow.",
+    intro: "An interactive Figma prototype. Click through the full product flow.",
     note: "Add the real brief here: what MOMents is, who it's for, and your role on team Spark.",
     tool: "Figma",
     href: "https://www.figma.com/proto/I4AYMtK2LPSuUrbMnd8vy9/MOMents-by-team-Spark?node-id=1909-5686&page-id=1902%3A3830&starting-point-node-id=1909%3A5686",
@@ -377,7 +434,7 @@ const WEB_PROJECTS_FALLBACK = [
     tag: "Product design · Prototype",
     year: "",
     role: "UX/UI · Interactive prototype",
-    intro: "An interactive Figma prototype — click through the full product flow.",
+    intro: "An interactive Figma prototype. Click through the full product flow.",
     note: "Add the real brief here: what ArtAsta is, who it's for, and your role on the project.",
     tool: "Figma",
     href: "https://www.figma.com/proto/XDD143AWWhkegVelp4z8sC/Art-Asta-Design?node-id=10153-950&page-id=1%3A43&starting-point-node-id=10490%3A3702&scaling=scale-down&content-scaling=fixed",
@@ -413,12 +470,6 @@ export const METRICS = [
   { v: 4, s: "wks", k: "Shoot to live site" },
 ];
 
-export const QUOTES = [
-  { q: "A short, specific line about the work. Replace with a real quote once you have one.", a: "Client Name", r: "Role, Company" },
-  { q: "Another testimonial goes here. Two sentences at most — the shorter, the better.", a: "Client Name", r: "Role, Company" },
-  { q: "One more placeholder quote. Swap these three out and delete the rest.", a: "Client Name", r: "Role, Company" },
-];
-
 export const SHOTLIST = [
   { k: "Editorial & campaign", v: "Shoot, select, grade, deliver. Usually two weeks." },
   { k: "Events & nightlife", v: "Available light. No flash unless you ask twice." },
@@ -431,20 +482,20 @@ export const SHOTLIST = [
 /* Viraj's real bio — condensed from his own words. */
 export const ABOUT = {
   portrait: manifest.portrait?.seed ?? "pf-about",
-  lead: "I create meaningful visual experiences — digital products designed with intent, and moments captured through a lens.",
+  lead: "I create meaningful visual experiences: digital products designed with intent, and moments captured through a lens.",
   body: [
-    "My creative journey started with technology. While studying Computer Science Engineering I built a foundation in programming and problem-solving, working as a developer and building solutions through code. But I kept being drawn to the creative side of technology — not just how things work, but how they look, feel and connect with people. That curiosity led me into UI/UX design, and to designing applications and websites that pair functionality with meaningful experiences.",
-    "Photography has run alongside all of it. In 2014 I held my first point-and-shoot camera, and what started as simple curiosity grew into a passion for visual storytelling. In 2018 I bought my first DSLR and went deeper — eventually sharing what I'd learned by teaching others, and leading a photography group in college: organising shoots, collaborating with fellow creators, and helping people find their own perspective.",
-    "Today, based in Vancouver, I bring engineering, design and photography together — creating digital experiences and capturing visual stories that connect technology with human emotion.",
+    "My creative journey started with technology. While studying Computer Science Engineering I built a foundation in programming and problem-solving, working as a developer and building solutions through code. But I kept being drawn to the creative side of technology: not just how things work, but how they look, feel and connect with people. That curiosity led me into UI/UX design, and to designing applications and websites that pair functionality with meaningful experiences.",
+    "Photography has run alongside all of it. In 2014 I held my first point-and-shoot camera, and what started as simple curiosity grew into a passion for visual storytelling. In 2018 I bought my first DSLR and went deeper, eventually sharing what I'd learned by teaching others, and leading a photography group in college: organising shoots, collaborating with fellow creators, and helping people find their own perspective.",
+    "Today, based in Vancouver, I bring engineering, design and photography together, creating digital experiences and capturing visual stories that connect technology with human emotion.",
   ],
   approach: [
-    { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs — analytical where it helps, intuitive where it matters." },
+    { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs: analytical where it helps, intuitive where it matters." },
     { k: "One pair of hands", v: "Shot, designed and built by the same person, so nothing gets lost in a handover." },
     { k: "Technology with emotion", v: "Products people can use without thinking; pictures people feel before they think." },
   ],
   timeline: [
     { y: "2014", t: "First point-and-shoot camera. Curiosity becomes a habit." },
-    { y: "2018", t: "First DSLR. Photography turns serious — and he starts teaching it." },
+    { y: "2018", t: "First DSLR. Photography turns serious, and he starts teaching it." },
     { y: "2019", t: "Leads the college photography group: shoots, collabs, mentoring." },
     { y: "2026", t: "Vancouver. Designing digital products, shooting as Lensofviraj." },
   ],
@@ -457,7 +508,12 @@ export const CSS = `
 .pf { background: var(--bg); color: var(--ink);
   font-family: 'Inter', system-ui, sans-serif; font-weight: 400;
   -webkit-font-smoothing: antialiased; letter-spacing: -0.01em;
-  transition: color .5s ease; overflow-x: hidden; position: relative; min-height: 100vh; }
+  transition: color .5s ease; position: relative; min-height: 100vh;
+  /* clip, not hidden: hidden would compute overflow-y to auto and turn
+     .pf into a scroll container, which silently kills every position:sticky
+     inside it (the bar, .card, .sec-label). clip contains the same
+     horizontal overflow without creating a scrollport. */
+  overflow-x: clip; }
 .pf a { color: inherit; text-decoration: none; }
 .pf button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 .pf img { display: block; width: 100%; height: 100%; object-fit: cover;
@@ -493,20 +549,33 @@ export const CSS = `
 .rv { will-change: opacity, transform; }
 
 /* --- bar --- */
-/* Hides while reading down, returns the moment you scroll up (driven
-   from App.jsx) — so the page is uninterrupted, but navigation is one
-   flick away from anywhere, including the bottom. */
+/* Always on screen — it never hides on scroll, on any route, so navigation
+   is one click away from anywhere including the bottom of a long gallery.
+   Sticky (not fixed) so it keeps its place in flow and needs no spacer;
+   this relies on .pf using overflow-x: clip rather than hidden. */
 .bar { position: sticky; top: 0; z-index: 80;
   background: color-mix(in srgb, var(--bg) 80%, transparent);
   backdrop-filter: blur(16px); border-bottom: 1px solid var(--rule);
-  transition: transform .42s cubic-bezier(.2,.8,.2,1); }
-.bar.hide { transform: translateY(-101%); }
+  transform: none !important; }
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
-/* sits where the accent switcher used to be */
-.barmeta { text-align: right; }
-@media (max-width: 860px) { .barmeta { display: none; } }
+/* the masthead CTA — the one way into the enquiry form from anywhere on
+   the site. Reads as a text link like the rest of the nav (no pill, no
+   fill), just marked out as the action by a small accent dot + accent
+   ink and the same underline-on-hover the nav links use. */
+.pf .barcta { flex: 0 0 auto; position: relative; display: inline-flex; align-items: center;
+  gap: 8px; padding: 0; border: 0; background: none; color: var(--accent);
+  white-space: nowrap; transition: opacity .3s ease; }
+.pf .barcta::before { content: ""; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent); flex: 0 0 auto;
+  transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+/* underline sweeps in under just the text (offset past the dot + gap) */
+.pf .barcta::after { content: ""; position: absolute; left: 13px; right: 0; bottom: -4px;
+  height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: right;
+  transition: transform .35s cubic-bezier(.76,0,.24,1); }
+.pf .barcta:hover::after { transform: scaleX(1); transform-origin: left; }
+.pf .barcta:hover::before { transform: scale(1.3); }
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
@@ -528,69 +597,137 @@ export const CSS = `
 .pf .totop:hover .arrow { transform: translateY(-3px); }
 @media (max-width: 640px) { .pf .totop { width: 44px; height: 44px; right: 16px; bottom: 16px; } }
 
-/* --- masthead --- */
-.mast { padding: 13vh 0 9vh; position: relative; }
-.mast .wrap { position: relative; z-index: 1; }
-.hero-canvas { position: absolute !important; inset: 0; z-index: 0;
-  pointer-events: none;
-  -webkit-mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%);
-          mask-image: radial-gradient(120% 90% at 50% 42%, #000 30%, transparent 78%); }
+/* --- masthead: the frame hero (HeroFrames.jsx) ---
+   One full screen: the sticky bar sits above it in flow, so subtract its
+   height rather than using a bare 100svh that would push the hero's foot
+   below the fold. svh, not vh, so mobile browser chrome doesn't overshoot. */
+.mast { position: relative; overflow: hidden; display: flex;
+  min-height: calc(100svh - 64px);
+  /* how soft the picture sits behind the copy — one dial, tune here */
+  --hero-soften: 3px; }
+.mast .wrap { position: relative; z-index: 3; width: 100%; }
+.mast-stage { position: relative; flex: 1; min-width: 0;
+  display: flex; align-items: center; }
+.mast-frames { position: absolute; inset: 0; z-index: 0; }
+/* the long cross-fade is the whole transition — two frames overlap for
+   well over a second, so nothing ever cuts */
+.mast-frame { position: absolute; inset: 0; opacity: 0;
+  transition: opacity 1.1s cubic-bezier(.4, 0, .2, 1); }
+.mast-frame.on { opacity: 1; }
+/* Overscale hides the soft edge the blur leaves at the frame border, and
+   the drift keeps a held shot from reading as a stalled page. It runs on
+   every frame, not just the visible one — tying it to .on would snap the
+   outgoing frame back to its start mid-fade. */
+.mast-frame img { width: 100%; height: 100%; object-fit: cover;
+  object-position: 50% 42%; transform: scale(1.03);
+  filter: blur(var(--hero-soften)) saturate(.94) brightness(.78);
+  /* transition:none so .pf img's transform tween doesn't fight the drift */
+  transition: none;
+  animation: heroDrift 24s ease-in-out infinite alternate; }
+@keyframes heroDrift { to { transform: scale(1.08); } }
+.mast-scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(100deg,
+    color-mix(in srgb, var(--bg) 84%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 40%, transparent) 48%,
+    color-mix(in srgb, var(--bg) 70%, transparent) 100%); }
+
+/* Scroll cue — the only thing in the hero you can act on, parked in the
+   bottom-right corner the frame counter used to hold. .pf-scoped so its
+   colour beats .mono's var(--dim). */
+.pf .mast-scroll { position: absolute; z-index: 3;
+  right: clamp(18px, 4vw, 46px); bottom: clamp(22px, 4vw, 40px);
+  display: inline-flex; align-items: center; gap: 10px; padding: 8px 6px;
+  color: color-mix(in srgb, var(--ink) 62%, transparent);
+  transition: color .3s ease; }
+.pf .mast-scroll:hover { color: var(--accent); }
+.mast-arrow { display: inline-block; font-size: 13px;
+  animation: scrollNudge 2.4s cubic-bezier(.4, 0, .2, 1) infinite; }
+@keyframes scrollNudge {
+  0%, 100% { transform: translateY(0); opacity: .55; }
+  50% { transform: translateY(5px); opacity: 1; }
+}
+
 .display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
   font-size: clamp(44px, 10.5vw, 140px); text-wrap: balance;
   overflow-wrap: break-word; max-width: 100%; }
-.mast .drawline { height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left;
-  margin-top: 40px; animation: draw 1.1s var(--line-delay, 1.5s) cubic-bezier(.76,0,.24,1) forwards; }
-@keyframes draw { to { transform: scaleX(1); } }
+.mast .display { text-shadow: 0 4px 44px color-mix(in srgb, var(--bg) 82%, transparent); }
+/* No ch-based cap here: ch resolves against this box's 16px font, not the
+   140px headline inside it, so 22ch squeezed the h1 into ~180px — and
+   .display's overflow-wrap then broke words mid-syllable (Cra/fte/d).
+   The headline wraps on the 1180px .wrap instead, which sets its rhythm. */
+.mast-copy { max-width: 100%; }
+.mast-sub { margin-top: 22px; max-width: 34ch; font-weight: 300;
+  letter-spacing: -0.015em; line-height: 1.45; font-size: clamp(15px, 1.7vw, 20px);
+  color: color-mix(in srgb, var(--ink) 78%, transparent); }
+/* the bar wraps to two rows below 720px, so it eats more of the screen */
+@media (max-width: 720px) { .mast { min-height: calc(100svh - 96px); } }
+@media (max-width: 640px) {
+  .pf .mast-scroll { right: 16px; bottom: 20px; }
+}
+
 /* standfirst / disciplines / role: fade+rise in after the headline
    resolves (--rd, set inline per element), so the primary hero text
    settles before the supporting copy and CTAs do. */
 .hero-reveal { opacity: 0; transform: translateY(14px);
   animation: heroUp .6s cubic-bezier(.16,1,.3,1) var(--rd, 0s) forwards; }
 @keyframes heroUp { to { opacity: 1; transform: none; } }
-.mast .role { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
-  margin-top: 18px; }
 
-/* --- contact strip (marquee) --- */
-.strip { overflow: hidden; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-          mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-.strip-track { display: flex; gap: 10px; padding: 14px 0; width: max-content;
-  animation: roll 48s linear infinite; }
-.strip:hover .strip-track { animation-play-state: paused; }
-.strip-fr { flex: 0 0 auto; width: 210px; height: 210px; overflow: hidden; border-radius: 2px; }
-@media (max-width: 640px) { .strip-fr { width: 160px; height: 160px; } }
-@keyframes roll { to { transform: translateX(-50%); } }
+/* --- the two practices, moved out of the hero and given their own room --- */
+.intro-sec { padding: 12vh 0 2vh; }
+.intro-sec .role { display: flex; justify-content: space-between; gap: 20px;
+  flex-wrap: wrap; margin-top: 34px; }
+.intro-sec .drawline { height: 1px; background: var(--accent); transform: scaleX(0);
+  transform-origin: left; margin-top: 40px;
+  animation: draw 1.1s cubic-bezier(.76,0,.24,1) forwards; }
+@keyframes draw { to { transform: scaleX(1); } }
 
-/* --- thesis --- */
-.thesis-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 56px; align-items: end; }
-@media (max-width: 860px) { .thesis-grid { grid-template-columns: 1fr; align-items: start; gap: 32px; } }
-.lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(24px, 3.6vw, 44px);
-  line-height: 1.22; max-width: 22ch; }
-.lead i { font-style: normal; color: var(--accent); }
-.aside { max-width: 400px; color: var(--dim); line-height: 1.72; font-size: 15px; }
-.aside p + p { margin-top: 16px; }
-
-/* --- work: sticky stacking cards --- */
-.stack { padding-bottom: 18vh; }
-.card { position: sticky; top: 92px; background: var(--panel); border: 1px solid var(--rule);
-  border-radius: 4px; margin-bottom: 24px; overflow: hidden;
-  transition: border-color .4s ease; }
+/* --- photography: one card per project --- */
+.stack { padding-bottom: 18vh; display: flex; flex-direction: column; gap: 34px; }
+/* These were sticky, which piled the projects up on top of each other as
+   you scrolled. Plain flow instead: one project after another, each read
+   on its own. */
+.card { position: relative; background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 4px; overflow: hidden; transition: border-color .4s ease; }
 .card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
-.card-in { display: grid; grid-template-columns: 1.25fr 1fr; }
-@media (max-width: 860px) { .card-in { grid-template-columns: 1fr; } .card { top: 72px; } }
-.shot { position: relative; overflow: hidden; aspect-ratio: 4/3; display: block; }
-.shot img { transition: filter .6s ease; will-change: transform; }
+/* align-items: stretch is the default, but it's load-bearing here: the
+   caption column matches the cover's height rather than the other way
+   round, so the card's height comes from one fixed ratio. */
+.card-in { display: grid; grid-template-columns: 1.15fr 1fr; }
+@media (max-width: 860px) {
+  .card-in { grid-template-columns: 1fr; }
+  .stack { gap: 26px; }
+}
+/* 3/2 and fixed. The ratio used to be set inline per card from the cover
+   photo's own dimensions, which made every card a different height — a
+   portrait cover ran to ~870px against a landscape's ~330px, and the
+   stack had no rhythm at all. One ratio for every card instead, so the
+   covers line up down the page; projectCover() picks a landscape frame
+   so the fixed box crops as little as possible. */
+.shot { position: relative; overflow: hidden; aspect-ratio: 3/2; display: block; }
+/* the cover is a crop, so bias it above centre — horizons and faces sit
+   in the upper half far more often than the lower */
+.shot img { object-position: 50% 42%;
+  transition: filter .6s ease; will-change: transform; }
 /* WebGL distortion layer: the real photo sits underneath, the canvas on
    top — if WebGL/texture fails, the canvas is transparent and the photo
    shows through. */
 .shot .distort-fallback { position: absolute; inset: 0; }
-.shot .distort-canvas { position: absolute !important; inset: 0; display: block; }
+/* the canvas takes the same grade as .pf img — a WebGL layer gets none of
+   the site-wide filter otherwise, and the card would sit brighter than
+   every other photo on the page */
+.shot .distort-canvas { position: absolute !important; inset: 0; display: block;
+  filter: var(--filter); }
 .shot .open { position: absolute; right: 14px; bottom: 14px; z-index: 2;
   background: color-mix(in srgb, var(--bg) 55%, transparent); color: var(--ink);
   backdrop-filter: blur(8px); border: 1px solid var(--rule); border-radius: 100px;
   padding: 7px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
   letter-spacing: .14em; text-transform: uppercase; }
 .cap { padding: 34px 32px; display: flex; flex-direction: column; justify-content: space-between; gap: 26px; }
+/* The copy used to sit hard against the top of a 400px column with the
+   meta pinned to the bottom, leaving a hollow band between them. Auto
+   margins centre the copy in whatever space is left over; the meta keeps
+   its place on the bottom rule. */
+.cap > :first-child { margin-block: auto; }
 .cap .kind { display: inline-block; border: 1px solid var(--rule); border-radius: 100px;
   padding: 4px 12px; margin-bottom: 18px; }
 .cap h2 { font-weight: 400; letter-spacing: -0.03em; font-size: clamp(24px, 3vw, 38px); line-height: 1.05; }
@@ -609,7 +746,7 @@ export const CSS = `
 .logo-mark { height: 34px; width: auto; aspect-ratio: 13113 / 11894; color: var(--ink);
   overflow: visible; transition: transform .5s cubic-bezier(.2,.8,.2,1), color .3s ease;
   transform-origin: 50% 50%; }
-.logo-mark path { fill: currentColor; stroke: currentColor; stroke-width: 220;
+.logo-mark path { fill: currentColor; fill-rule: evenodd; stroke: currentColor; stroke-width: 220;
   stroke-dasharray: 1; stroke-dashoffset: 1; fill-opacity: 0;
   animation: logoDraw 1.4s cubic-bezier(.4,0,.2,1) .2s forwards,
              logoFill .7s ease 1.2s forwards; }
@@ -637,16 +774,6 @@ export const CSS = `
 .gwork { padding: 12vh 0; border-top: 1px solid var(--rule); }
 .gwork-head { display: flex; justify-content: space-between; align-items: center;
   gap: 18px 28px; flex-wrap: wrap; margin-bottom: 36px; }
-.gtabs { display: flex; gap: 8px; flex-wrap: wrap; }
-.gtab { border: 1px solid var(--rule); border-radius: 100px; padding: 8px 16px;
-  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--dim);
-  transition: border-color .3s ease, color .3s ease, background-color .3s ease; }
-.gtab:hover { border-color: var(--accent); color: var(--accent); }
-.gtab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-.gempty { padding: 9vh 24px; text-align: center; border: 1px dashed var(--rule);
-  border-radius: 6px; }
-
 /* --- home: photography collection cards ---
    One framed cover per collection; opens the full gallery at
    /photography/:slug. Mirrors the site's card idiom (accent hover, the
@@ -679,10 +806,6 @@ export const CSS = `
   transition: color .3s; }
 .projcard:hover .projcap h3 { color: var(--accent); }
 .projcap .mono { flex: 0 0 auto; color: var(--dim); }
-/* label above the pooled "selected frames" grid on the home page */
-.gwork-sub { margin: 48px 0 20px; color: var(--dim);
-  padding-top: 26px; border-top: 1px solid var(--rule); }
-
 /* --- reserved room (design work not published yet) --- */
 .reserved { border: 1px dashed var(--rule); border-radius: 6px; padding: 8vh 36px;
   display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -712,41 +835,30 @@ export const CSS = `
 .metric b .suf { display: inline-block; margin-top: 0; will-change: transform, opacity; }
 
 /* --- services / shot list ---
-   Hover sweeps the current accent across the whole row and flips the
-   text to the page background — so the row reads as a solid block in
-   whichever colour the visitor picked in the bar. The fill wipes in
-   from the left and out to the right (transform-origin swaps on
-   hover), and bleeds 18px past the text so nothing sits flush to the
-   edge. Children are lifted above it with z-index. */
-.sl-row { position: relative; display: grid; grid-template-columns: 42px 1fr 1.1fr;
+   No entrance animation: the rows are simply there. The only motion in
+   the block is the hover, and it stays small — the row lifts a few
+   pixels and its rule and number brighten. The old version swept a
+   solid accent fill across and inverted the text, which was far more
+   than a list of four steps needs. */
+.sl-row { display: grid; grid-template-columns: 42px 1fr 1.1fr;
   gap: 20px; align-items: baseline; padding: 22px 0;
   border-bottom: 1px solid var(--rule);
-  transition: padding-left .35s cubic-bezier(.2,.8,.2,1); }
-.sl-row::before { content: ""; position: absolute; inset: 0 -18px; z-index: 0;
-  background: var(--accent); border-radius: 3px; transform: scaleX(0);
-  transform-origin: right; transition: transform .55s cubic-bezier(.76,0,.24,1); }
-.sl-row:hover::before { transform: scaleX(1); transform-origin: left; }
-.sl-row > * { position: relative; z-index: 1; }
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s ease; }
 .sl-row:first-child { border-top: 1px solid var(--rule); }
-.sl-row:hover { padding-left: 10px; }
+.sl-row:hover { transform: translateY(-4px);
+  border-bottom-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
 .sl-row h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(18px, 2.1vw, 25px);
-  transition: color .35s ease .06s; }
-.sl-row p { color: var(--dim); font-size: 14.5px; line-height: 1.58;
-  transition: color .35s ease .06s; }
-.sl-row .mono { transition: color .35s ease .06s; }
-/* on the filled row every layer switches to the background colour —
-   the body copy at reduced opacity so the hierarchy survives */
-.sl-row:hover h3, .sl-row:hover .mono { color: var(--bg); }
-.sl-row:hover p { color: color-mix(in srgb, var(--bg) 72%, transparent); }
+  transition: color .35s ease; }
+.sl-row p { color: var(--dim); font-size: 14.5px; line-height: 1.58; }
+.sl-row .mono { transition: color .35s ease; }
+/* the number carries the state — accent is near-white, so brightening
+   the dim mono reads far more clearly than tinting the already-light h3 */
+.sl-row:hover .mono { color: var(--accent); }
 @media (max-width: 700px) { .sl-row { grid-template-columns: 30px 1fr; } .sl-row p { grid-column: 2; } }
 
-/* --- quotes slideshow --- */
-.slide { position: relative; min-height: 200px; }
-.q p { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(21px, 2.7vw, 32px);
-  line-height: 1.35; max-width: 24ch; }
-.q footer { margin-top: 22px; }
-/* Each dot is a 26px-tall tap target; the 2px bar centred in it is the visual. */
-.dots { display: flex; gap: 8px; margin-top: 16px; }
+/* --- carousel dot rail (the lightbox's frame picker) ---
+   Each dot is a 26px-tall tap target; the 2px bar centred in it is the
+   visual. Laid out by .lb-foot, so there's no container rule here. */
 .dot { width: 26px; height: 26px; position: relative; }
 .dot::before { content: ""; position: absolute; left: 0; right: 0; top: 50%;
   margin-top: -1px; height: 2px; background: var(--rule); transition: background-color .4s; }
@@ -784,6 +896,33 @@ export const CSS = `
 .form-done { margin-top: 30px; }
 .form-done .mono { margin-top: 10px; }
 
+/* --- contact modal ---
+   Sized to the form rather than the screen: wide enough for the two-up
+   name/email row, capped so it never sprawls on a desktop, and it
+   scrolls internally instead of growing past the viewport. Below the
+   lightbox (400) but above the masthead (80). */
+.cmodal { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center;
+  padding: 24px; overflow-y: auto;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  backdrop-filter: blur(18px) saturate(.9); -webkit-backdrop-filter: blur(18px) saturate(.9); }
+.cmodal-panel { width: min(100%, 560px); max-height: calc(100vh - 48px); overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
+  padding: 30px 32px 32px; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+@media (max-width: 560px) { .cmodal { padding: 14px; } .cmodal-panel { padding: 24px 20px 26px; } }
+.cmodal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.cmodal-head h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.05;
+  font-size: clamp(26px, 4vw, 34px); margin-top: 12px; }
+.cmodal-x { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center;
+  border: 1px solid var(--rule); border-radius: 50%; color: var(--dim); font-size: 13px;
+  transition: border-color .3s ease, color .3s ease; }
+.cmodal-x:hover { border-color: var(--accent); color: var(--accent); }
+/* the form fills the panel here, unlike the wide page version */
+.cmodal-panel .contact-form { max-width: none; margin-top: 24px; }
+.cmodal-panel .form-done { margin-top: 24px; }
+.cmodal-foot { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--rule);
+  text-transform: none; letter-spacing: .04em; }
+.cmodal-foot a { color: var(--accent); }
+
 /* --- work detail page --- */
 .detail { padding: 12vh 0 10vh; }
 .back { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 40px; }
@@ -814,7 +953,10 @@ export const CSS = `
 .pager a:hover strong { color: var(--accent); }
 
 /* --- nav links in the bar --- */
-.nav { display: flex; gap: 22px; align-items: center; }
+/* Generous, viewport-tracking gaps so the four sections read as four
+   separate destinations rather than one run of text; clamped so they
+   neither crowd at 900px nor drift apart on a wide desktop. */
+.nav { display: flex; gap: clamp(24px, 3.4vw, 44px); align-items: center; }
 .nav a { position: relative; }
 .nav a[aria-current="page"] { color: var(--accent); }
 .nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
@@ -839,10 +981,6 @@ export const CSS = `
 .about-lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.6vw, 30px);
   line-height: 1.35; margin-top: 28px; max-width: 22ch; }
 .about-lead i { font-style: normal; color: var(--accent); }
-.about-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 34px; }
-.about-tags span { border: 1px solid var(--rule); border-radius: 100px; padding: 8px 16px;
-  transition: border-color .35s ease; }
-.about-tags span:hover { border-color: var(--accent); }
 .about-portrait { position: relative; overflow: hidden; border-radius: 4px;
   border: 1px solid var(--rule); aspect-ratio: 4/5; }
 .about-portrait img { will-change: transform; }
@@ -858,12 +996,33 @@ export const CSS = `
   transform: scaleX(0); transform-origin: left; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
 .shead.in .shead-rule { transform: scaleX(1); }
 
-.about-body { max-width: 64ch; margin: 12vh 0; color: var(--dim); line-height: 1.8; font-size: 16px; }
-.about-body p + p { margin-top: 20px; }
+/* Globe left, bio right. The globe column simply isn't rendered when
+   heavy visuals are off — hence the minmax on the *text* column, so it
+   spreads to a full measure on its own rather than staying pinned to a
+   60ch strip with dead space beside it. */
+.about-body { display: grid; grid-template-columns: 1fr minmax(0, 60ch);
+  gap: 48px; align-items: center; margin: 12vh 0; }
+.about-body:not(:has(.about-body-viz)) { grid-template-columns: minmax(0, 64ch); }
+.about-body-viz { position: relative; height: 460px; min-width: 0; }
+/* ParticleSphere mounts its canvas into this, not into .about-body-viz —
+   without inset:0 it has no height of its own and the globe sizes itself
+   from the component's 400px bootstrap instead of the column. */
+.psphere { position: absolute; inset: 0; cursor: grab; }
+.psphere:active { cursor: grabbing; }
+.about-body-text { color: var(--dim); line-height: 1.8; font-size: 16px; }
+.about-body-text p + p { margin-top: 20px; }
 /* first paragraph reads as a lead-in — brighter, larger, sets the voice */
-.about-body .lead-p { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
+.about-body-text .lead-p { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
   font-size: clamp(19px, 2.3vw, 25px); line-height: 1.5; }
-.about-body .lead-p + p { margin-top: 30px; }
+.about-body-text .lead-p + p { margin-top: 30px; }
+@media (max-width: 900px) {
+  .about-body { grid-template-columns: 1fr; gap: 32px; }
+  .about-body-viz { height: 320px; }
+  /* stacked, the bio leads and the globe follows — it's decoration, and
+     shouldn't push the reading off the top of the section */
+  .about-body-text { order: 1; }
+  .about-body-viz { order: 2; }
+}
 .approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
   background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
 /* panels are plain <div> on the about page and <a> on the home page,
@@ -898,6 +1057,66 @@ export const CSS = `
   color: var(--accent); font-variant-numeric: tabular-nums; }
 .tl-row p { font-size: clamp(16px, 1.9vw, 21px); letter-spacing: -0.01em; }
 @media (max-width: 700px) { .tl-row { grid-template-columns: 64px 1fr; gap: 16px; } }
+
+/* --- full-bleed band ---
+   The version this came from is a cream site, where these bands were a
+   true colour inversion to black. Inverting a dark site would drop a
+   white slab into the middle of it, so here the band is a lift instead:
+   the panel tone, ruled top and bottom. Same job — it breaks the page
+   into rooms — in this palette. Breaks out of the centred .wrap column,
+   so put a plain .wrap inside to re-centre the content. */
+.invert-band { width: 100vw; margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw); padding: 11vh 0;
+  background: var(--panel);
+  border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+/* the approach panels sit on the band, so they take its tone, not the page's */
+.invert-band .approach div, .invert-band .approach a { background: var(--panel); }
+
+/* --- "What you get" — offset card grid ---
+   Two columns with the even one dropped 44px so the pairs stagger.
+   Number-led: an oversized outlined index as a graphic element, which
+   fills to the accent as the card lifts. */
+/* no top margin: this sits in the right-hand column of .sec-grid, level
+   with its label, not stacked under a heading */
+.get-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.get-card { position: relative; border: 1px solid var(--rule); border-radius: 7px;
+  padding: 32px 30px 30px; background: var(--panel); overflow: hidden;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), border-color .4s ease, box-shadow .45s ease; }
+.get-card:nth-child(even) { margin-top: 44px; }
+.get-card:hover { transform: translateY(-5px); border-color: var(--accent);
+  box-shadow: 0 22px 44px -28px rgba(0, 0, 0, .75); }
+/* Inter 600, not the personal version's Anton — this site has one
+   typeface family and an outlined 300 would read as a hairline smudge. */
+.get-num { display: block; font-weight: 600; font-size: 62px; line-height: 1;
+  letter-spacing: -0.04em; color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--ink) 26%, transparent);
+  margin-bottom: 16px; transition: -webkit-text-stroke-color .4s ease; }
+.get-card:hover .get-num { -webkit-text-stroke-color: var(--accent); }
+.get-card h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(20px, 2.4vw, 28px);
+  margin-bottom: 10px; }
+.get-card p { color: var(--dim); font-size: 14.5px; line-height: 1.6; max-width: 42ch; }
+@media (max-width: 720px) {
+  .get-grid { grid-template-columns: 1fr; gap: 14px; }
+  .get-card:nth-child(even) { margin-top: 0; }
+}
+
+/* --- "What I'm hired for" — capability pills + live caption ---
+   The services wrap like a keyword cloud; hovering or tapping one fills
+   it and swaps the large caption below to that service's description. */
+.hire { margin-top: 34px; }
+.hire-tags { display: flex; flex-wrap: wrap; gap: 12px; }
+.pf .hire-tag { display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px;
+  border: 1px solid var(--rule); border-radius: 100px; letter-spacing: -0.01em;
+  font-size: clamp(16px, 1.8vw, 22px); color: var(--ink);
+  transition: color .35s ease, background-color .35s ease, border-color .35s ease; }
+.hire-tag .mono { color: var(--accent); font-size: 11px; transition: color .35s ease; }
+.pf .hire-tag:hover, .pf .hire-tag.on { background: var(--accent);
+  border-color: var(--accent); color: var(--bg); }
+.hire-tag:hover .mono, .hire-tag.on .mono { color: var(--bg); }
+.hire-desc { margin-top: 28px; min-height: 3em; }
+.hire-desc p { font-weight: 300; letter-spacing: -0.02em; color: var(--dim);
+  font-size: clamp(18px, 2.3vw, 27px); line-height: 1.4; max-width: 40ch; }
+.hire-desc b { font-weight: 400; color: var(--ink); font-style: normal; }
 
 /* ==================================================================
    PHOTOGRAPHY PAGE
@@ -962,9 +1181,42 @@ export const CSS = `
 /* --- photo project detail --- */
 /* Fixed, capped hero so a portrait source can't blow the box up to
    full-width-portrait height; the image covers a 16:9 frame instead. */
+/* Shows the opening frame whole. This was aspect-ratio: 16/9 with the
+   site-wide object-fit: cover, which guillotined every portrait — heads
+   cropped off the top. Then it was a full-width fixed-height stage with
+   the picture contained inside it, which read as a black slab with a
+   sliver of photograph in the middle: a portrait at this height only
+   fills about a quarter of the 1180px column, and .pj-hero's panel
+   background filled the rest.
+
+   Now the frame takes the photograph's own aspect ratio (set inline from
+   the manifest) and shrinks to fit it, centred. Height stays capped, so a
+   portrait is a tall narrow frame and a landscape a wide one — the whole
+   picture either way, and no letterbox around it.
+
+   Height is set so the whole stage clears the fold: the masthead, the
+   page's top padding, the back link and the title take ~310px above it,
+   and at 76vh the foot of the frame sat 170px below the bottom of a
+   900px window. The tightened spacing below buys most of that back. */
 .pj-hero { position: relative; overflow: hidden; border-radius: 4px;
-  border: 1px solid var(--rule); aspect-ratio: 16/9; max-height: 78vh; }
-.pj-hero img { will-change: transform; }
+  border: 1px solid var(--rule); background: var(--panel);
+  /* the third term is the one that matters on a short window: what's
+     above the stage is ~310px of largely fixed chrome, so cap the frame
+     at the space actually left rather than at a share of the height */
+  height: min(60vh, 640px, calc(100svh - 330px));
+  /* fit-content, not auto: a block-level box with width:auto stretches to
+     the column and ignores aspect-ratio, which is what left the black
+     margins. max-width keeps a very wide frame inside the column, and the
+     frame stays hard-left so a narrow portrait lines up with the title
+     above it and the grid below rather than floating in the middle. */
+  width: fit-content; max-width: 100%; }
+/* scoped to this page — /work/:seed and /design/:slug share .detail and
+   want their original, roomier lead-in */
+.detail-pj { padding-top: 7vh; }
+.detail-pj .back { margin-bottom: 26px; }
+.detail-pj .detail-head { margin-bottom: 28px; }
+.pj-hero img { width: 100%; height: 100%; object-fit: contain;
+  transform: none; transition: none; }
 .pj-intro { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.8vw, 34px);
   line-height: 1.32; max-width: 26ch; }
 
@@ -985,21 +1237,56 @@ export const CSS = `
   transform: translateY(-4px); transition: opacity .35s ease, transform .35s ease; }
 .pgrid figure:hover .idx { opacity: 1; transform: none; }
 
-/* --- carousel roll: snap-scrolling filmstrip with drag ------------- */
-.roll { position: relative; }
-.roll-track { display: flex; align-items: flex-start; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
-  padding-bottom: 18px; scrollbar-width: none; cursor: grab; }
-.roll-track::-webkit-scrollbar { display: none; }
-.roll-track.dragging { cursor: grabbing; scroll-snap-type: none; }
-.roll-fr { flex: 0 0 auto; width: min(62vw, 700px); aspect-ratio: 3/2; overflow: hidden;
-  border-radius: 4px; border: 1px solid var(--rule); scroll-snap-align: center;
-  position: relative; background: var(--panel); }
-.roll-fr img { pointer-events: none; }
-.roll-nav { display: flex; gap: 10px; margin-top: 4px; }
-.roll-btn { width: 44px; height: 44px; border: 1px solid var(--rule); border-radius: 50%;
-  display: grid; place-items: center; transition: border-color .3s ease, color .3s ease; }
-.roll-btn:hover { border-color: var(--accent); color: var(--accent); }
-@media (max-width: 700px) { .roll-fr { width: 84vw; } }
+/* --- frames coverflow ---------------------------------------------
+   The active photograph centred at full size, its neighbours peeking in
+   from either edge; the arrows ride over them. Every slide is the same
+   height and takes its width from the picture's own aspect ratio, so a
+   portrait is a tall narrow card and a landscape a wide one — both
+   whole, neither cropped nor zoomed.
+
+   Breaks the .wrap column to full width so the neighbours run off the
+   sides of the screen rather than stopping at the text margin. */
+.pcar { position: relative; width: 100vw; margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw); }
+.pcar-stage { position: relative; height: min(64vh, 560px); overflow: hidden; }
+/* Sizing is layout; the depth effect is transform only — that keeps
+   every slide's measured width constant, which is what the centring
+   maths reads mid-animation. */
+.pcar-track { position: absolute; top: 0; bottom: 0; left: 0;
+  display: flex; align-items: center; gap: clamp(14px, 2vw, 28px);
+  will-change: transform;
+  transition: transform .8s cubic-bezier(.22, .61, .36, 1); }
+.pf .pcar-slide { position: relative; flex: 0 0 auto; height: 100%; padding: 0;
+  border-radius: 10px; overflow: hidden; background: var(--panel);
+  cursor: pointer; transform: scale(.8); opacity: .3; filter: saturate(.55);
+  transition: transform .8s cubic-bezier(.22, .61, .36, 1),
+    opacity .8s ease, filter .8s ease; }
+.pf .pcar-slide.on { transform: scale(1); opacity: 1; filter: none; cursor: default;
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, .85); }
+.pf .pcar-slide:not(.on):hover { opacity: .55; transform: scale(.83); }
+/* the slide box already matches the picture's ratio, so contain and
+   cover agree — contain is the safe one when a seed has no dimensions
+   recorded and the box falls back to 3/2 */
+.pcar-slide img { width: 100%; height: 100%; object-fit: contain;
+  transform: none; transition: none; }
+
+.pf .pcar-arrow { position: absolute; top: 50%; z-index: 3; width: 52px; height: 52px;
+  transform: translateY(-50%); display: grid; place-items: center;
+  border-radius: 50%; color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(10px);
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease; }
+.pcar-arrow.prev { left: clamp(12px, 3vw, 40px); }
+.pcar-arrow.next { right: clamp(12px, 3vw, 40px); }
+.pf .pcar-arrow:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.pcar-arrow svg { width: 20px; height: 20px; fill: none;
+  stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+@media (max-width: 700px) {
+  .pcar-stage { height: 52vh; }
+  .pf .pcar-arrow { width: 44px; height: 44px; }
+}
 
 /* --- lightbox slideshow --- */
 .lb { position: fixed; inset: 0; z-index: 400; background: color-mix(in srgb, var(--bg) 94%, #000);
@@ -1198,21 +1485,248 @@ export const CSS = `
 .disc:hover strong, .disc:hover .mono { color: var(--bg); }
 
 
+
+/* ==================================================================
+   ADMIN — /admin. Same palette as the site, but the site's display
+   typography is wrong for a form: .mono is 11px uppercase at --dim
+   (5.2:1), which reads fine as a one-word kicker on a poster page and
+   badly as the label on all thirty fields of a working tool. All-caps
+   also measures ~13% slower to read. So the admin overrides it with
+   sentence-case Inter at real sizes, and defines its own line/edge
+   tokens because the site's --rule (#1E1E22) sits at 1.19:1 against
+   the background — invisible, which is why nothing here had structure.
+
+   Every token below is scoped to .admin, so the public site keeps its
+   deliberate look untouched.
+   ================================================================== */
+.admin {
+  --a-line: #48484F;    /* structural dividers — visible, quiet */
+  --a-edge: #666670;    /* interactive borders — 3.5:1, WCAG 1.4.11 */
+  --a-label: #C4C4CC;   /* field labels — 11.8:1 */
+  --a-hint: #9A9AA4;    /* helper text — 7.1:1 */
+  --a-field: #17171B;   /* input fill */
+  --a-ok: #4ADE80;      /* active   — 11.4:1 */
+  --a-draft: #9A9AA4;   /* draft    — 7.1:1 */
+  --a-bad: #FF6B70;     /* revoked  — 7.2:1 */
+  padding: 6vh 0 14vh; max-width: 1000px;
+}
+.admin-top { display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 20px; flex-wrap: wrap; padding-bottom: 18px; margin-bottom: 30px;
+  border-bottom: 1px solid var(--a-line); }
+.admin-top h1 { font-weight: 300; letter-spacing: -0.03em; font-size: clamp(28px, 4vw, 40px);
+  margin-top: 8px; }
+.admin-top .mono { color: var(--a-hint); }
+.pf .admin-viewsite { font-size: 13.5px; color: var(--a-hint); transition: color .25s ease; }
+.pf .admin-viewsite:hover { color: var(--ink); }
+/* the editor's status line sits under a heading, so it needs the gap */
+.admin-sec-head .status { margin-top: 6px; }
+
+.admin-summary { color: var(--a-hint); font-size: 14px; margin-bottom: 18px; }
+
+.admin-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+/* Every control class below is .pf-scoped, same as .totop and .extlink
+   above and for the same reason: the .pf button reset (border: none;
+   background: none) is class+type, which beats a bare class, so an
+   unscoped .btn on a <button> loses its border and fill and renders as
+   naked text. These pages are almost entirely buttons, so it applies
+   throughout — .btn, .mini, .crumb, .client-dl, .client-alt. NB: this
+   whole stylesheet is a template literal, so no
+   backticks in these comments. */
+.pf .btn { border: 1px solid var(--a-edge); border-radius: 100px; padding: 10px 20px;
+  font-size: 13.5px; font-weight: 500; letter-spacing: 0; color: var(--ink);
+  transition: border-color .25s ease, background-color .25s ease, color .25s ease; }
+.pf .btn:hover { border-color: var(--ink); }
+.pf .btn:disabled { opacity: .4; pointer-events: none; }
+.pf .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.pf .btn.primary:hover { filter: brightness(1.1); color: var(--bg); }
+.pf .btn.ghost { border-color: transparent; color: var(--a-hint); }
+.pf .btn.ghost:hover { color: var(--ink); }
+.pf .btn.danger { color: var(--a-bad); border-color: color-mix(in srgb, var(--a-bad) 40%, transparent); }
+.pf .btn.danger:hover { border-color: var(--a-bad); }
+.pf .btn.small { padding: 7px 15px; font-size: 12.5px; }
+.pf .mini { width: 32px; height: 32px; border: 1px solid var(--a-edge); border-radius: 4px;
+  display: grid; place-items: center; font-size: 13px; color: var(--a-hint);
+  transition: border-color .25s ease, color .25s ease; }
+.pf .mini:hover { border-color: var(--ink); color: var(--ink); }
+.pf .mini:disabled { opacity: .35; pointer-events: none; }
+.pf .mini.danger:hover { border-color: var(--a-bad); color: var(--a-bad); }
+
+.admin-msg { padding: 12px 16px; border: 1px solid var(--a-line); border-radius: 4px;
+  margin-bottom: 20px; font-size: 14px; color: var(--ink); }
+.admin-msg.bad { color: var(--a-bad); border-color: color-mix(in srgb, var(--a-bad) 50%, transparent); }
+.admin-msg.preview { color: #E0A93B; border-color: color-mix(in srgb, #E0A93B 40%, transparent);
+  background: color-mix(in srgb, #E0A93B 7%, transparent); }
+.admin-empty { padding: 22px 0; color: var(--a-hint); font-size: 14px; }
+
+.admin-sec { margin-top: 38px; }
+.admin-sec-head { display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 1px solid var(--a-line); }
+.admin-sec-head h2 { font-weight: 500; letter-spacing: -0.01em; font-size: 20px; }
+.admin-sec-head .sub { display: block; margin-top: 4px; font-size: 13px; color: var(--a-hint); }
+
+.admin-row { display: grid; grid-template-columns: 1fr auto; gap: 16px;
+  align-items: center; padding: 14px 0; border-bottom: 1px solid var(--a-line); }
+.admin-row-main strong { font-weight: 500; letter-spacing: -0.01em; font-size: 16px; display: block; }
+.admin-row-main .dim { color: var(--a-hint); font-style: normal; }
+.admin-row-meta { display: flex; align-items: center; gap: 10px; margin-top: 5px; font-size: 13px; }
+.admin-row-code { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px;
+  letter-spacing: .02em; color: var(--a-hint); }
+.admin-row-acts { display: flex; gap: 8px; align-items: center; }
+@media (max-width: 640px) {
+  .admin-row { grid-template-columns: 1fr; gap: 10px; }
+  .admin-row-acts { justify-content: flex-start; }
+}
+
+/* --- forms --- */
+.admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 26px; }
+@media (max-width: 720px) { .admin-form { grid-template-columns: 1fr; } }
+.admin-field { display: flex; flex-direction: column; gap: 7px; }
+.admin-field.wide { grid-column: 1 / -1; }
+.admin-field > .lbl { font-size: 13.5px; font-weight: 500; color: var(--a-label);
+  letter-spacing: 0; text-transform: none; }
+.admin-field em { font-style: normal; font-size: 13px; line-height: 1.5; color: var(--a-hint); }
+.admin-field input, .admin-field textarea, .admin-login input {
+  background: var(--a-field); border: 1px solid var(--a-edge); border-radius: 4px;
+  color: var(--ink); font: inherit; font-size: 15px; padding: 11px 13px; width: 100%;
+  transition: border-color .2s ease, box-shadow .2s ease; }
+.admin-field input:focus, .admin-field textarea:focus, .admin-login input:focus {
+  border-color: var(--ink); outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 14%, transparent); }
+.admin-field textarea { resize: vertical; line-height: 1.6; }
+
+.admin-login { max-width: 340px; display: flex; flex-direction: column; gap: 10px; margin-top: 8vh; }
+.admin-login .lbl { font-size: 13.5px; font-weight: 500; color: var(--a-label); }
+
+/* --- status: colour AND word together, never colour alone --- */
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+.status::before { content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; flex: 0 0 auto; }
+.status-active { color: var(--a-ok); }
+.status-draft { color: var(--a-draft); }
+.status-revoked { color: var(--a-bad); }
+
+/* --- Drive folder picker (client-delivery folder field) --- */
+.admin-picker { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,.78);
+  display: grid; place-items: center; padding: 24px; }
+.admin-picker-in { background: var(--bg); border: 1px solid var(--a-edge); border-radius: 6px;
+  width: min(720px, 100%); height: min(70vh, 640px); display: flex; flex-direction: column;
+  overflow: hidden; }
+.admin-picker-top { display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--a-line); }
+.admin-picker-top strong { font-weight: 500; font-size: 16px; }
+/* Column layout so the "new folder" row sits on the bottom edge instead
+   of floating under a short list. */
+.admin-folder-body { padding: 16px 20px; overflow-y: auto; flex: 1; min-height: 0;
+  display: flex; flex-direction: column; }
+.admin-folder-body .admin-row:last-of-type { border-bottom: 0; }
+.admin-crumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.pf .crumb { font-size: 13px; color: var(--a-hint); }
+.pf .crumb:hover { color: var(--ink); }
+.pf .crumb::after { content: "/"; margin-left: 6px; color: var(--a-line); }
+.pf .crumb:last-child::after { content: none; }
+.admin-folder-new { display: flex; gap: 8px; margin-top: auto; padding-top: 16px;
+  border-top: 1px solid var(--a-line); }
+.admin-folder-new input { flex: 1; background: var(--a-field); border: 1px solid var(--a-edge);
+  border-radius: 4px; color: var(--ink); font: inherit; font-size: 14px; padding: 9px 12px; }
+.admin-folder-new input:focus { border-color: var(--ink); outline: none; }
+
+/* ==================================================================
+   CLIENT AREA — /client. The plainest page on the site: a client here
+   wants their photos, not an experience.
+   ================================================================== */
+.client { min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; padding: 12vh 0 8vh; text-align: center; }
+.client-kicker { margin-bottom: 40px; }
+
+/* --- 404 --- */
+.notfound { min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; padding: 12vh 0 8vh; text-align: center; }
+.client-card { width: min(560px, 100%); border: 1px solid var(--rule); border-radius: 4px;
+  background: var(--panel); padding: 44px 38px; }
+@media (max-width: 560px) { .client-card { padding: 32px 22px; } }
+.client-card h1 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.05;
+  font-size: clamp(28px, 5vw, 44px); margin-top: 14px; text-wrap: balance; }
+.client-shoot { color: var(--dim); font-size: 15px; margin-top: 10px; }
+.client-lead { color: var(--dim); font-size: 15px; line-height: 1.7; margin-top: 14px; }
+.client-note { color: var(--ink); font-size: 15px; line-height: 1.7; margin-top: 22px;
+  padding: 16px 18px; border-left: 2px solid var(--accent); text-align: left;
+  background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+.client-card form { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+.client-card label { text-align: left; }
+.client-card input { background: var(--bg); border: 1px solid var(--rule); border-radius: 4px;
+  color: var(--ink); font-family: 'IBM Plex Mono', monospace; font-size: 16px;
+  letter-spacing: .06em; padding: 15px 16px; width: 100%; text-align: center;
+  transition: border-color .25s ease; }
+.client-card input:focus { border-color: var(--accent); outline: none; }
+
+/* one button does the whole job — make it obvious */
+.pf .client-dl { display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; margin-top: 26px; padding: 17px 26px; border-radius: 100px;
+  background: var(--accent); color: var(--bg); border: 1px solid var(--accent);
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .16em;
+  text-transform: uppercase; transition: filter .3s ease, opacity .3s ease; }
+.pf .client-dl:hover { filter: brightness(1.12); }
+.pf .client-dl:disabled { opacity: .45; pointer-events: none; }
+.pf .client-dl .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.pf .client-dl:hover .arrow { transform: translate(2px, -2px); }
+
+/* secondary action shown alongside (or instead of) the ZIP button */
+.pf .client-alt { display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; margin-top: 12px; padding: 15px 26px; border-radius: 100px;
+  border: 1px solid var(--rule); color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .16em;
+  text-transform: uppercase; transition: border-color .25s ease, color .25s ease; }
+.pf .client-alt:hover { border-color: var(--accent); color: var(--accent); }
+.pf .client-alt .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.pf .client-alt:hover .arrow { transform: translate(2px, -2px); }
+
+/* shown instead of the ZIP button when a shoot is over the download cap */
+.client-cap { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--rule);
+  border-radius: 4px; color: var(--dim); font-size: 13px; line-height: 1.7; }
+
+.client-facts { display: flex; justify-content: center; gap: 34px; margin-top: 28px;
+  padding-top: 20px; border-top: 1px solid var(--rule); }
+.client-facts dd { margin: 6px 0 0; font-size: 19px; font-variant-numeric: tabular-nums; }
+.client-help { margin-top: 20px; line-height: 1.8; text-transform: none; letter-spacing: .04em; }
+.client-help a { color: var(--accent); }
+.client-err { margin-top: 18px; color: #F4595E; text-transform: none; letter-spacing: .04em;
+  line-height: 1.7; }
+.client-foot { margin-top: 44px; }
+.client-foot .back:hover { color: var(--accent); }
+
+/* --- admin: the delivery panel --- */
+.deliver { border: 1px solid var(--a-line); border-radius: 6px; padding: 24px;
+  background: var(--panel); margin-top: 24px; }
+.admin-inline { display: flex; gap: 8px; align-items: center; }
+.admin-inline input { flex: 1; }
+.admin-inline .folder-name { flex: 1; font-size: 14px; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-inline .folder-name.none { color: var(--a-hint); }
+.deliver-send { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--a-line); }
+.deliver-send .lbl { font-size: 13.5px; font-weight: 500; color: var(--a-label); }
+.deliver-send pre { background: var(--bg); border: 1px solid var(--a-line); border-radius: 4px;
+  padding: 14px 16px; margin: 10px 0 14px; white-space: pre-wrap; word-break: break-word;
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1.65; color: var(--a-label); }
+.deliver-hint { margin-top: 12px; font-size: 13px; color: var(--a-hint); }
+.admin-folder-manual { margin-top: 8px; }
+.admin-folder-manual summary { cursor: pointer; font-size: 13px; color: var(--a-hint); }
+.admin-folder-manual summary:hover { color: var(--ink); }
+.admin-folder-manual input { margin-top: 8px; }
+
+
 @media (prefers-reduced-motion: reduce) {
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1 !important; transform: none !important; }
   .hero-reveal { opacity: 1 !important; transform: none !important; }
   .logo-mark path { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; }
   .logo-word b { opacity: 1 !important; transform: none !important; }
-  .mast .drawline, .metrics::after { transform: scaleX(1) !important; }
+  .intro-sec .drawline, .metrics::after { transform: scaleX(1) !important; }
   .shot img, .detail-fig img, .about-portrait img { transform: none !important; }
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
+  /* the hero holds its first frame — see HeroFrames, which skips the
+     reel entirely rather than cutting between shots */
   .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }
-  .card { position: static; }
-  /* with transitions off, an auto-hiding bar would blink in and out —
-     keep it put instead */
-  .bar.hide { transform: none !important; }
-  .roll-track { scroll-snap-type: none; }
   .iris-lens { display: none; }
 }
 `;

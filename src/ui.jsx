@@ -98,7 +98,7 @@ export function FigmaFrame({ w, eager = false }) {
         <span className="mono">{w.tag}</span>
       </div>
       {show && (
-        <iframe className="figbox-frame" title={`${w.t} — Figma preview`}
+        <iframe className="figbox-frame" title={`${w.t} Figma preview`}
           src={figmaEmbed(w.href)} loading="lazy" tabIndex={-1} />
       )}
     </div>
@@ -164,7 +164,7 @@ export function ContactForm({ email }) {
   if (status === "ok") {
     return (
       <div className="form-done" role="status">
-        <p className="pj-intro">Thanks — your message is in.</p>
+        <p className="pj-intro">Thanks. Your message is in.</p>
         <p className="mono">Viraj usually replies within a day or two.</p>
       </div>
     );
@@ -172,7 +172,7 @@ export function ContactForm({ email }) {
 
   return (
     <form className="contact-form" onSubmit={onSubmit}>
-      <input type="hidden" name="_subject" value="New enquiry — Crafted & Captured" />
+      <input type="hidden" name="_subject" value="New enquiry · Crafted & Captured" />
       <div className="cf-row">
         <label className="cf-field">
           <span className="mono">Your name</span>
@@ -186,7 +186,7 @@ export function ContactForm({ email }) {
       <label className="cf-field">
         <span className="mono">What do you need?</span>
         <textarea name="message" rows={4} required
-          placeholder="A shoot, a site, or both — a few lines is plenty." />
+          placeholder="A shoot, a site, or both. A few lines is plenty." />
       </label>
       {/* honeypot — hidden from people, tempting to bots */}
       <input type="text" name="_gotcha" tabIndex={-1} autoComplete="off"
@@ -197,11 +197,78 @@ export function ContactForm({ email }) {
         </button>
         {status === "error" && (
           <span className="mono cf-err">
-            That didn't send — please email <a href={`mailto:${email}`}>{email}</a> instead.
+            That didn't send. Please email <a href={`mailto:${email}`}>{email}</a> instead.
           </span>
         )}
       </div>
     </form>
+  );
+}
+
+/* ---------------- contact modal ----------------
+   The enquiry form now has one home: a centred dialog over a blurred
+   page, opened from the masthead CTA and the "Contact me" button at the
+   foot of every page. The form inside is the same ContactForm — the
+   Formspree wiring is untouched.
+
+   Locks page scroll, moves focus to the first field, traps Tab inside
+   the panel, restores focus to whatever opened it, and closes on Esc or
+   a click on the backdrop. */
+export function ContactModal({ email, onClose, reduced }) {
+  const panelRef = useRef(null);
+
+  useEffect(() => {
+    const opener = document.activeElement;
+    /* focus the first field rather than the close button — someone who
+       opened this came to type, not to leave */
+    panelRef.current?.querySelector("input, textarea")?.focus();
+
+    const key = (e) => {
+      if (e.key === "Escape") { onClose(); return; }
+      if (e.key !== "Tab") return;
+      const items = panelRef.current?.querySelectorAll(
+        "a[href], button:not([disabled]), input:not([tabindex='-1']), textarea",
+      );
+      if (!items?.length) return;
+      const first = items[0], last = items[items.length - 1];
+      const active = document.activeElement;
+      if (!panelRef.current.contains(active)) { e.preventDefault(); first.focus(); }
+      else if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+    };
+    window.addEventListener("keydown", key);
+    const prevOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", key);
+      document.documentElement.style.overflow = prevOverflow;
+      if (opener instanceof HTMLElement && document.contains(opener)) opener.focus();
+    };
+  }, [onClose]);
+
+  return (
+    <motion.div className="cmodal" role="dialog" aria-modal="true" aria-labelledby="cmodal-title"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: reduced ? 0 : 0.25 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <motion.div className="cmodal-panel" ref={panelRef}
+        initial={{ opacity: 0, y: reduced ? 0 : 16, scale: reduced ? 1 : 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: reduced ? 0 : 10, scale: reduced ? 1 : 0.99 }}
+        transition={{ duration: reduced ? 0 : 0.34, ease: [0.2, 0.8, 0.2, 1] }}>
+        <div className="cmodal-head">
+          <div>
+            <span className="mono">Enquiry</span>
+            <h2 id="cmodal-title">Tell me about it.</h2>
+          </div>
+          <button type="button" className="cmodal-x" onClick={onClose} aria-label="Close enquiry form">✕</button>
+        </div>
+        <ContactForm email={email} />
+        <div className="mono cmodal-foot">
+          Prefer email? <a href={`mailto:${email}`}>{email}</a> · {P.phone}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -347,13 +414,13 @@ export function Lightbox({ photos, title, index, setIndex, reduced, single = fal
   }, [close, shift, single]);
 
   return (
-    <motion.div className="lb" ref={boxRef} role="dialog" aria-modal="true" aria-label={`${title} — photo viewer`}
+    <motion.div className="lb" ref={boxRef} role="dialog" aria-modal="true" aria-label={`${title} photo viewer`}
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       transition={{ duration: reduced ? 0 : 0.3 }}
       onClick={single ? (e) => { if (e.target === e.currentTarget) close(); } : undefined}>
       <div className="lb-bar">
         <span className="mono">
-          {single ? title : `${title} — ${String(index + 1).padStart(2, "0")} / ${String(photos.length).padStart(2, "0")}`}
+          {single ? title : `${title} · ${String(index + 1).padStart(2, "0")} / ${String(photos.length).padStart(2, "0")}`}
         </span>
         <button className="lb-x" onClick={close} aria-label="Close viewer">Close ✕</button>
       </div>
