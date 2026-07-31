@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Private / non-portfolio areas — keep out of search
+Disallow: /admin
+Disallow: /client
+
+Sitemap: https://craftedandcaptured.com/sitemap.xml
