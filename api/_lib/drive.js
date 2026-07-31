@@ -69,7 +69,9 @@ export async function listImages(drive, folder) {
   }));
 }
 
-export async function fileBytes(drive, fileId) {
+/* Internal: only readContent() needs whole-file bytes now. It was exported
+   for api/thumb.js, which went with the photo picker. */
+async function fileBytes(drive, fileId) {
   const res = await drive.files.get(
     { fileId, alt: "media" },
     { responseType: "arraybuffer" },
@@ -193,7 +195,7 @@ export const folderUrl = (id) => `https://drive.google.com/drive/folders/${id}`;
    The client list /admin edits — deliberately flat and boring so it
    stays readable if anyone opens it in Drive. */
 
-export const EMPTY_CONTENT = {
+const EMPTY_CONTENT = {
   version: 1,
   updatedAt: null,
   deliveries: [],

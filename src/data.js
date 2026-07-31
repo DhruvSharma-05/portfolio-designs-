@@ -681,15 +681,6 @@ export const CSS = `
   animation: draw 1.1s cubic-bezier(.76,0,.24,1) forwards; }
 @keyframes draw { to { transform: scaleX(1); } }
 
-/* --- thesis --- */
-.thesis-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 56px; align-items: end; }
-@media (max-width: 860px) { .thesis-grid { grid-template-columns: 1fr; align-items: start; gap: 32px; } }
-.lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(24px, 3.6vw, 44px);
-  line-height: 1.22; max-width: 22ch; }
-.lead i { font-style: normal; color: var(--accent); }
-.aside { max-width: 400px; color: var(--dim); line-height: 1.72; font-size: 15px; }
-.aside p + p { margin-top: 16px; }
-
 /* --- photography: one card per project --- */
 .stack { padding-bottom: 18vh; display: flex; flex-direction: column; gap: 34px; }
 /* These were sticky, which piled the projects up on top of each other as
@@ -783,16 +774,6 @@ export const CSS = `
 .gwork { padding: 12vh 0; border-top: 1px solid var(--rule); }
 .gwork-head { display: flex; justify-content: space-between; align-items: center;
   gap: 18px 28px; flex-wrap: wrap; margin-bottom: 36px; }
-.gtabs { display: flex; gap: 8px; flex-wrap: wrap; }
-.gtab { border: 1px solid var(--rule); border-radius: 100px; padding: 8px 16px;
-  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--dim);
-  transition: border-color .3s ease, color .3s ease, background-color .3s ease; }
-.gtab:hover { border-color: var(--accent); color: var(--accent); }
-.gtab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-.gempty { padding: 9vh 24px; text-align: center; border: 1px dashed var(--rule);
-  border-radius: 6px; }
-
 /* --- home: photography collection cards ---
    One framed cover per collection; opens the full gallery at
    /photography/:slug. Mirrors the site's card idiom (accent hover, the
@@ -825,10 +806,6 @@ export const CSS = `
   transition: color .3s; }
 .projcard:hover .projcap h3 { color: var(--accent); }
 .projcap .mono { flex: 0 0 auto; color: var(--dim); }
-/* label above the pooled "selected frames" grid on the home page */
-.gwork-sub { margin: 48px 0 20px; color: var(--dim);
-  padding-top: 26px; border-top: 1px solid var(--rule); }
-
 /* --- reserved room (design work not published yet) --- */
 .reserved { border: 1px dashed var(--rule); border-radius: 6px; padding: 8vh 36px;
   display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -1004,10 +981,6 @@ export const CSS = `
 .about-lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.6vw, 30px);
   line-height: 1.35; margin-top: 28px; max-width: 22ch; }
 .about-lead i { font-style: normal; color: var(--accent); }
-.about-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 34px; }
-.about-tags span { border: 1px solid var(--rule); border-radius: 100px; padding: 8px 16px;
-  transition: border-color .35s ease; }
-.about-tags span:hover { border-color: var(--accent); }
 .about-portrait { position: relative; overflow: hidden; border-radius: 4px;
   border: 1px solid var(--rule); aspect-ratio: 4/5; }
 .about-portrait img { will-change: transform; }
