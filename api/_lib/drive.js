@@ -148,6 +148,34 @@ export async function folderMeta(drive, folderId) {
   return res.data;
 }
 
+/* Is `folderId` a DESCENDANT of `rootId`?
+
+   This is what stops the one accident the whole sharing design exists to
+   prevent: link-sharing a PARENT folder, which Drive inherits down to
+   every client folder inside it and so exposes every gallery at once.
+   Until this existed the rule was convention only — api/share.js would
+   happily share whatever id it was handed, including the Clients root
+   itself, which the admin's "paste a folder ID" box makes reachable in
+   two clicks.
+
+   The root itself returns false on purpose: it is the container, never a
+   delivery folder. Walks up the parent chain, capped so a cycle or a
+   pathological nesting can't spin. Drive v3 is effectively single-parent,
+   but the legacy multi-parent shape is handled by checking the whole
+   parents array at each level before following the first. */
+export async function isInsideRoot(drive, folderId, rootId, maxDepth = 12) {
+  if (!rootId || !folderId || folderId === rootId) return false;
+  let cursor = folderId;
+  for (let i = 0; i < maxDepth; i++) {
+    const { data } = await drive.files.get({ fileId: cursor, fields: "parents" });
+    const parents = data.parents || [];
+    if (!parents.length) return false;          // hit My Drive / a shared-with-me top level
+    if (parents.includes(rootId)) return true;
+    cursor = parents[0];
+  }
+  return false;                                  // deeper than any real shoot tree
+}
+
 /* How many images are in the delivery folder — shown to the client so
    they can tell the download finished with everything in it. */
 export async function countImages(drive, folderId) {

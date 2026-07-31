@@ -89,6 +89,7 @@ export default function Admin() {
   const [editing, setEditing] = useState(null); // index into content.deliveries
   const [msg, setMsg] = useState(null);
   const [dirty, setDirty] = useState(false);
+  const [busyDelete, setBusyDelete] = useState(false);
 
   useEffect(() => {
     document.title = `Admin — ${P.name}`;
@@ -142,12 +143,41 @@ export default function Admin() {
     setEditing(content.deliveries.length);
   };
 
-  const remove = (index) => {
+  /* Deleting has to turn Drive sharing OFF first. The record is the only
+     place the folder id is stored, so dropping it while the folder is
+     still link-shared would leave those photos reachable by anyone with
+     the Drive URL, permanently, with no way left to close it from here.
+
+     Hence: revoke, and only delete if the revoke actually succeeded. A
+     failed revoke aborts the whole thing and keeps the row (and its
+     folder id) so it can be retried. Saves immediately too — a delete
+     left sitting unsaved would mean access is already gone while the
+     client still appears live in the list. */
+  const remove = async (index) => {
+    if (busyDelete) return;
     const d = content.deliveries[index];
-    if (!confirm(`Delete "${d.name || d.title || "this client"}"? The photos stay in Drive.`)) return;
-    setContent((c) => ({ ...c, deliveries: c.deliveries.filter((_, i) => i !== index) }));
-    setDirty(true);
-    setEditing(null);
+    const who = d.name || d.title || "this client";
+    const warn = d.folderId
+      ? `Delete "${who}"?\n\nThis turns off Drive sharing for their folder — the code and the Drive link both stop working. The photos themselves stay in Drive.`
+      : `Delete "${who}"?`;
+    if (!confirm(warn)) return;
+
+    setBusyDelete(true);
+    try {
+      if (d.folderId) {
+        await api("/api/share", { method: "POST", body: { folderId: d.folderId, action: "revoke" } });
+      }
+      const next = { ...content, deliveries: content.deliveries.filter((_, i) => i !== index) };
+      setEditing(null);
+      await save(next);
+    } catch (e) {
+      setMsg({
+        bad: true,
+        text: `Couldn't turn off sharing for "${who}" (${e.message}) — nothing was deleted, so you can try again.`,
+      });
+    } finally {
+      setBusyDelete(false);
+    }
   };
 
   if (authed === null) return <Shell><p className="admin-empty">Checking…</p></Shell>;
@@ -165,6 +195,7 @@ export default function Admin() {
           onBack={() => setEditing(null)}
           onSave={async () => { if (await save()) setEditing(null); }}
           onDelete={() => remove(editing)}
+          busyDelete={busyDelete}
           msg={msg}
         />
       </Shell>
@@ -176,6 +207,7 @@ export default function Admin() {
       <Dashboard
         content={content} dirty={dirty} msg={msg}
         onSave={() => save()} onAdd={add} onEdit={setEditing} onRemove={remove}
+        busyDelete={busyDelete}
         onSignOut={async () => { await api("/api/auth", { method: "DELETE" }); setAuthed(false); }}
       />
     </Shell>
@@ -239,7 +271,7 @@ function Login({ onIn }) {
 
 /* ---------------- dashboard ---------------- */
 
-function Dashboard({ content, dirty, msg, onSave, onAdd, onEdit, onRemove, onSignOut }) {
+function Dashboard({ content, dirty, msg, onSave, onAdd, onEdit, onRemove, onSignOut, busyDelete }) {
   const items = content.deliveries;
   const revoked = items.filter((d) => d.revoked).length;
   const drafts = items.filter((d) => !d.revoked && !d.code).length;
@@ -261,12 +293,13 @@ function Dashboard({ content, dirty, msg, onSave, onAdd, onEdit, onRemove, onSig
 
       {msg && <p className={`admin-msg ${msg.bad ? "bad" : ""}`}>{msg.text}</p>}
 
-      <DeliveryList items={items} onAdd={onAdd} onEdit={onEdit} onRemove={onRemove} />
+      <DeliveryList items={items} onAdd={onAdd} onEdit={onEdit} onRemove={onRemove}
+        busyDelete={busyDelete} />
     </>
   );
 }
 
-function DeliveryList({ items, onAdd, onEdit, onRemove }) {
+function DeliveryList({ items, onAdd, onEdit, onRemove, busyDelete }) {
   return (
     <section className="admin-sec">
       <div className="admin-sec-head">
@@ -293,7 +326,7 @@ function DeliveryList({ items, onAdd, onEdit, onRemove }) {
           </div>
           <div className="admin-row-acts">
             <button className="btn small" onClick={() => onEdit(i)}>Edit</button>
-            <button className="mini danger" onClick={() => onRemove(i)}
+            <button className="mini danger" onClick={() => onRemove(i)} disabled={busyDelete}
               aria-label={`Delete ${d.name || d.title || "client"}`}>
               <XIcon />
             </button>
@@ -313,7 +346,7 @@ function DeliveryList({ items, onAdd, onEdit, onRemove }) {
    dialog is where the dangerous mistake lives — sharing a PARENT
    folder would expose every client inside it. This only ever touches
    the one folder id below. */
-function Editor({ delivery, onChange, onBack, onSave, onDelete, msg }) {
+function Editor({ delivery, onChange, onBack, onSave, onDelete, msg, busyDelete }) {
   const [state, setState] = useState(null);      // { shared, name, count }
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -382,7 +415,9 @@ function Editor({ delivery, onChange, onBack, onSave, onDelete, msg }) {
       <div className="admin-actions">
         <button className="btn ghost" onClick={onBack}>← Back</button>
         <button className="btn primary" onClick={onSave}>Save client</button>
-        <button className="btn danger" onClick={onDelete}>Delete</button>
+        <button className="btn danger" onClick={onDelete} disabled={busyDelete}>
+          {busyDelete ? "Deleting…" : "Delete"}
+        </button>
       </div>
       {msg && <p className={`admin-msg ${msg.bad ? "bad" : ""}`}>{msg.text}</p>}
 
