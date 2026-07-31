@@ -5,6 +5,9 @@ import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import { P, img, srcSet, figmaEmbed, prefersReduced } from "./data.js";
 import { useApp } from "./context.js";
+// inlined (not <img src>) so the page actually runs its CSS animation —
+// CSS animations inside an <img>-referenced SVG don't play.
+import virajSvg from "./assets/logo-viraj.svg?raw";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -36,17 +39,34 @@ export function TLink({ to, children, className, ...rest }) {
    bounding box, so the mark fills its frame with no dead canvas. */
 const LOGO_PATH = "M13601.01 7399.82c51.36,550.69 45.2,1101.39 0,1652.13l-861.97 -5.81 -202.08 -635.26c-382.96,-696.11 -1154.99,-923.24 -2207.5,-812.25 -1758.3,269.41 -3004.63,1226.91 -3616.47,3037.17 -383.62,1406.37 -324.94,2773.98 138.86,4106.13 402.92,1001.85 1159.38,1619.03 2182.96,1945.53 789.43,308.57 1532.45,391.36 2247.63,338.44 -265.06,-362.71 -410.55,-811.57 -469.6,-1322.7 -26.57,-635.87 178,-1193.05 582.51,-1682.19l684.1 -784.56c-391.51,-691.76 -461.76,-1470.16 -36.98,-2382.05 580.92,-841.33 1437.94,-1130.48 2505.06,-999.36 1685.84,372.04 887,1950.08 -258.82,2522.56 147.04,-261.24 299.18,-521.47 306.33,-810.69 140.24,-1002.74 -786.89,-1222.76 -1362.03,-471.25 -472.04,743.76 -373.84,1605.91 -51.24,2514.64 750.11,1021.43 1560.1,1970.14 2438.61,2835.66 476.47,-792.85 704.16,-1507.47 646.62,-2447.37 325.41,14.81 477.7,505.15 457.97,1418.07 1.1,336.78 -294.09,785.62 -623.15,1402.61l1139.01 906.25 -479.82 582.25 -1044.96 -976.84c-898.32,695.41 -2890.17,1127.08 -3744.7,229.96 -526.27,279.5 -1132,361.54 -1755.56,402.22 -1843.68,-76.02 -3453.7,-847.76 -4629.62,-2912.11 -777.17,-1689.4 -729.69,-3460.2 -83.76,-5290.03 775.39,-1697.29 2122.34,-2647.16 3979.45,-2929.89 1648.22,-146.94 3004.82,62.76 4119.15,568.74zm1849.97 5514.61c545.17,-179.01 1141.85,-262.75 1778.26,-272.97l452.94 0c97.23,6.42 119.8,122.11 84.88,321.91 -36.02,192.83 -69.04,832.76 -225.86,827.45 -239.96,-36.96 -474.97,-121.67 -712.45,-182.51 -358.58,-102.54 -716.77,-151.3 -1074.25,-114.62 -496.59,70.74 -955.12,225.71 -1376.44,462.99 -217,130.9 -308.85,26.86 -234.87,-147.23 281.96,-399.89 724.11,-694.12 1307.79,-895.02zm-3779.98 2416.92c181.57,-624.18 574.76,-1347.87 783.79,-1338.97 843.56,1036.89 1762.56,2015.29 2790.58,2909.21 -625.91,467.01 -1702.35,780.79 -2615.23,304.5 -831.26,-435.64 -1068.47,-1091.08 -959.14,-1874.74z";
 
-export function Logo() {
+/* On the photography routes the bar shows the Lensofviraj photography
+   mark instead of the C& studio monogram. Drop the file at
+   public/logo-viraj.svg (or .png / .webp) — light/transparent art so it
+   reads on the dark bar — and it's picked up automatically; until then
+   the "Lensofviraj" wordmark stands in. */
+function PhotoLogo() {
+  // key by pathname isn't needed — a fresh mount on entering /photography
+  // re-injects the SVG, so its entrance animation replays each visit.
+  return (
+    <span className="logo logo-photo" role="img" aria-label={P.photoBrand}
+      dangerouslySetInnerHTML={{ __html: virajSvg }} />
+  );
+}
+
+export function Logo({ photo = false }) {
   // Replaying the draw-in every so often (not just once on load) — remount
   // the mark + wordmark via a changing key so the CSS animations (which use
   // animation-fill-mode: forwards and only ever run once per element)
   // restart clean. Skipped under reduced motion.
   const [replay, setReplay] = useState(0);
   useEffect(() => {
-    if (prefersReduced()) return;
+    if (photo || prefersReduced()) return;
     const id = setInterval(() => setReplay((n) => n + 1), 15000);
     return () => clearInterval(id);
-  }, []);
+  }, [photo]);
+
+  // photography routes swap the C& monogram for the Lensofviraj mark
+  if (photo) return <PhotoLogo />;
 
   return (
     <span className="logo" key={replay}>

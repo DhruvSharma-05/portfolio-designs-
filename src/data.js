@@ -743,6 +743,13 @@ export const CSS = `
    fill develops in — a nod to a print coming up in the tray. Hovering
    the brand twists the mark slightly, like focusing a lens. */
 .logo { display: inline-flex; align-items: center; gap: 12px; }
+/* photography-route logo (Lensofviraj). Drop public/logo-viraj.{svg,png,webp};
+   until then the wordmark below stands in. */
+/* the viraj photography mark, inlined so its entrance animation runs.
+   overflow:visible so the shutter's rotate-in isn't clipped mid-spin. */
+.logo-photo { gap: 0; display: inline-flex; }
+.logo-photo svg { height: 34px; width: auto; display: block; overflow: visible; }
+@media (max-width: 720px) { .logo-photo svg { height: 28px; } }
 .logo-mark { height: 34px; width: auto; aspect-ratio: 13113 / 11894; color: var(--ink);
   overflow: visible; transition: transform .5s cubic-bezier(.2,.8,.2,1), color .3s ease;
   transform-origin: 50% 50%; }

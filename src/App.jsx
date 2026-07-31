@@ -188,7 +188,9 @@ export default function App() {
         {/* masthead bar — sticky, always on screen */}
         <div className="bar" hidden={isAdmin}>
           <div className="bar-in">
-            <TLink to="/" className="mono brand" aria-label={`${P.name} home`}><Logo /></TLink>
+            <TLink to="/" className="mono brand" aria-label={`${P.name} home`}>
+              <Logo photo={location.pathname.startsWith("/photography")} />
+            </TLink>
             <nav className="nav mono" aria-label="Primary">
               {NAV.map((n) => (
                 <TLink key={n.to} to={n.to}
