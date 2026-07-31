@@ -62,7 +62,7 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: "No photos in this folder yet." });
   }
 
-  const filename = `${found.project.slug || "photos"}.zip`;
+  const filename = `${found.delivery.code || "photos"}.zip`;
   res.setHeader("Content-Type", "application/zip");
   res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 

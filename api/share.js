@@ -9,6 +9,7 @@
 import { requireAuth } from "./_lib/auth.js";
 import {
   driveClient, grantLinkAccess, revokeLinkAccess, shareState, folderMeta, countImages,
+  isInsideRoot,
 } from "./_lib/drive.js";
 
 export default async function handler(req, res) {
@@ -33,10 +34,30 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "That is a file, not a folder" });
     }
 
+    /* Only GRANTING is fenced to the delivery tree. Revoking and checking
+       stay open on purpose: removing access must never be blocked, or a
+       folder shared by mistake (or before this guard existed) would be
+       impossible to close from here. Restrict the dangerous direction,
+       always allow the safe one. */
     let state;
-    if (action === "grant") state = await grantLinkAccess(drive, folderId);
-    else if (action === "revoke") state = await revokeLinkAccess(drive, folderId);
-    else state = await shareState(drive, folderId);
+    if (action === "grant") {
+      const root = process.env.DRIVE_ROOT_FOLDER_ID;
+      if (!root) {
+        return res.status(500).json({ error: "DRIVE_ROOT_FOLDER_ID is not set" });
+      }
+      if (!(await isInsideRoot(drive, folderId, root))) {
+        return res.status(400).json({
+          error: folderId === root
+            ? "That is the Clients root folder. Sharing it would expose every client — pick the one shoot folder inside it."
+            : "That folder is outside the Clients folder. Only folders inside it can be shared.",
+        });
+      }
+      state = await grantLinkAccess(drive, folderId);
+    } else if (action === "revoke") {
+      state = await revokeLinkAccess(drive, folderId);
+    } else {
+      state = await shareState(drive, folderId);
+    }
 
     const count = await countImages(drive, folderId).catch(() => null);
     return res.status(200).json({ ...state, name: meta.name, count });

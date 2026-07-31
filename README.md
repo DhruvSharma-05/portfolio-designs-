@@ -210,11 +210,18 @@ npm run dev:api      # = vercel dev, serves / and /api together
   right there in the admin — pick an existing shoot folder, or create a
   brand-new one, without ever leaving the page. (A raw folder-ID paste box is
   still there as a fallback for folders made by hand.)
-- **Share folder** — turns on link-sharing for that one folder only.
+- **Share folder** — turns on link-sharing for that one folder only. The
+  server refuses to share the `DRIVE_ROOT_FOLDER_ID` root itself, or any
+  folder outside it, so the "shared a parent folder by accident" failure
+  can't happen even via the manual folder-ID box.
 - **Send it** — copy the pre-written WhatsApp message, copy just the link, or
   hit **"Email this to them"** to send the same message over SMTP.
 - **Revoke** — turns sharing back off; the code stops working immediately.
-- Deleting a client never touches the photos in Drive.
+- **Deleting a client revokes its Drive sharing first**, then removes the
+  record. If the revoke fails the delete is aborted and the client is kept —
+  otherwise the folder id would be gone while the photos stayed link-shared,
+  with nothing left in the UI to close them. The photos themselves stay in
+  Drive either way.
 
 ### Security notes
 
@@ -256,6 +263,13 @@ it. The site sets the permission on exactly the folder id the gallery points at,
 as **Viewer** — the client can open and download, but cannot rename, delete,
 upload, or see anything outside that folder.
 
+That rule is **enforced, not just documented**: `api/share.js` walks the
+folder's parent chain (`isInsideRoot` in `api/_lib/drive.js`) and refuses to
+grant sharing unless the folder is a *descendant* of `DRIVE_ROOT_FOLDER_ID`.
+The root itself is rejected explicitly. Only *granting* is fenced this way —
+**revoke and check stay open on any folder**, deliberately, so access that was
+opened by mistake (or before this guard existed) can always be closed from here.
+
 **Revoke** removes that permission again, killing the link for good.
 
 For this the service account needs **Editor** on the delivery folders, with
@@ -271,7 +285,8 @@ newly created delivery folder public by default).
   characters from a 31-letter alphabet, and the lookup endpoint is
   rate-limited to 10 tries a minute per IP.
 - Once a client has the **Drive** link, forwarding it still works — the code
-  protects discovery, not the folder. Revoke is the answer if that happens.
+  protects discovery, not the folder. Revoke is the answer if that happens,
+  and deleting the client now revokes for you.
 - `/client` is `noindex` and never cached.
 - Anyone who can download can also copy to their own Drive. Those are the same
   permission in Drive; it cannot be split.

@@ -46,9 +46,9 @@ export default async function handler(req, res) {
     const overCap = !images || images.length > MAX_FILES || totalBytes > MAX_BYTES;
 
     return res.status(200).json({
-      client: found.project.client.name || "",
-      title: found.project.t || "",
-      note: found.project.client.note || "",
+      client: found.delivery.name || "",
+      title: found.delivery.title || "",
+      note: found.delivery.note || "",
       count: images ? images.length : null,
       url: folderUrl(found.folderId),
       zip: {

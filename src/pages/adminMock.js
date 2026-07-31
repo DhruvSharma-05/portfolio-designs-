@@ -4,8 +4,8 @@
    `npm run dev` runs Vite alone, which does not serve the functions in
    api/. Rather than leave /admin stuck on a login it can never pass,
    the page detects that there is no backend and runs against this
-   in-memory stand-in instead: sign-in is skipped, the lists are full of
-   plausible projects, and the Drive picker shows placeholder frames.
+   in-memory stand-in instead: sign-in is skipped, the list is full of
+   plausible clients, and the folder picker shows placeholder folders.
 
    It is for looking at the interface and nothing else. Edits live until
    you refresh, and this module is only ever reachable when
@@ -16,74 +16,29 @@ let active = false;
 export const isMock = () => active;
 export const enableMock = () => { active = true; };
 
-/* In preview mode a photo "id" is just an image URL, so the same <img>
-   markup works with no Drive behind it. */
-export const thumbUrl = (id) =>
-  active ? id : `/api/thumb?id=${encodeURIComponent(id)}`;
-
-const shot = (seed, n) =>
-  Array.from({ length: n }, (_, i) => `https://picsum.photos/seed/${seed}-${i + 1}/400/400`);
-
 const FOLDERS = [
-  { id: "f-after-hours", name: "After Hours" },
-  { id: "f-faces", name: "Faces" },
-  { id: "f-salt", name: "Salt & Light" },
-  { id: "f-web", name: "Web screens" },
+  { id: "f-after-hours", name: "After Hours — North Café" },
+  { id: "f-sharma", name: "Sharma Wedding" },
+  { id: "f-faces", name: "Faces (portrait day)" },
 ];
-
-const FOLDER_PHOTOS = {
-  "f-after-hours": shot("after-hours", 12),
-  "f-faces": shot("faces", 10),
-  "f-salt": shot("salt", 8),
-  "f-web": shot("web", 6),
-};
-
-const asPhotos = (urls) =>
-  urls.map((u, i) => ({ id: u, name: `frame-${String(i + 1).padStart(2, "0")}.jpg`, w: 400, h: 400 }));
 
 /* the document the real admin would load from Drive */
 let store = {
   version: 1,
   updatedAt: new Date().toISOString(),
-  photoProjects: [
+  deliveries: [
     {
-      slug: "after-hours", t: "After Hours", kind: "Editorial",
-      loc: "Chandigarh, IN", year: "2025", exif: "35mm · f/1.8 · 1/125",
-      role: "Photography · Grade",
-      note: "A night series shot entirely on available light, made over two evenings across the old market.",
-      intro: "Two nights, one lens, no flash. The city did the lighting.",
-      photos: FOLDER_PHOTOS["f-after-hours"].slice(0, 7), hidden: false,
-      client: {
-        on: true, name: "North Café", folderId: "mock-folder-1",
-        code: "after-hours-7q4m2x", note: "Full set, edited. Shout if you need a different crop.",
-        email: "hello@northcafe.example", revoked: false,
-      },
+      title: "After Hours", name: "North Café", email: "hello@northcafe.example",
+      folderId: "f-after-hours", code: "after-hours-7q4m2x",
+      note: "Full set, edited. Shout if you need a different crop.", revoked: false,
     },
     {
-      slug: "faces", t: "Faces", kind: "Portraits",
-      loc: "Studio", year: "2024", exif: "85mm · f/2 · 1/200",
-      role: "Portrait · One light",
-      note: "Twelve people, one afternoon, one light moved twice.",
-      intro: "One light, moved twice. Everything else is the person.",
-      photos: FOLDER_PHOTOS["f-faces"].slice(0, 5), hidden: false,
-      client: { on: false, name: "", folderId: "", code: "", note: "", email: "", revoked: false },
+      title: "Sharma Wedding", name: "Priya Sharma", email: "",
+      folderId: "f-sharma", code: "sharma-wed-3k9d2p",
+      note: "", revoked: true,
     },
-  ],
-  webProjects: [
     {
-      slug: "north-cafe", t: "North Café", tag: "Brand & menu", year: "2025",
-      role: "Design · Brand",
-      note: "Identity, printed menu system and a one-page site for a small café.",
-      intro: "A menu that reads the same printed as it does on a phone.",
-      tool: "Canva", href: "https://canva.com", live: "",
-      stack: ["Canva", "Illustrator", "Webflow"],
-      specs: [
-        { k: "Scope", v: "Identity, print menu, one-page site" },
-        { k: "Timeline", v: "3 weeks" },
-      ],
-      cover: FOLDER_PHOTOS["f-web"][0],
-      shots: FOLDER_PHOTOS["f-web"].slice(1, 4),
-      hidden: false,
+      title: "Faces", name: "", email: "", folderId: "", code: "", note: "", revoked: false,
     },
   ],
 };
@@ -91,7 +46,7 @@ let store = {
 const wait = (ms = 260) => new Promise((r) => setTimeout(r, ms));
 
 /* which folders are "shared" in this preview session */
-const shared = new Set(["mock-folder-1"]);
+const shared = new Set(["f-after-hours"]);
 
 /* Mirrors the real endpoints closely enough that swapping back to the
    live API changes nothing in the page. */
@@ -114,8 +69,7 @@ export async function mockApi(url, options = {}) {
       return { folder };
     }
     const folder = new URL(url, location.origin).searchParams.get("folder");
-    if (!folder) return { folders: FOLDERS, photos: [] };
-    return { folders: [], photos: asPhotos(FOLDER_PHOTOS[folder] || []) };
+    return { folders: folder ? [] : FOLDERS };
   }
 
   if (url.startsWith("/api/mail")) {
@@ -137,11 +91,8 @@ export async function mockApi(url, options = {}) {
     if (!folderId) throw new Error("Pick a delivery folder first");
     if (action === "grant") shared.add(folderId);
     if (action === "revoke") shared.delete(folderId);
-    return { shared: shared.has(folderId), name: "After Hours (preview)", count: 24 };
-  }
-
-  if (url.startsWith("/api/publish")) {
-    return { started: true, preview: true };
+    const name = FOLDERS.find((f) => f.id === folderId)?.name || "the folder";
+    return { shared: shared.has(folderId), name, count: 24 };
   }
 
   throw new Error(`No preview handler for ${url}`);

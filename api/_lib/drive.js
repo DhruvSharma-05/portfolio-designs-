@@ -69,7 +69,9 @@ export async function listImages(drive, folder) {
   }));
 }
 
-export async function fileBytes(drive, fileId) {
+/* Internal: only readContent() needs whole-file bytes now. It was exported
+   for api/thumb.js, which went with the photo picker. */
+async function fileBytes(drive, fileId) {
   const res = await drive.files.get(
     { fileId, alt: "media" },
     { responseType: "arraybuffer" },
@@ -148,6 +150,34 @@ export async function folderMeta(drive, folderId) {
   return res.data;
 }
 
+/* Is `folderId` a DESCENDANT of `rootId`?
+
+   This is what stops the one accident the whole sharing design exists to
+   prevent: link-sharing a PARENT folder, which Drive inherits down to
+   every client folder inside it and so exposes every gallery at once.
+   Until this existed the rule was convention only — api/share.js would
+   happily share whatever id it was handed, including the Clients root
+   itself, which the admin's "paste a folder ID" box makes reachable in
+   two clicks.
+
+   The root itself returns false on purpose: it is the container, never a
+   delivery folder. Walks up the parent chain, capped so a cycle or a
+   pathological nesting can't spin. Drive v3 is effectively single-parent,
+   but the legacy multi-parent shape is handled by checking the whole
+   parents array at each level before following the first. */
+export async function isInsideRoot(drive, folderId, rootId, maxDepth = 12) {
+  if (!rootId || !folderId || folderId === rootId) return false;
+  let cursor = folderId;
+  for (let i = 0; i < maxDepth; i++) {
+    const { data } = await drive.files.get({ fileId: cursor, fields: "parents" });
+    const parents = data.parents || [];
+    if (!parents.length) return false;          // hit My Drive / a shared-with-me top level
+    if (parents.includes(rootId)) return true;
+    cursor = parents[0];
+  }
+  return false;                                  // deeper than any real shoot tree
+}
+
 /* How many images are in the delivery folder — shown to the client so
    they can tell the download finished with everything in it. */
 export async function countImages(drive, folderId) {
@@ -162,14 +192,30 @@ export async function countImages(drive, folderId) {
 export const folderUrl = (id) => `https://drive.google.com/drive/folders/${id}`;
 
 /* ---- content.json -------------------------------------------------
-   The shape the admin edits and the build consumes. Kept deliberately
-   flat and boring so it stays readable if anyone opens it in Drive. */
+   The client list /admin edits — deliberately flat and boring so it
+   stays readable if anyone opens it in Drive. */
 
-export const EMPTY_CONTENT = {
+const EMPTY_CONTENT = {
   version: 1,
   updatedAt: null,
-  photoProjects: [],
-  webProjects: [],
+  deliveries: [],
+};
+
+/* One-time read-side migration from the old shape (`photoProjects` /
+   `webProjects`, each optionally carrying a `client` sub-object) to the
+   flat `deliveries` list. Only runs if a file predates this change —
+   the next Save rewrites it in the new shape, so this can be deleted
+   once every real content.json has been saved at least once. */
+const migrateLegacy = (parsed) => {
+  if (parsed.deliveries || (!parsed.photoProjects && !parsed.webProjects)) return parsed;
+  const deliveries = [...(parsed.photoProjects || []), ...(parsed.webProjects || [])]
+    .filter((p) => p.client?.on && p.client?.code)
+    .map((p) => ({
+      code: p.client.code, title: p.t || "", name: p.client.name || "",
+      email: p.client.email || "", folderId: p.client.folderId || "",
+      note: p.client.note || "", revoked: Boolean(p.client.revoked),
+    }));
+  return { ...parsed, deliveries };
 };
 
 export async function readContent(drive) {
@@ -179,7 +225,7 @@ export async function readContent(drive) {
   const text = buf.toString("utf8").trim();
   if (!text) return { ...EMPTY_CONTENT };          // freshly created empty file
   try {
-    return { ...EMPTY_CONTENT, ...JSON.parse(text) };
+    return { ...EMPTY_CONTENT, ...migrateLegacy(JSON.parse(text)) };
   } catch {
     // never let a corrupt file wipe the site — surface it instead
     throw new Error("content.json in Drive is not valid JSON");

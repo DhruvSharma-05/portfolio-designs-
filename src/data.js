@@ -681,15 +681,6 @@ export const CSS = `
   animation: draw 1.1s cubic-bezier(.76,0,.24,1) forwards; }
 @keyframes draw { to { transform: scaleX(1); } }
 
-/* --- thesis --- */
-.thesis-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 56px; align-items: end; }
-@media (max-width: 860px) { .thesis-grid { grid-template-columns: 1fr; align-items: start; gap: 32px; } }
-.lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(24px, 3.6vw, 44px);
-  line-height: 1.22; max-width: 22ch; }
-.lead i { font-style: normal; color: var(--accent); }
-.aside { max-width: 400px; color: var(--dim); line-height: 1.72; font-size: 15px; }
-.aside p + p { margin-top: 16px; }
-
 /* --- photography: one card per project --- */
 .stack { padding-bottom: 18vh; display: flex; flex-direction: column; gap: 34px; }
 /* These were sticky, which piled the projects up on top of each other as
@@ -790,16 +781,6 @@ export const CSS = `
 .gwork { padding: 12vh 0; border-top: 1px solid var(--rule); }
 .gwork-head { display: flex; justify-content: space-between; align-items: center;
   gap: 18px 28px; flex-wrap: wrap; margin-bottom: 36px; }
-.gtabs { display: flex; gap: 8px; flex-wrap: wrap; }
-.gtab { border: 1px solid var(--rule); border-radius: 100px; padding: 8px 16px;
-  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--dim);
-  transition: border-color .3s ease, color .3s ease, background-color .3s ease; }
-.gtab:hover { border-color: var(--accent); color: var(--accent); }
-.gtab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-.gempty { padding: 9vh 24px; text-align: center; border: 1px dashed var(--rule);
-  border-radius: 6px; }
-
 /* --- home: photography collection cards ---
    One framed cover per collection; opens the full gallery at
    /photography/:slug. Mirrors the site's card idiom (accent hover, the
@@ -832,10 +813,6 @@ export const CSS = `
   transition: color .3s; }
 .projcard:hover .projcap h3 { color: var(--accent); }
 .projcap .mono { flex: 0 0 auto; color: var(--dim); }
-/* label above the pooled "selected frames" grid on the home page */
-.gwork-sub { margin: 48px 0 20px; color: var(--dim);
-  padding-top: 26px; border-top: 1px solid var(--rule); }
-
 /* --- reserved room (design work not published yet) --- */
 .reserved { border: 1px dashed var(--rule); border-radius: 6px; padding: 8vh 36px;
   display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -1011,10 +988,6 @@ export const CSS = `
 .about-lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.6vw, 30px);
   line-height: 1.35; margin-top: 28px; max-width: 22ch; }
 .about-lead i { font-style: normal; color: var(--accent); }
-.about-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 34px; }
-.about-tags span { border: 1px solid var(--rule); border-radius: 100px; padding: 8px 16px;
-  transition: border-color .35s ease; }
-.about-tags span:hover { border-color: var(--accent); }
 .about-portrait { position: relative; overflow: hidden; border-radius: 4px;
   border: 1px solid var(--rule); aspect-ratio: 4/5; }
 .about-portrait img { will-change: transform; }
@@ -1521,24 +1494,41 @@ export const CSS = `
 
 
 /* ==================================================================
-   ADMIN — /admin. Same palette as the site so it feels like one thing,
-   but plainer: forms want clarity, not atmosphere.
-   ================================================================== */
-.admin { padding: 6vh 0 14vh; max-width: 1100px; }
-.admin-top { display: flex; justify-content: space-between; align-items: flex-end;
-  gap: 20px; flex-wrap: wrap; padding-bottom: 18px; margin-bottom: 34px;
-  border-bottom: 1px solid var(--rule); }
-.admin-top h1 { font-weight: 300; letter-spacing: -0.03em; font-size: clamp(30px, 5vw, 52px);
-  margin-top: 10px; }
-.admin-top a:hover { color: var(--accent); }
+   ADMIN — /admin. Same palette as the site, but the site's display
+   typography is wrong for a form: .mono is 11px uppercase at --dim
+   (5.2:1), which reads fine as a one-word kicker on a poster page and
+   badly as the label on all thirty fields of a working tool. All-caps
+   also measures ~13% slower to read. So the admin overrides it with
+   sentence-case Inter at real sizes, and defines its own line/edge
+   tokens because the site's --rule (#1E1E22) sits at 1.19:1 against
+   the background — invisible, which is why nothing here had structure.
 
-.admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px;
-  overflow: hidden; margin-bottom: 26px; }
-.admin-stat { background: var(--bg); padding: 22px 20px; }
-.admin-stat b { display: block; font-weight: 300; letter-spacing: -0.03em;
-  font-size: clamp(28px, 3.4vw, 42px); line-height: 1; font-variant-numeric: tabular-nums; }
-.admin-stat span { display: block; margin-top: 10px; }
+   Every token below is scoped to .admin, so the public site keeps its
+   deliberate look untouched.
+   ================================================================== */
+.admin {
+  --a-line: #48484F;    /* structural dividers — visible, quiet */
+  --a-edge: #666670;    /* interactive borders — 3.5:1, WCAG 1.4.11 */
+  --a-label: #C4C4CC;   /* field labels — 11.8:1 */
+  --a-hint: #9A9AA4;    /* helper text — 7.1:1 */
+  --a-field: #17171B;   /* input fill */
+  --a-ok: #4ADE80;      /* active   — 11.4:1 */
+  --a-draft: #9A9AA4;   /* draft    — 7.1:1 */
+  --a-bad: #FF6B70;     /* revoked  — 7.2:1 */
+  padding: 6vh 0 14vh; max-width: 1000px;
+}
+.admin-top { display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 20px; flex-wrap: wrap; padding-bottom: 18px; margin-bottom: 30px;
+  border-bottom: 1px solid var(--a-line); }
+.admin-top h1 { font-weight: 300; letter-spacing: -0.03em; font-size: clamp(28px, 4vw, 40px);
+  margin-top: 8px; }
+.admin-top .mono { color: var(--a-hint); }
+.pf .admin-viewsite { font-size: 13.5px; color: var(--a-hint); transition: color .25s ease; }
+.pf .admin-viewsite:hover { color: var(--ink); }
+/* the editor's status line sits under a heading, so it needs the gap */
+.admin-sec-head .status { margin-top: 6px; }
+
+.admin-summary { color: var(--a-hint); font-size: 14px; margin-bottom: 18px; }
 
 .admin-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
 /* Every control class below is .pf-scoped, same as .totop and .extlink
@@ -1546,47 +1536,48 @@ export const CSS = `
    background: none) is class+type, which beats a bare class, so an
    unscoped .btn on a <button> loses its border and fill and renders as
    naked text. These pages are almost entirely buttons, so it applies
-   throughout — .btn, .mini, .fold, .pickfr, .crumb, .client-dl,
-   .client-alt. NB: this whole stylesheet is a template literal, so no
+   throughout — .btn, .mini, .crumb, .client-dl, .client-alt. NB: this
+   whole stylesheet is a template literal, so no
    backticks in these comments. */
-.pf .btn { border: 1px solid var(--rule); border-radius: 100px; padding: 11px 22px;
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--ink);
-  transition: border-color .3s ease, background-color .3s ease, color .3s ease; }
-.pf .btn:hover { border-color: var(--accent); color: var(--accent); }
-.pf .btn:disabled { opacity: .45; pointer-events: none; }
-.pf .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-.pf .btn.primary:hover { filter: brightness(1.12); color: var(--bg); }
-.pf .btn.ghost { border-color: transparent; color: var(--dim); }
+.pf .btn { border: 1px solid var(--a-edge); border-radius: 100px; padding: 10px 20px;
+  font-size: 13.5px; font-weight: 500; letter-spacing: 0; color: var(--ink);
+  transition: border-color .25s ease, background-color .25s ease, color .25s ease; }
+.pf .btn:hover { border-color: var(--ink); }
+.pf .btn:disabled { opacity: .4; pointer-events: none; }
+.pf .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.pf .btn.primary:hover { filter: brightness(1.1); color: var(--bg); }
+.pf .btn.ghost { border-color: transparent; color: var(--a-hint); }
 .pf .btn.ghost:hover { color: var(--ink); }
-.pf .btn.danger:hover { border-color: #F4595E; color: #F4595E; }
-.pf .btn.small { padding: 8px 16px; font-size: 10px; }
-.pf .mini { width: 30px; height: 30px; border: 1px solid var(--rule); border-radius: 4px;
-  display: grid; place-items: center; font-size: 12px; color: var(--dim);
+.pf .btn.danger { color: var(--a-bad); border-color: color-mix(in srgb, var(--a-bad) 40%, transparent); }
+.pf .btn.danger:hover { border-color: var(--a-bad); }
+.pf .btn.small { padding: 7px 15px; font-size: 12.5px; }
+.pf .mini { width: 32px; height: 32px; border: 1px solid var(--a-edge); border-radius: 4px;
+  display: grid; place-items: center; font-size: 13px; color: var(--a-hint);
   transition: border-color .25s ease, color .25s ease; }
-.pf .mini:hover { border-color: var(--accent); color: var(--accent); }
-.pf .mini:disabled { opacity: .3; pointer-events: none; }
-.pf .mini.danger:hover { border-color: #F4595E; color: #F4595E; }
+.pf .mini:hover { border-color: var(--ink); color: var(--ink); }
+.pf .mini:disabled { opacity: .35; pointer-events: none; }
+.pf .mini.danger:hover { border-color: var(--a-bad); color: var(--a-bad); }
 
-.admin-msg { padding: 12px 16px; border: 1px solid var(--rule); border-radius: 4px;
-  margin-bottom: 22px; color: var(--accent); }
-.admin-msg.bad { color: #F4595E; border-color: color-mix(in srgb, #F4595E 45%, var(--rule)); }
-.admin-msg.preview { color: #E0A93B; border-color: color-mix(in srgb, #E0A93B 45%, var(--rule));
-  background: color-mix(in srgb, #E0A93B 8%, transparent); }
-.admin-empty { padding: 22px 0; color: var(--dim); }
+.admin-msg { padding: 12px 16px; border: 1px solid var(--a-line); border-radius: 4px;
+  margin-bottom: 20px; font-size: 14px; color: var(--ink); }
+.admin-msg.bad { color: var(--a-bad); border-color: color-mix(in srgb, var(--a-bad) 50%, transparent); }
+.admin-msg.preview { color: #E0A93B; border-color: color-mix(in srgb, #E0A93B 40%, transparent);
+  background: color-mix(in srgb, #E0A93B 7%, transparent); }
+.admin-empty { padding: 22px 0; color: var(--a-hint); font-size: 14px; }
 
-.admin-sec { margin-top: 44px; }
-.admin-sec-head { display: flex; justify-content: space-between; align-items: flex-end;
-  gap: 16px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
-.admin-sec-head h2 { font-weight: 400; letter-spacing: -0.02em; font-size: 24px; }
-.admin-sec-head span { display: block; margin-top: 6px; }
+.admin-sec { margin-top: 38px; }
+.admin-sec-head { display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 1px solid var(--a-line); }
+.admin-sec-head h2 { font-weight: 500; letter-spacing: -0.01em; font-size: 20px; }
+.admin-sec-head .sub { display: block; margin-top: 4px; font-size: 13px; color: var(--a-hint); }
 
-.admin-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 16px;
-  align-items: center; padding: 16px 0; border-bottom: 1px solid var(--rule); }
-.admin-row .num { color: var(--dim); }
-.admin-row-main strong { font-weight: 400; letter-spacing: -0.02em; font-size: 18px; display: block; }
-.admin-row-main .dim { color: var(--dim); font-style: normal; }
-.admin-row-main span { display: block; margin-top: 5px; }
+.admin-row { display: grid; grid-template-columns: 1fr auto; gap: 16px;
+  align-items: center; padding: 14px 0; border-bottom: 1px solid var(--a-line); }
+.admin-row-main strong { font-weight: 500; letter-spacing: -0.01em; font-size: 16px; display: block; }
+.admin-row-main .dim { color: var(--a-hint); font-style: normal; }
+.admin-row-meta { display: flex; align-items: center; gap: 10px; margin-top: 5px; font-size: 13px; }
+.admin-row-code { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px;
+  letter-spacing: .02em; color: var(--a-hint); }
 .admin-row-acts { display: flex; gap: 8px; align-items: center; }
 @media (max-width: 640px) {
   .admin-row { grid-template-columns: 1fr; gap: 10px; }
@@ -1594,68 +1585,57 @@ export const CSS = `
 }
 
 /* --- forms --- */
-.admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 30px; }
+.admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 26px; }
 @media (max-width: 720px) { .admin-form { grid-template-columns: 1fr; } }
-.admin-field { display: flex; flex-direction: column; gap: 8px; }
+.admin-field { display: flex; flex-direction: column; gap: 7px; }
 .admin-field.wide { grid-column: 1 / -1; }
-.admin-field em { font-style: normal; font-size: 12.5px; color: var(--dim); }
+.admin-field > .lbl { font-size: 13.5px; font-weight: 500; color: var(--a-label);
+  letter-spacing: 0; text-transform: none; }
+.admin-field em { font-style: normal; font-size: 13px; line-height: 1.5; color: var(--a-hint); }
 .admin-field input, .admin-field textarea, .admin-login input {
-  background: var(--panel); border: 1px solid var(--rule); border-radius: 4px;
-  color: var(--ink); font: inherit; font-size: 15px; padding: 12px 14px; width: 100%;
-  transition: border-color .25s ease; }
+  background: var(--a-field); border: 1px solid var(--a-edge); border-radius: 4px;
+  color: var(--ink); font: inherit; font-size: 15px; padding: 11px 13px; width: 100%;
+  transition: border-color .2s ease, box-shadow .2s ease; }
 .admin-field input:focus, .admin-field textarea:focus, .admin-login input:focus {
-  border-color: var(--accent); outline: none; }
+  border-color: var(--ink); outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 14%, transparent); }
 .admin-field textarea { resize: vertical; line-height: 1.6; }
-.admin-check { display: flex; align-items: center; gap: 10px; color: var(--dim); font-size: 14.5px; }
-.admin-check input { width: 16px; height: 16px; accent-color: var(--accent); }
 
-.admin-login { max-width: 340px; display: flex; flex-direction: column; gap: 12px; margin-top: 8vh; }
+.admin-login { max-width: 340px; display: flex; flex-direction: column; gap: 10px; margin-top: 8vh; }
+.admin-login .lbl { font-size: 13.5px; font-weight: 500; color: var(--a-label); }
 
-/* --- chosen pictures --- */
-.admin-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 14px; margin-top: 20px; }
-.admin-thumb { border: 1px solid var(--rule); border-radius: 4px; overflow: hidden;
-  background: var(--panel); }
-.admin-thumb img { aspect-ratio: 4/3; }
-.admin-thumb figcaption { display: flex; align-items: center; gap: 6px; padding: 8px;
-  justify-content: space-between; }
+/* --- status: colour AND word together, never colour alone --- */
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+.status::before { content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; flex: 0 0 auto; }
+.status-active { color: var(--a-ok); }
+.status-draft { color: var(--a-draft); }
+.status-revoked { color: var(--a-bad); }
 
-/* --- Drive picker --- */
-.admin-picker { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,.72);
+/* --- Drive folder picker (client-delivery folder field) --- */
+.admin-picker { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,.78);
   display: grid; place-items: center; padding: 24px; }
-.admin-picker-in { background: var(--bg); border: 1px solid var(--rule); border-radius: 4px;
-  width: min(1100px, 100%); height: min(80vh, 800px); display: flex; flex-direction: column;
+.admin-picker-in { background: var(--bg); border: 1px solid var(--a-edge); border-radius: 6px;
+  width: min(720px, 100%); height: min(70vh, 640px); display: flex; flex-direction: column;
   overflow: hidden; }
 .admin-picker-top { display: flex; justify-content: space-between; align-items: center;
-  gap: 16px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--rule); }
-.admin-picker-body { display: grid; grid-template-columns: 220px 1fr; flex: 1; min-height: 0; }
-@media (max-width: 700px) { .admin-picker-body { grid-template-columns: 1fr; } .admin-folders { display: none; } }
-.admin-folders { border-right: 1px solid var(--rule); overflow-y: auto; padding: 12px; }
-.pf .fold { display: block; width: 100%; text-align: left; padding: 9px 12px; border-radius: 4px;
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .08em;
-  color: var(--dim); transition: background-color .25s ease, color .25s ease; }
-.pf .fold:hover { background: var(--panel); color: var(--ink); }
-.pf .fold.on { background: var(--accent); color: var(--bg); }
-.admin-grid { overflow-y: auto; padding: 16px; display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; align-content: start; }
-.pf .pickfr { position: relative; border: 1px solid var(--rule); border-radius: 4px;
-  overflow: hidden; aspect-ratio: 1; transition: border-color .25s ease; }
-.pf .pickfr:hover { border-color: var(--accent); }
-.pf .pickfr.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
-.pf .pickfr .badge { position: absolute; right: 6px; top: 6px; background: var(--accent);
-  color: var(--bg); border-radius: 100px; min-width: 22px; height: 22px; display: grid;
-  place-items: center; padding: 0 6px; font-size: 10px; }
-
-/* --- Drive folder picker/creator (client-delivery folder field) --- */
-.admin-folder-body { padding: 16px 20px; overflow-y: auto; }
-.admin-crumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 14px; }
-.pf .crumb { font-size: 11px; letter-spacing: .08em; color: var(--dim); }
-.pf .crumb:hover { color: var(--accent); }
-.pf .crumb::after { content: "/"; margin-left: 6px; color: var(--rule); }
+  gap: 16px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--a-line); }
+.admin-picker-top strong { font-weight: 500; font-size: 16px; }
+/* Column layout so the "new folder" row sits on the bottom edge instead
+   of floating under a short list. */
+.admin-folder-body { padding: 16px 20px; overflow-y: auto; flex: 1; min-height: 0;
+  display: flex; flex-direction: column; }
+.admin-folder-body .admin-row:last-of-type { border-bottom: 0; }
+.admin-crumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.pf .crumb { font-size: 13px; color: var(--a-hint); }
+.pf .crumb:hover { color: var(--ink); }
+.pf .crumb::after { content: "/"; margin-left: 6px; color: var(--a-line); }
 .pf .crumb:last-child::after { content: none; }
-.admin-folder-new { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px;
-  border-top: 1px solid var(--rule); }
-.admin-folder-new input { flex: 1; }
+.admin-folder-new { display: flex; gap: 8px; margin-top: auto; padding-top: 16px;
+  border-top: 1px solid var(--a-line); }
+.admin-folder-new input { flex: 1; background: var(--a-field); border: 1px solid var(--a-edge);
+  border-radius: 4px; color: var(--ink); font: inherit; font-size: 14px; padding: 9px 12px; }
+.admin-folder-new input:focus { border-color: var(--ink); outline: none; }
 
 /* ==================================================================
    CLIENT AREA — /client. The plainest page on the site: a client here
@@ -1723,20 +1703,23 @@ export const CSS = `
 .client-foot .back:hover { color: var(--accent); }
 
 /* --- admin: the delivery panel --- */
-.deliver { border: 1px solid var(--rule); border-radius: 4px; padding: 26px 24px;
-  background: var(--panel); }
-.deliver .admin-sec-head { border-bottom-color: var(--rule); }
+.deliver { border: 1px solid var(--a-line); border-radius: 6px; padding: 24px;
+  background: var(--panel); margin-top: 24px; }
 .admin-inline { display: flex; gap: 8px; align-items: center; }
 .admin-inline input { flex: 1; }
-.deliver-send { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--rule); }
-.deliver-send pre { background: var(--bg); border: 1px solid var(--rule); border-radius: 4px;
-  padding: 16px 18px; margin: 12px 0 14px; white-space: pre-wrap; word-break: break-word;
-  font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.7; color: var(--dim); }
-.deliver-hint { margin-top: 12px; text-transform: none; letter-spacing: .04em; }
-.admin-folder-manual { margin-top: 10px; }
-.admin-folder-manual summary { cursor: pointer; font-size: 11px; letter-spacing: .08em;
-  color: var(--dim); }
-.admin-folder-manual summary:hover { color: var(--accent); }
+.admin-inline .folder-name { flex: 1; font-size: 14px; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-inline .folder-name.none { color: var(--a-hint); }
+.deliver-send { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--a-line); }
+.deliver-send .lbl { font-size: 13.5px; font-weight: 500; color: var(--a-label); }
+.deliver-send pre { background: var(--bg); border: 1px solid var(--a-line); border-radius: 4px;
+  padding: 14px 16px; margin: 10px 0 14px; white-space: pre-wrap; word-break: break-word;
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1.65; color: var(--a-label); }
+.deliver-hint { margin-top: 12px; font-size: 13px; color: var(--a-hint); }
+.admin-folder-manual { margin-top: 8px; }
+.admin-folder-manual summary { cursor: pointer; font-size: 13px; color: var(--a-hint); }
+.admin-folder-manual summary:hover { color: var(--ink); }
+.admin-folder-manual input { margin-top: 8px; }
 
 
 @media (prefers-reduced-motion: reduce) {

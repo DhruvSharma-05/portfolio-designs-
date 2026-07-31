@@ -11,7 +11,7 @@
 
 import nodemailer from "nodemailer";
 
-export function mailTransport() {
+function mailTransport() {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
     throw new Error("SMTP is not configured — set SMTP_HOST/SMTP_USER/SMTP_PASS");
