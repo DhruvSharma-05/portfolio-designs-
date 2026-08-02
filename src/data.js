@@ -579,21 +579,15 @@ export const CSS = `
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
 /* the masthead CTA — the one way into the enquiry form from anywhere on
-   the site. Reads as a text link like the rest of the nav (no pill, no
-   fill), just marked out as the action by a small accent dot + accent
-   ink and the same underline-on-hover the nav links use. */
-.pf .barcta { flex: 0 0 auto; position: relative; display: inline-flex; align-items: center;
-  gap: 8px; padding: 0; border: 0; background: none; color: var(--accent);
-  white-space: nowrap; transition: opacity .3s ease; }
-.pf .barcta::before { content: ""; width: 5px; height: 5px; border-radius: 50%;
-  background: var(--accent); flex: 0 0 auto;
-  transition: transform .35s cubic-bezier(.2,.8,.2,1); }
-/* underline sweeps in under just the text (offset past the dot + gap) */
-.pf .barcta::after { content: ""; position: absolute; left: 13px; right: 0; bottom: -4px;
+   the site. Styled to read exactly like the other nav links: dim ink,
+   brightening to accent with the same underline-on-hover, no dot or fill. */
+.pf .barcta { flex: 0 0 auto; position: relative; padding: 0; border: 0; background: none;
+  color: var(--dim); white-space: nowrap; transition: color .3s ease; }
+.pf .barcta:hover { color: var(--accent); }
+.pf .barcta::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px;
   height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: right;
   transition: transform .35s cubic-bezier(.76,0,.24,1); }
 .pf .barcta:hover::after { transform: scaleX(1); transform-origin: left; }
-.pf .barcta:hover::before { transform: scale(1.3); }
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
