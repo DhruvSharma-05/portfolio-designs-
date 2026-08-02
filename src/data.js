@@ -988,7 +988,10 @@ export const CSS = `
 /* --- about page --- */
 .about { padding: 12vh 0 8vh; }
 .about-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
-@media (max-width: 820px) { .about-hero { grid-template-columns: 1fr; gap: 36px; } }
+@media (max-width: 820px) { .about-hero { grid-template-columns: 1fr; gap: 36px; }
+  /* single column now, so the 22ch measure that sat beside the portrait
+     just leaves dead space on the right — let the lead fill the column. */
+  .about-lead { max-width: 34ch; } }
 .about-kicker { margin-bottom: 22px; }
 .about-hero h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .98;
   font-size: clamp(44px, 8vw, 104px); text-wrap: balance; }
