@@ -105,7 +105,6 @@ export default function Home() {
             </div>
             <div className="role">
               <span className="mono">{P.role} · {P.city} · Booking 2026</span>
-              <span className="mono">Scroll</span>
             </div>
           </Reveal>
         </div>
@@ -181,24 +180,6 @@ export default function Home() {
                 </TLink>
               </Reveal>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* what a client walks away with — moved here from /about, which is
-          about the person; this is the sales argument, so it belongs
-          alongside the work it's arguing for */}
-      <section className="sec">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">What you get</div>
-          <div className="get-grid">
-            {INTRO.offer.map((o, i) => (
-              <Reveal className="get-card" key={o.k} delay={i * 0.06}>
-                <span className="get-num">{String(i + 1).padStart(2, "0")}</span>
-                <h3>{o.k}</h3>
-                <p>{o.v}</p>
-              </Reveal>
-            ))}
           </div>
         </div>
       </section>
