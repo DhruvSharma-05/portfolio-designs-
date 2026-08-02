@@ -328,7 +328,7 @@ export function ContactModal({ email, onClose, reduced }) {
         transition={{ duration: reduced ? 0 : 0.34, ease: [0.2, 0.8, 0.2, 1] }}>
         <div className="cmodal-head">
           <div>
-            <h2 id="cmodal-title">Let's create something together</h2>
+            <h2 id="cmodal-title">Tell me about your vision</h2>
             <p className="cmodal-sub">
               Whether it's a photoshoot, a website, or a creative collaboration, I'd love to
               hear your ideas. Fill out the form below and I'll get back to you within 24 hours.
