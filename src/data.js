@@ -502,12 +502,22 @@ export const ABOUT = {
     { y: "2026", t: "Vancouver. Designing digital products, shooting as Lensofviraj." },
   ],
   kit: [
-    { k: "Camera", v: "Sony A7 IV" },
+    { k: "Camera", v: "Sony A7 IV, A7 V" },
     { k: "Lens", v: "24-70mm, 50mm, 70-200mm" },
     { k: "Location", v: "Richmond · Vancouver · Lower Mainland" },
     { k: "Available for", v: "Portraits · Events · Fashion · Graduation" },
   ],
 };
+
+/* Client words. Attribution is a placeholder role until real names come in —
+   swap `by` for the client's name/shoot when available. */
+export const TESTIMONIALS = [
+  { q: "Viraj made us feel comfortable from the moment the shoot started. The photos exceeded our expectations.", by: "Portrait client" },
+  { q: "Viraj understood exactly what we wanted before we did.", by: "Event client" },
+];
+
+/* The studio line, used as a standalone statement on the home page. */
+export const TAGLINE = "Designed with intention. Captured with emotion.";
 
 /* Inter + IBM Plex Mono are self-hosted via @fontsource (see main.jsx) —
    no render-blocking request to fonts.googleapis.com. */
@@ -1150,6 +1160,24 @@ export const CSS = `
   .get-card:nth-child(even) { margin-top: 0; }
 }
 
+/* studio tagline — a large, quiet, centred statement between sections */
+.statement { padding: 15vh 0; border-top: 1px solid var(--rule); text-align: center; }
+.statement p { font-weight: 300; letter-spacing: -0.03em; line-height: 1.14;
+  font-size: clamp(28px, 5vw, 58px); text-wrap: balance; }
+.st-line { display: block; }
+.st-line + .st-line { color: var(--dim); }
+
+/* testimonials — client words in the standard two-up card grid */
+.tmon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 720px) { .tmon-grid { grid-template-columns: 1fr; } }
+.tcard { border: 1px solid var(--rule); border-radius: 7px; background: var(--panel);
+  padding: 30px 30px 26px; display: flex; flex-direction: column; gap: 18px; }
+.tcard blockquote { font-weight: 300; letter-spacing: -0.02em;
+  font-size: clamp(18px, 2vw, 23px); line-height: 1.5; }
+.tcard blockquote::before { content: "\\201C"; color: var(--accent); }
+.tcard blockquote::after { content: "\\201D"; color: var(--accent); }
+.tcard-by { color: var(--dim); margin-top: auto; }
+
 /* --- "What I'm hired for" — capability pills + live caption ---
    The services wrap like a keyword cloud; hovering or tapping one fills
    it and swaps the large caption below to that service's description. */
@@ -1227,6 +1255,9 @@ export const CSS = `
 .band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
   font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
 .band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
+/* the photography philosophy line — brighter and larger than the note below it */
+.band-lead { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
+  font-size: clamp(19px, 2.4vw, 27px); line-height: 1.45; max-width: 30ch; margin-top: 26px; }
 
 /* --- photo project detail --- */
 /* Fixed, capped hero so a portrait source can't blow the box up to

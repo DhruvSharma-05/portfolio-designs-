@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, isLandscape, INTRO, HERO_FRAMES, METRICS,
+  P, img, srcSet, ratio, isLandscape, INTRO, HERO_FRAMES, METRICS, TESTIMONIALS, TAGLINE,
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced,
 } from "../data.js";
 import { Reveal, TLink, FigmaFrame, Metrics } from "../ui.jsx";
@@ -184,6 +184,18 @@ export default function Home() {
         </div>
       </section>
 
+      {/* the studio line — a quiet full-width statement between the work
+          and the offer */}
+      <section className="statement">
+        <div className="wrap">
+          <Reveal as="p">
+            {TAGLINE.split(". ").map((s, i, a) => (
+              <span className="st-line" key={i}>{s}{i < a.length - 1 ? "." : ""}</span>
+            ))}
+          </Reveal>
+        </div>
+      </section>
+
       {/* what a client walks away with — framed on the two crafts Viraj
           does himself: photography and design */}
       <section className="sec">
@@ -206,6 +218,21 @@ export default function Home() {
           <div className="sec-label mono">The numbers</div>
           <div>
             <Metrics items={METRICS} />
+          </div>
+        </div>
+      </section>
+
+      {/* testimonials — client words, right before the closing CTA */}
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">Kind words</div>
+          <div className="tmon-grid">
+            {TESTIMONIALS.map((t, i) => (
+              <Reveal className="tcard" key={i} delay={i * 0.06}>
+                <blockquote>{t.q}</blockquote>
+                <span className="mono tcard-by">{t.by}</span>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
