@@ -986,7 +986,9 @@ export const CSS = `
 }
 
 /* --- about page --- */
-.about { padding: 12vh 0 8vh; }
+/* vertical padding only: a padding shorthand here would reset .wrap's
+   left/right 28px to 0 and jam the whole page against the screen edge. */
+.about { padding-top: 12vh; padding-bottom: 8vh; }
 .about-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
 @media (max-width: 820px) { .about-hero { grid-template-columns: 1fr; gap: 36px; }
   /* single column now, so the 22ch measure that sat beside the portrait
