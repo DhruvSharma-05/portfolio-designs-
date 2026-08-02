@@ -51,7 +51,7 @@ export default function About() {
       variants={page} initial="initial" animate="animate">
       <div className="about-hero">
         <div>
-          <div className="mono about-kicker">About · {P.city}</div>
+          <div className="mono about-kicker">About</div>
           <h1>{P.photographer}</h1>
           <p className="about-lead">
             {ABOUT.lead.split(" ").map((w, i) =>
