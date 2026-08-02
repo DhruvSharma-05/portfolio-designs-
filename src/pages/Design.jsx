@@ -59,7 +59,7 @@ function Preview({ w, reduced, sizes, eager = false }) {
    single link into /design/:slug.
    ================================================================== */
 export default function Design() {
-  useSeo("Web Design & Build", "UI/UX and web design by Viraj Mehta — interactive product prototypes and sites, designed and built end to end in Vancouver.");
+  useSeo("Web Design & Build", "UI/UX and web design by Viraj Mehta: interactive product prototypes and sites, designed and built end to end in Vancouver.");
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);

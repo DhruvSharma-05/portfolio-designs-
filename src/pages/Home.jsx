@@ -29,7 +29,7 @@ const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
    design work. Everything about the person lives on /about.
    ================================================================== */
 export default function Home() {
-  useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus web design and build — shot, designed and shipped by the same person. Booking 2026.");
+  useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus web design and build. Shot, designed and shipped by the same person. Booking 2026.");
   const { openContact, go } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);

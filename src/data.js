@@ -86,9 +86,9 @@ export const INTRO = {
      does himself: photography and design (not development/build). */
   offer: [
     { k: "A finished set", v: "Graded, consistent photographs, delivered in web and print sizes. Not a folder of raws." },
-    { k: "A design, ready to build", v: "Every screen designed and prototyped in Figma — clean and considered, ready to hand to any developer." },
+    { k: "A design, ready to build", v: "Every screen designed and prototyped in Figma: clean and considered, ready to hand to any developer." },
     { k: "One eye across both", v: "The person who shoots is the person who designs. Pictures and product, thought through together." },
-    { k: "Yours to keep", v: "You leave with the source files — the graded photos and the editable Figma, ready to use." },
+    { k: "Yours to keep", v: "You leave with the source files: the graded photos and the editable Figma, ready to use." },
   ],
 };
 
