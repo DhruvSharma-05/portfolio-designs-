@@ -1316,7 +1316,7 @@ export const CSS = `
   object-fit: contain; border-radius: 3px; }
 .lb-foot { display: flex; justify-content: center; gap: 8px; }
 .lb-x { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
-  text-transform: uppercase; transition: color .3s;
+  text-transform: uppercase; color: var(--dim); transition: color .3s;
   padding: 14px; margin: -14px; } /* bigger tap target, no layout shift */
 .lb-x:hover { color: var(--accent); }
 .lb-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
