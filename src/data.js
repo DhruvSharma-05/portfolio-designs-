@@ -1598,6 +1598,25 @@ export const CSS = `
 
 .admin-summary { color: var(--a-hint); font-size: 14px; margin-bottom: 18px; }
 
+/* in-app guide — collapsible walkthrough on the dashboard */
+.admin-guide { border: 1px solid var(--a-line); border-radius: 6px; background: var(--a-field);
+  margin-bottom: 22px; }
+.admin-guide > summary { display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; cursor: pointer; padding: 15px 18px; font-weight: 500; font-size: 15px;
+  color: var(--a-label); list-style: none; }
+.admin-guide > summary::-webkit-details-marker { display: none; }
+.admin-guide > summary:hover { color: #fff; }
+.admin-guide-cue { flex: 0 0 auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--a-hint);
+  border: 1px solid var(--a-edge); border-radius: 100px; padding: 4px 10px; }
+.admin-guide[open] > summary { border-bottom: 1px solid var(--a-line); }
+.admin-guide-steps { margin: 0; padding: 16px 20px 6px 42px; display: flex;
+  flex-direction: column; gap: 12px; }
+.admin-guide-steps li { color: var(--a-hint); font-size: 14px; line-height: 1.6; padding-left: 4px; }
+.admin-guide-steps li b { color: var(--a-label); font-weight: 500; }
+.admin-guide-note { margin: 6px 20px 18px; font-size: 13px; line-height: 1.6; color: var(--a-hint); }
+.admin-guide-note b { color: var(--a-label); font-weight: 500; }
+
 .admin-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
 /* Every control class below is .pf-scoped, same as .totop and .extlink
    above and for the same reason: the .pf button reset (border: none;

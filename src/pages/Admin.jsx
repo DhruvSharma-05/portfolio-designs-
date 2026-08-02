@@ -269,6 +269,62 @@ function Login({ onIn }) {
   );
 }
 
+/* ---------------- in-app guide ----------------
+   A collapsible walkthrough on the dashboard so Viraj never has to
+   remember the order. Closed by default; the labels match the buttons
+   exactly so following it is literal. */
+function GuidePanel() {
+  return (
+    <details className="admin-guide">
+      <summary>
+        <span>How to send a client their photos</span>
+        <span className="admin-guide-cue">Guide</span>
+      </summary>
+      <ol className="admin-guide-steps">
+        <li>
+          <b>Put the photos in one Drive folder.</b> Just that shoot&rsquo;s finished
+          photos, nothing else. (You can also make the folder here in step 4 and
+          upload to it afterwards.)
+        </li>
+        <li>
+          <b>Press &ldquo;New client&rdquo;.</b> Fill in the shoot title, the
+          client&rsquo;s name, and their email (email is optional).
+        </li>
+        <li>
+          <b>Press &ldquo;Generate&rdquo;</b> next to Access code. This is the code the
+          client types to open their photos.
+        </li>
+        <li>
+          <b>Press &ldquo;Choose folder&rdquo;</b> and pick the Drive folder with that
+          shoot&rsquo;s photos. Pick the exact folder, never a parent folder, or other
+          clients could be exposed.
+        </li>
+        <li>
+          <b>Press &ldquo;Share folder&rdquo;.</b> This turns on access to those photos;
+          the status changes to &ldquo;Shared&rdquo;.
+        </li>
+        <li>
+          <b>Press &ldquo;Save client&rdquo;.</b> The code goes live straight away, no
+          waiting.
+        </li>
+        <li>
+          <b>Press &ldquo;Copy message&rdquo;</b> and paste it to the client on WhatsApp,
+          or press &ldquo;Email this to them&rdquo;. The message already has the link and
+          the code.
+        </li>
+        <li>
+          <b>When they have downloaded everything,</b> open the client and press
+          &ldquo;Revoke access&rdquo; (or &ldquo;Delete&rdquo;) to switch the link off.
+        </li>
+      </ol>
+      <p className="admin-guide-note">
+        The link only works while the folder is shared <b>and</b> the client is saved.
+        You can revoke access at any time.
+      </p>
+    </details>
+  );
+}
+
 /* ---------------- dashboard ---------------- */
 
 function Dashboard({ content, dirty, msg, onSave, onAdd, onEdit, onRemove, onSignOut, busyDelete }) {
@@ -283,6 +339,8 @@ function Dashboard({ content, dirty, msg, onSave, onAdd, onEdit, onRemove, onSig
         {items.length} client{items.length === 1 ? "" : "s"}
         {items.length ? ` — ${active} active, ${drafts} draft${drafts === 1 ? "" : "s"}, ${revoked} revoked` : ""}
       </p>
+
+      <GuidePanel />
 
       <div className="admin-actions">
         <button className="btn" onClick={onSave} disabled={!dirty}>
