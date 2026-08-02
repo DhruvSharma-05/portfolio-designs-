@@ -501,6 +501,12 @@ export const ABOUT = {
     { y: "2019", t: "Leads the college photography group: shoots, collabs, mentoring." },
     { y: "2026", t: "Vancouver. Designing digital products, shooting as Lensofviraj." },
   ],
+  kit: [
+    { k: "Camera", v: "Sony A7 IV" },
+    { k: "Lens", v: "24-70mm, 50mm, 70-200mm" },
+    { k: "Location", v: "Richmond · Vancouver · Lower Mainland" },
+    { k: "Available for", v: "Portraits · Events · Fashion · Graduation" },
+  ],
 };
 
 /* Inter + IBM Plex Mono are self-hosted via @fontsource (see main.jsx) —
@@ -895,17 +901,35 @@ export const CSS = `
 .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 @media (max-width: 620px) { .cf-row { grid-template-columns: 1fr; } }
 .cf-field { display: flex; flex-direction: column; gap: 8px; }
-.cf-field input, .cf-field textarea { background: var(--panel); border: 1px solid var(--rule);
+.cf-field input, .cf-field textarea, .cf-field select { background: var(--panel); border: 1px solid var(--rule);
   border-radius: 4px; color: var(--ink); font: inherit; font-size: 15px; padding: 13px 15px;
   width: 100%; transition: border-color .25s ease; }
-.cf-field input:focus, .cf-field textarea:focus { border-color: var(--accent); outline: none; }
+.cf-field input:focus, .cf-field textarea:focus, .cf-field select:focus { border-color: var(--accent); outline: none; }
 .cf-field textarea { resize: vertical; line-height: 1.6; }
+/* select: strip the native chrome, draw our own chevron, and dim the label
+   until a real option is chosen (empty value fails :invalid on a required select). */
+.cf-field select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%2382828B' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 15px center; }
+.cf-field select:required:invalid { color: var(--dim); }
+.cf-field select option { color: var(--ink); background: var(--panel); }
+.cf-field select option[disabled] { color: var(--dim); }
 /* honeypot: off-screen, never shown, no tab stop */
 .cf-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .cf-foot { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 4px; }
 .cf-foot button[disabled] { opacity: .5; pointer-events: none; }
 .cf-err { text-transform: none; letter-spacing: .02em; color: #F4595E; }
 .cf-err a { color: var(--accent); }
+/* reply-time note + social links, sat below the button on one line */
+.cf-after { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex-wrap: wrap; margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.cf-reply { text-transform: none; letter-spacing: .04em; color: var(--dim); }
+.cf-social { display: flex; gap: 10px; }
+.pf .cf-social a { width: 36px; height: 36px; display: grid; place-items: center; color: var(--dim);
+  border: 1px solid var(--rule); border-radius: 50%;
+  transition: color .3s ease, border-color .3s ease; }
+.pf .cf-social a:hover { color: var(--accent); border-color: var(--accent); }
+.cf-social svg { width: 18px; height: 18px; }
 .form-done { margin-top: 30px; }
 .form-done .mono { margin-top: 10px; }
 
@@ -923,8 +947,9 @@ export const CSS = `
   padding: 30px 32px 32px; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
 @media (max-width: 560px) { .cmodal { padding: 14px; } .cmodal-panel { padding: 24px 20px 26px; } }
 .cmodal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
-.cmodal-head h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.05;
-  font-size: clamp(26px, 4vw, 34px); margin-top: 12px; }
+.cmodal-head h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.1;
+  font-size: clamp(24px, 3.4vw, 32px); text-wrap: balance; }
+.cmodal-sub { margin-top: 14px; color: var(--dim); font-size: 15px; line-height: 1.6; max-width: 48ch; }
 .cmodal-x { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center;
   border: 1px solid var(--rule); border-radius: 50%; color: var(--dim); font-size: 13px;
   transition: border-color .3s ease, color .3s ease; }
@@ -1002,6 +1027,12 @@ export const CSS = `
 .about-lead i { font-style: normal; color: var(--accent); }
 .about-portrait { position: relative; overflow: hidden; border-radius: 4px;
   border: 1px solid var(--rule); aspect-ratio: 4/5; }
+/* kit + availability strip — a plain spec grid under the bio */
+.about-kit { margin: 10vh 0; }
+.kitgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 30px 28px;
+  border-top: 1px solid var(--rule); padding-top: 32px; }
+.kitgrid dd { margin: 10px 0 0; font-weight: 300; letter-spacing: -0.01em;
+  font-size: 17px; line-height: 1.5; color: var(--ink); }
 .about-portrait img { will-change: transform; }
 .about-portrait figcaption { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
   padding: 46px 16px 15px; color: var(--ink);

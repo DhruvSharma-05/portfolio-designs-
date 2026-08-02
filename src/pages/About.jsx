@@ -80,6 +80,18 @@ export default function About() {
         </Reveal>
       </div>
 
+      {/* kit + availability — the practical facts a client wants up front */}
+      <section className="about-kit">
+        <Reveal as="dl" className="kitgrid">
+          {ABOUT.kit.map((k) => (
+            <div key={k.k}>
+              <dt className="mono">{k.k}</dt>
+              <dd>{k.v}</dd>
+            </div>
+          ))}
+        </Reveal>
+      </section>
+
       <section className="invert-band">
         <div className="wrap">
           <SectionHead n="01">How I work</SectionHead>
