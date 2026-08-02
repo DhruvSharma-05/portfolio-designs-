@@ -46,7 +46,6 @@ export const P = {
   region: "British Columbia, Canada",
   socials: [
     { k: "Instagram", v: "@lensofviraj", href: "https://www.instagram.com/lensofviraj/" },
-    { k: "Instagram (personal)", v: "@virajmehtaxo", href: "https://www.instagram.com/virajmehtaxo/" },
     { k: "LinkedIn", v: "virajmehtaa", href: "https://www.linkedin.com/in/virajmehtaa" },
   ],
 };
