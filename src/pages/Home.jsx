@@ -184,6 +184,23 @@ export default function Home() {
         </div>
       </section>
 
+      {/* what a client walks away with — framed on the two crafts Viraj
+          does himself: photography and design */}
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">What you get</div>
+          <div className="get-grid">
+            {INTRO.offer.map((o, i) => (
+              <Reveal className="get-card" key={o.k} delay={i * 0.06}>
+                <span className="get-num">{String(i + 1).padStart(2, "0")}</span>
+                <h3>{o.k}</h3>
+                <p>{o.v}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="sec">
         <div className="wrap sec-grid">
           <div className="sec-label mono">The numbers</div>

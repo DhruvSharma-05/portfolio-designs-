@@ -82,12 +82,13 @@ export const INTRO = {
       v: "Apps and sites designed and shipped end to end, from UI/UX through to a live, fast, editable page.",
     },
   ],
-  /* what a client actually walks away with */
+  /* what a client actually walks away with — framed on the two crafts he
+     does himself: photography and design (not development/build). */
   offer: [
-    { k: "A finished set", v: "Graded, consistent, delivered in web and print sizes. Not a folder of raws." },
-    { k: "A site that ships", v: "Designed, built and deployed. Not a mockup you then have to find a developer for." },
-    { k: "One point of contact", v: "The person who shot it is the person who built it. No handover, no translation loss." },
-    { k: "Something you can edit", v: "You leave with the source file and a way to change the words yourself." },
+    { k: "A finished set", v: "Graded, consistent photographs, delivered in web and print sizes. Not a folder of raws." },
+    { k: "A design, ready to build", v: "Every screen designed and prototyped in Figma — clean and considered, ready to hand to any developer." },
+    { k: "One eye across both", v: "The person who shoots is the person who designs. Pictures and product, thought through together." },
+    { k: "Yours to keep", v: "You leave with the source files — the graded photos and the editable Figma, ready to use." },
   ],
 };
 
