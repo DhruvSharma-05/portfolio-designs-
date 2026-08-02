@@ -816,7 +816,10 @@ export const CSS = `
 .projcap h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(19px, 2.2vw, 25px);
   transition: color .3s; }
 .projcard:hover .projcap h3 { color: var(--accent); }
-.projcap .mono { flex: 0 0 auto; color: var(--dim); }
+/* the category label shares the title's typeface (Inter) and reads as a
+   smaller, dimmer subtitle rather than a mono tag, so the two lines match. */
+.projcap .mono { flex: 0 0 auto; color: var(--dim); font-family: inherit;
+  font-size: 14px; letter-spacing: -0.01em; text-transform: none; line-height: 1.2; }
 /* --- reserved room (design work not published yet) --- */
 .reserved { border: 1px dashed var(--rule); border-radius: 6px; padding: 8vh 36px;
   display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
