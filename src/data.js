@@ -274,8 +274,10 @@ export const PHOTO_PROJECTS = manifest.photoProjects?.length
   : withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
 
 /* The home hero is a wide, full-bleed frame, so a portrait photo would be
-   cropped down to a vertical sliver of itself — landscape only. */
-const isLandscape = (seed) => {
+   cropped down to a vertical sliver of itself — landscape only. Also used by
+   the home photography cards to stack a second frame under a landscape
+   collection so it fills its column like the portrait ones. */
+export const isLandscape = (seed) => {
   const p = PHOTOS.get(seed);
   return !!(p?.w && p?.h && p.w > p.h);
 };
@@ -797,6 +799,7 @@ export const CSS = `
 .projshot { position: relative; overflow: hidden; border: 1px solid var(--rule);
   border-radius: 4px; background: var(--panel); aspect-ratio: 4/3;
   transition: border-color .4s ease; }
+.projshot + .projshot { margin-top: 22px; }
 .projcard:hover .projshot { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
 .projshot img { transition: transform 1.1s cubic-bezier(.2,.8,.2,1), filter .6s ease; }
 .projcard:hover .projshot img { transform: scale(1.05); }

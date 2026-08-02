@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, INTRO, HERO_FRAMES, METRICS,
+  P, img, srcSet, ratio, isLandscape, INTRO, HERO_FRAMES, METRICS,
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced,
 } from "../data.js";
 import { Reveal, TLink, FigmaFrame, Metrics } from "../ui.jsx";
@@ -285,22 +285,35 @@ function PhotoProjects() {
         </div>
 
         <div className="projrow">
-          {PHOTO_PROJECTS.map((p, n) => (
+          {PHOTO_PROJECTS.map((p, n) => {
+            // a landscape cover leaves a short card; stack a second frame
+            // beneath it so the collection fills its column like the portraits
+            const stack = isLandscape(p.photos[0]) && p.photos[1];
+            return (
             <Reveal key={p.slug} delay={n * 0.06}>
               <TLink to={`/photography/${p.slug}`} className="projcard" aria-label={`Open ${p.t}`}>
                 <div className="projshot" style={{ aspectRatio: ratio(p.photos[0], 4, 3) }}>
                   <img src={img(p.photos[0], 900, 675)} srcSet={srcSet(p.photos[0])}
                     sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
                     alt={p.t} loading="lazy" />
-                  <span className="open">{p.photos.length} frames →</span>
+                  {!stack && <span className="open">{p.photos.length} frames →</span>}
                 </div>
+                {stack && (
+                  <div className="projshot" style={{ aspectRatio: ratio(p.photos[1], 4, 3) }}>
+                    <img src={img(p.photos[1], 900, 675)} srcSet={srcSet(p.photos[1])}
+                      sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
+                      alt={`${p.t}, second frame`} loading="lazy" />
+                    <span className="open">{p.photos.length} frames →</span>
+                  </div>
+                )}
                 <div className="projcap">
                   <h3>{p.t}</h3>
                   <span className="mono">{p.kind}</span>
                 </div>
               </TLink>
             </Reveal>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
