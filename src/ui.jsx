@@ -185,7 +185,7 @@ export function ContactForm({ email }) {
     return (
       <div className="form-done" role="status">
         <p className="pj-intro">Thanks. Your message is in.</p>
-        <p className="mono">Viraj usually replies within a day or two.</p>
+        <p className="mono">Usually replies within 24 hours.</p>
       </div>
     );
   }
@@ -195,25 +195,37 @@ export function ContactForm({ email }) {
       <input type="hidden" name="_subject" value="New enquiry · Crafted & Captured" />
       <div className="cf-row">
         <label className="cf-field">
-          <span className="mono">Your name</span>
-          <input name="name" type="text" required autoComplete="name" />
+          <span className="mono">Name</span>
+          <input name="name" type="text" required autoComplete="name" placeholder="John Doe" />
         </label>
         <label className="cf-field">
           <span className="mono">Email</span>
-          <input name="email" type="email" required autoComplete="email" />
+          <input name="email" type="email" required autoComplete="email" placeholder="someone@example.com" />
         </label>
       </div>
       <label className="cf-field">
-        <span className="mono">What do you need?</span>
+        <span className="mono">What are you looking for?</span>
+        <select name="service" required defaultValue="">
+          <option value="" disabled>Select one…</option>
+          <option>Portrait Photography</option>
+          <option>Event Photography</option>
+          <option>Product Photography</option>
+          <option>UI/UX Design</option>
+          <option>Website Design</option>
+          <option>Other</option>
+        </select>
+      </label>
+      <label className="cf-field">
+        <span className="mono">Message</span>
         <textarea name="message" rows={4} required
-          placeholder="A shoot, a site, or both. A few lines is plenty." />
+          placeholder="Tell me about your project, preferred date, location, and any ideas you have." />
       </label>
       {/* honeypot — hidden from people, tempting to bots */}
       <input type="text" name="_gotcha" tabIndex={-1} autoComplete="off"
         className="cf-hp" aria-hidden="true" />
       <div className="cf-foot">
         <button className="extlink" type="submit" disabled={status === "sending"}>
-          {status === "sending" ? "Sending…" : "Send enquiry"} <span className="arrow">→</span>
+          {status === "sending" ? "Sending…" : "Send message"} <span className="arrow">→</span>
         </button>
         {status === "error" && (
           <span className="mono cf-err">
@@ -221,7 +233,45 @@ export function ContactForm({ email }) {
           </span>
         )}
       </div>
+      <div className="cf-after">
+        <span className="mono cf-reply">Usually replies within 24 hours.</span>
+        <SocialIcons />
+      </div>
     </form>
+  );
+}
+
+/* Instagram + LinkedIn, drawn from P.socials so the links stay in one place.
+   Line-style glyphs to sit quietly beside the reply note. */
+function SocialIcons() {
+  const href = (k) => P.socials.find((s) => s.k === k)?.href;
+  const ig = href("Instagram");
+  const li = href("LinkedIn");
+  return (
+    <div className="cf-social">
+      {ig && (
+        <a href={ig} target="_blank" rel="noreferrer" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
+            strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="5" />
+            <circle cx="12" cy="12" r="4" />
+            <circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none" />
+          </svg>
+        </a>
+      )}
+      {li && (
+        <a href={li} target="_blank" rel="noreferrer" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
+            strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2.5" />
+            <path d="M7 10.5V17" />
+            <path d="M7 7.2v.01" />
+            <path d="M11 17v-3.5a2 2 0 0 1 4 0V17" />
+            <path d="M11 10.5V17" />
+          </svg>
+        </a>
+      )}
+    </div>
   );
 }
 
@@ -278,8 +328,11 @@ export function ContactModal({ email, onClose, reduced }) {
         transition={{ duration: reduced ? 0 : 0.34, ease: [0.2, 0.8, 0.2, 1] }}>
         <div className="cmodal-head">
           <div>
-            <span className="mono">Enquiry</span>
-            <h2 id="cmodal-title">Tell me about it.</h2>
+            <h2 id="cmodal-title">Tell me about your vision</h2>
+            <p className="cmodal-sub">
+              Whether it's a photoshoot, a website, or a creative collaboration, I'd love to
+              hear your ideas. Fill out the form below and I'll get back to you within 24 hours.
+            </p>
           </div>
           <button type="button" className="cmodal-x" onClick={onClose} aria-label="Close enquiry form">✕</button>
         </div>

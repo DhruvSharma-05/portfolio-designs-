@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, INTRO, HERO_FRAMES, METRICS,
+  P, img, srcSet, ratio, isLandscape, INTRO, HERO_FRAMES, METRICS, TESTIMONIALS, TAGLINE,
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced,
 } from "../data.js";
 import { Reveal, TLink, FigmaFrame, Metrics } from "../ui.jsx";
@@ -29,7 +29,7 @@ const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
    design work. Everything about the person lives on /about.
    ================================================================== */
 export default function Home() {
-  useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus web design and build — shot, designed and shipped by the same person. Booking 2026.");
+  useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus web design and build. Shot, designed and shipped by the same person. Booking 2026.");
   const { openContact, go } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
@@ -105,7 +105,6 @@ export default function Home() {
             </div>
             <div className="role">
               <span className="mono">{P.role} · {P.city} · Booking 2026</span>
-              <span className="mono">Scroll</span>
             </div>
           </Reveal>
         </div>
@@ -185,9 +184,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* what a client walks away with — moved here from /about, which is
-          about the person; this is the sales argument, so it belongs
-          alongside the work it's arguing for */}
+      {/* the studio line — a quiet full-width statement between the work
+          and the offer */}
+      <section className="statement">
+        <div className="wrap">
+          <Reveal as="p">
+            {TAGLINE.split(". ").map((s, i, a) => (
+              <span className="st-line" key={i}>{s}{i < a.length - 1 ? "." : ""}</span>
+            ))}
+          </Reveal>
+        </div>
+      </section>
+
+      {/* what a client walks away with — framed on the two crafts Viraj
+          does himself: photography and design */}
       <section className="sec">
         <div className="wrap sec-grid">
           <div className="sec-label mono">What you get</div>
@@ -208,6 +218,21 @@ export default function Home() {
           <div className="sec-label mono">The numbers</div>
           <div>
             <Metrics items={METRICS} />
+          </div>
+        </div>
+      </section>
+
+      {/* testimonials — client words, right before the closing CTA */}
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">Kind words</div>
+          <div className="tmon-grid">
+            {TESTIMONIALS.map((t, i) => (
+              <Reveal className="tcard" key={i} delay={i * 0.06}>
+                <blockquote>{t.q}</blockquote>
+                <span className="mono tcard-by">{t.by}</span>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
@@ -236,7 +261,6 @@ export default function Home() {
               <dt className="mono">Contact</dt>
               <dd>
                 <a href={`mailto:${P.email}`}>{P.email}</a><br />
-                <a href={`mailto:${P.email2}`}>{P.email2}</a><br />
                 <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
               </dd>
             </div>
@@ -287,22 +311,35 @@ function PhotoProjects() {
         </div>
 
         <div className="projrow">
-          {PHOTO_PROJECTS.map((p, n) => (
+          {PHOTO_PROJECTS.map((p, n) => {
+            // a landscape cover leaves a short card; stack a second frame
+            // beneath it so the collection fills its column like the portraits
+            const stack = isLandscape(p.photos[0]) && p.photos[1];
+            return (
             <Reveal key={p.slug} delay={n * 0.06}>
               <TLink to={`/photography/${p.slug}`} className="projcard" aria-label={`Open ${p.t}`}>
                 <div className="projshot" style={{ aspectRatio: ratio(p.photos[0], 4, 3) }}>
                   <img src={img(p.photos[0], 900, 675)} srcSet={srcSet(p.photos[0])}
                     sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
                     alt={p.t} loading="lazy" />
-                  <span className="open">{p.photos.length} frames →</span>
+                  {!stack && <span className="open">{p.photos.length} frames →</span>}
                 </div>
+                {stack && (
+                  <div className="projshot" style={{ aspectRatio: ratio(p.photos[1], 4, 3) }}>
+                    <img src={img(p.photos[1], 900, 675)} srcSet={srcSet(p.photos[1])}
+                      sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
+                      alt={`${p.t}, second frame`} loading="lazy" />
+                    <span className="open">{p.photos.length} frames →</span>
+                  </div>
+                )}
                 <div className="projcap">
                   <h3>{p.t}</h3>
                   <span className="mono">{p.kind}</span>
                 </div>
               </TLink>
             </Reveal>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -30,7 +30,7 @@ const HOLD = 5400; // ms per hero slide — matches the tick-fill keyframe
    vertical flow, each opening /photography/:slug.
    ================================================================== */
 export default function Photography() {
-  useSeo("Photography", "Portrait, event and visual-story photography by Viraj Mehta (Lensofviraj), Vancouver — traditional, wildlife and modern collections, each shown as a complete edit.");
+  useSeo("Photography", "Portrait, event and visual-story photography by Viraj Mehta (Lensofviraj), Vancouver: traditional, wildlife and modern collections, each shown as a complete edit.");
   const { openContact } = useApp();
   const [i, setI] = useState(0);
   const [reduced] = useState(prefersReduced);
@@ -133,6 +133,10 @@ export default function Photography() {
             Photography by {P.photographer}
           </div>
           <h2>{P.photoBrand}</h2>
+          <p className="band-lead">
+            Every photograph begins long before I press the shutter. Understanding
+            people, light, and emotion is just as important as the camera itself.
+          </p>
           <p>
             The photography half of {P.name}. Each set below is a single body of
             work, shot, selected and graded as one. Open any of them for the full edit.

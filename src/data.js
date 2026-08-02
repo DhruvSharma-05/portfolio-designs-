@@ -46,7 +46,6 @@ export const P = {
   region: "British Columbia, Canada",
   socials: [
     { k: "Instagram", v: "@lensofviraj", href: "https://www.instagram.com/lensofviraj/" },
-    { k: "Instagram (personal)", v: "@virajmehtaxo", href: "https://www.instagram.com/virajmehtaxo/" },
     { k: "LinkedIn", v: "virajmehtaa", href: "https://www.linkedin.com/in/virajmehtaa" },
   ],
 };
@@ -82,12 +81,13 @@ export const INTRO = {
       v: "Apps and sites designed and shipped end to end, from UI/UX through to a live, fast, editable page.",
     },
   ],
-  /* what a client actually walks away with */
+  /* what a client actually walks away with — framed on the two crafts he
+     does himself: photography and design (not development/build). */
   offer: [
-    { k: "A finished set", v: "Graded, consistent, delivered in web and print sizes. Not a folder of raws." },
-    { k: "A site that ships", v: "Designed, built and deployed. Not a mockup you then have to find a developer for." },
-    { k: "One point of contact", v: "The person who shot it is the person who built it. No handover, no translation loss." },
-    { k: "Something you can edit", v: "You leave with the source file and a way to change the words yourself." },
+    { k: "A finished set", v: "Graded, consistent photographs, delivered in web and print sizes. Not a folder of raws." },
+    { k: "A design, ready to build", v: "Every screen designed and prototyped in Figma: clean and considered, ready to hand to any developer." },
+    { k: "One eye across both", v: "The person who shoots is the person who designs. Pictures and product, thought through together." },
+    { k: "Yours to keep", v: "You leave with the source files: the graded photos and the editable Figma, ready to use." },
   ],
 };
 
@@ -273,8 +273,10 @@ export const PHOTO_PROJECTS = manifest.photoProjects?.length
   : withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
 
 /* The home hero is a wide, full-bleed frame, so a portrait photo would be
-   cropped down to a vertical sliver of itself — landscape only. */
-const isLandscape = (seed) => {
+   cropped down to a vertical sliver of itself — landscape only. Also used by
+   the home photography cards to stack a second frame under a landscape
+   collection so it fills its column like the portrait ones. */
+export const isLandscape = (seed) => {
   const p = PHOTOS.get(seed);
   return !!(p?.w && p?.h && p.w > p.h);
 };
@@ -499,7 +501,23 @@ export const ABOUT = {
     { y: "2019", t: "Leads the college photography group: shoots, collabs, mentoring." },
     { y: "2026", t: "Vancouver. Designing digital products, shooting as Lensofviraj." },
   ],
+  kit: [
+    { k: "Camera", v: "Sony A7 IV, A7 V" },
+    { k: "Lens", v: "24-70mm, 50mm, 70-200mm" },
+    { k: "Location", v: "Richmond · Vancouver · Lower Mainland" },
+    { k: "Available for", v: "Portraits · Events · Fashion · Graduation" },
+  ],
 };
+
+/* Client words. Attribution is a placeholder role until real names come in —
+   swap `by` for the client's name/shoot when available. */
+export const TESTIMONIALS = [
+  { q: "Viraj made us feel comfortable from the moment the shoot started. The photos exceeded our expectations.", by: "Portrait client" },
+  { q: "Viraj understood exactly what we wanted before we did.", by: "Event client" },
+];
+
+/* The studio line, used as a standalone statement on the home page. */
+export const TAGLINE = "Designed with intention. Captured with emotion.";
 
 /* Inter + IBM Plex Mono are self-hosted via @fontsource (see main.jsx) —
    no render-blocking request to fonts.googleapis.com. */
@@ -561,21 +579,15 @@ export const CSS = `
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
 /* the masthead CTA — the one way into the enquiry form from anywhere on
-   the site. Reads as a text link like the rest of the nav (no pill, no
-   fill), just marked out as the action by a small accent dot + accent
-   ink and the same underline-on-hover the nav links use. */
-.pf .barcta { flex: 0 0 auto; position: relative; display: inline-flex; align-items: center;
-  gap: 8px; padding: 0; border: 0; background: none; color: var(--accent);
-  white-space: nowrap; transition: opacity .3s ease; }
-.pf .barcta::before { content: ""; width: 5px; height: 5px; border-radius: 50%;
-  background: var(--accent); flex: 0 0 auto;
-  transition: transform .35s cubic-bezier(.2,.8,.2,1); }
-/* underline sweeps in under just the text (offset past the dot + gap) */
-.pf .barcta::after { content: ""; position: absolute; left: 13px; right: 0; bottom: -4px;
+   the site. Styled to read exactly like the other nav links: dim ink,
+   brightening to accent with the same underline-on-hover, no dot or fill. */
+.pf .barcta { flex: 0 0 auto; position: relative; padding: 0; border: 0; background: none;
+  color: var(--dim); white-space: nowrap; transition: color .3s ease; }
+.pf .barcta:hover { color: var(--accent); }
+.pf .barcta::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px;
   height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: right;
   transition: transform .35s cubic-bezier(.76,0,.24,1); }
 .pf .barcta:hover::after { transform: scaleX(1); transform-origin: left; }
-.pf .barcta:hover::before { transform: scale(1.3); }
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
@@ -796,6 +808,7 @@ export const CSS = `
 .projshot { position: relative; overflow: hidden; border: 1px solid var(--rule);
   border-radius: 4px; background: var(--panel); aspect-ratio: 4/3;
   transition: border-color .4s ease; }
+.projshot + .projshot { margin-top: 22px; }
 .projcard:hover .projshot { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
 .projshot img { transition: transform 1.1s cubic-bezier(.2,.8,.2,1), filter .6s ease; }
 .projcard:hover .projshot img { transform: scale(1.05); }
@@ -812,7 +825,10 @@ export const CSS = `
 .projcap h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(19px, 2.2vw, 25px);
   transition: color .3s; }
 .projcard:hover .projcap h3 { color: var(--accent); }
-.projcap .mono { flex: 0 0 auto; color: var(--dim); }
+/* the category label shares the title's typeface (Inter) and reads as a
+   smaller, dimmer subtitle rather than a mono tag, so the two lines match. */
+.projcap .mono { flex: 0 0 auto; color: var(--dim); font-family: inherit;
+  font-size: 14px; letter-spacing: -0.01em; text-transform: none; line-height: 1.2; }
 /* --- reserved room (design work not published yet) --- */
 .reserved { border: 1px dashed var(--rule); border-radius: 6px; padding: 8vh 36px;
   display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -889,17 +905,35 @@ export const CSS = `
 .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 @media (max-width: 620px) { .cf-row { grid-template-columns: 1fr; } }
 .cf-field { display: flex; flex-direction: column; gap: 8px; }
-.cf-field input, .cf-field textarea { background: var(--panel); border: 1px solid var(--rule);
+.cf-field input, .cf-field textarea, .cf-field select { background: var(--panel); border: 1px solid var(--rule);
   border-radius: 4px; color: var(--ink); font: inherit; font-size: 15px; padding: 13px 15px;
   width: 100%; transition: border-color .25s ease; }
-.cf-field input:focus, .cf-field textarea:focus { border-color: var(--accent); outline: none; }
+.cf-field input:focus, .cf-field textarea:focus, .cf-field select:focus { border-color: var(--accent); outline: none; }
 .cf-field textarea { resize: vertical; line-height: 1.6; }
+/* select: strip the native chrome, draw our own chevron, and dim the label
+   until a real option is chosen (empty value fails :invalid on a required select). */
+.cf-field select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%2382828B' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 15px center; }
+.cf-field select:required:invalid { color: var(--dim); }
+.cf-field select option { color: var(--ink); background: var(--panel); }
+.cf-field select option[disabled] { color: var(--dim); }
 /* honeypot: off-screen, never shown, no tab stop */
 .cf-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .cf-foot { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 4px; }
 .cf-foot button[disabled] { opacity: .5; pointer-events: none; }
 .cf-err { text-transform: none; letter-spacing: .02em; color: #F4595E; }
 .cf-err a { color: var(--accent); }
+/* reply-time note + social links, sat below the button on one line */
+.cf-after { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex-wrap: wrap; margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.cf-reply { text-transform: none; letter-spacing: .04em; color: var(--dim); }
+.cf-social { display: flex; gap: 10px; }
+.pf .cf-social a { width: 36px; height: 36px; display: grid; place-items: center; color: var(--dim);
+  border: 1px solid var(--rule); border-radius: 50%;
+  transition: color .3s ease, border-color .3s ease; }
+.pf .cf-social a:hover { color: var(--accent); border-color: var(--accent); }
+.cf-social svg { width: 18px; height: 18px; }
 .form-done { margin-top: 30px; }
 .form-done .mono { margin-top: 10px; }
 
@@ -917,8 +951,9 @@ export const CSS = `
   padding: 30px 32px 32px; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
 @media (max-width: 560px) { .cmodal { padding: 14px; } .cmodal-panel { padding: 24px 20px 26px; } }
 .cmodal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
-.cmodal-head h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.05;
-  font-size: clamp(26px, 4vw, 34px); margin-top: 12px; }
+.cmodal-head h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.1;
+  font-size: clamp(24px, 3.4vw, 32px); text-wrap: balance; }
+.cmodal-sub { margin-top: 14px; color: var(--dim); font-size: 15px; line-height: 1.6; max-width: 48ch; }
 .cmodal-x { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center;
   border: 1px solid var(--rule); border-radius: 50%; color: var(--dim); font-size: 13px;
   transition: border-color .3s ease, color .3s ease; }
@@ -979,9 +1014,15 @@ export const CSS = `
 }
 
 /* --- about page --- */
-.about { padding: 12vh 0 8vh; }
+/* vertical padding only: a padding shorthand here would reset .wrap's
+   left/right 28px to 0 and jam the whole page against the screen edge. */
+.about { padding-top: 12vh; padding-bottom: 8vh; }
 .about-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
-@media (max-width: 820px) { .about-hero { grid-template-columns: 1fr; gap: 36px; } }
+@media (max-width: 820px) { .about-hero { grid-template-columns: 1fr; gap: 36px; }
+  /* single column now, so the 22ch measure that sat beside the portrait
+     just leaves dead space on the right — let the lead fill the column
+     (it's a short sentence, so it becomes a couple of full-width lines). */
+  .about-lead { max-width: none; } }
 .about-kicker { margin-bottom: 22px; }
 .about-hero h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .98;
   font-size: clamp(44px, 8vw, 104px); text-wrap: balance; }
@@ -990,6 +1031,12 @@ export const CSS = `
 .about-lead i { font-style: normal; color: var(--accent); }
 .about-portrait { position: relative; overflow: hidden; border-radius: 4px;
   border: 1px solid var(--rule); aspect-ratio: 4/5; }
+/* kit + availability strip — a plain spec grid under the bio */
+.about-kit { margin: 10vh 0; }
+.kitgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 30px 28px;
+  border-top: 1px solid var(--rule); padding-top: 32px; }
+.kitgrid dd { margin: 10px 0 0; font-weight: 300; letter-spacing: -0.01em;
+  font-size: 17px; line-height: 1.5; color: var(--ink); }
 .about-portrait img { will-change: transform; }
 .about-portrait figcaption { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
   padding: 46px 16px 15px; color: var(--ink);
@@ -1107,6 +1154,24 @@ export const CSS = `
   .get-card:nth-child(even) { margin-top: 0; }
 }
 
+/* studio tagline — a large, quiet, centred statement between sections */
+.statement { padding: 15vh 0; border-top: 1px solid var(--rule); text-align: center; }
+.statement p { font-weight: 300; letter-spacing: -0.03em; line-height: 1.14;
+  font-size: clamp(28px, 5vw, 58px); text-wrap: balance; }
+.st-line { display: block; }
+.st-line + .st-line { color: var(--dim); }
+
+/* testimonials — client words in the standard two-up card grid */
+.tmon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 720px) { .tmon-grid { grid-template-columns: 1fr; } }
+.tcard { border: 1px solid var(--rule); border-radius: 7px; background: var(--panel);
+  padding: 30px 30px 26px; display: flex; flex-direction: column; gap: 18px; }
+.tcard blockquote { font-weight: 300; letter-spacing: -0.02em;
+  font-size: clamp(18px, 2vw, 23px); line-height: 1.5; }
+.tcard blockquote::before { content: "\\201C"; color: var(--accent); }
+.tcard blockquote::after { content: "\\201D"; color: var(--accent); }
+.tcard-by { color: var(--dim); margin-top: auto; }
+
 /* --- "What I'm hired for" — capability pills + live caption ---
    The services wrap like a keyword cloud; hovering or tapping one fills
    it and swaps the large caption below to that service's description. */
@@ -1184,6 +1249,9 @@ export const CSS = `
 .band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
   font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
 .band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
+/* the photography philosophy line — brighter and larger than the note below it */
+.band-lead { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
+  font-size: clamp(19px, 2.4vw, 27px); line-height: 1.45; max-width: 30ch; margin-top: 26px; }
 
 /* --- photo project detail --- */
 /* Fixed, capped hero so a portrait source can't blow the box up to
@@ -1304,7 +1372,7 @@ export const CSS = `
   object-fit: contain; border-radius: 3px; }
 .lb-foot { display: flex; justify-content: center; gap: 8px; }
 .lb-x { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
-  text-transform: uppercase; transition: color .3s;
+  text-transform: uppercase; color: var(--dim); transition: color .3s;
   padding: 14px; margin: -14px; } /* bigger tap target, no layout shift */
 .lb-x:hover { color: var(--accent); }
 .lb-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
@@ -1529,6 +1597,25 @@ export const CSS = `
 .admin-sec-head .status { margin-top: 6px; }
 
 .admin-summary { color: var(--a-hint); font-size: 14px; margin-bottom: 18px; }
+
+/* in-app guide — collapsible walkthrough on the dashboard */
+.admin-guide { border: 1px solid var(--a-line); border-radius: 6px; background: var(--a-field);
+  margin-bottom: 22px; }
+.admin-guide > summary { display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; cursor: pointer; padding: 15px 18px; font-weight: 500; font-size: 15px;
+  color: var(--a-label); list-style: none; }
+.admin-guide > summary::-webkit-details-marker { display: none; }
+.admin-guide > summary:hover { color: #fff; }
+.admin-guide-cue { flex: 0 0 auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--a-hint);
+  border: 1px solid var(--a-edge); border-radius: 100px; padding: 4px 10px; }
+.admin-guide[open] > summary { border-bottom: 1px solid var(--a-line); }
+.admin-guide-steps { margin: 0; padding: 16px 20px 6px 42px; display: flex;
+  flex-direction: column; gap: 12px; }
+.admin-guide-steps li { color: var(--a-hint); font-size: 14px; line-height: 1.6; padding-left: 4px; }
+.admin-guide-steps li b { color: var(--a-label); font-weight: 500; }
+.admin-guide-note { margin: 6px 20px 18px; font-size: 13px; line-height: 1.6; color: var(--a-hint); }
+.admin-guide-note b { color: var(--a-label); font-weight: 500; }
 
 .admin-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
 /* Every control class below is .pf-scoped, same as .totop and .extlink

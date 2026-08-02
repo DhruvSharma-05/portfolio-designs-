@@ -51,7 +51,7 @@ export default function About() {
       variants={page} initial="initial" animate="animate">
       <div className="about-hero">
         <div>
-          <div className="mono about-kicker">About · {P.city}</div>
+          <div className="mono about-kicker">About</div>
           <h1>{P.photographer}</h1>
           <p className="about-lead">
             {ABOUT.lead.split(" ").map((w, i) =>
@@ -79,6 +79,18 @@ export default function About() {
           ))}
         </Reveal>
       </div>
+
+      {/* kit + availability — the practical facts a client wants up front */}
+      <section className="about-kit">
+        <Reveal as="dl" className="kitgrid">
+          {ABOUT.kit.map((k) => (
+            <div key={k.k}>
+              <dt className="mono">{k.k}</dt>
+              <dd>{k.v}</dd>
+            </div>
+          ))}
+        </Reveal>
+      </section>
 
       <section className="invert-band">
         <div className="wrap">
@@ -127,7 +139,6 @@ export default function About() {
             <dt className="mono">Contact</dt>
             <dd>
               <a href={`mailto:${P.email}`}>{P.email}</a><br />
-              <a href={`mailto:${P.email2}`}>{P.email2}</a><br />
               <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
             </dd>
           </div>

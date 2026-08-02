@@ -34,8 +34,8 @@ export default function PhotoProject() {
   }, [i, go]);
 
   useSeo(
-    p ? `${p.t} — Photography` : "Photography",
-    p ? (p.note || p.intro || `${p.t} — a photography set by Viraj Mehta, Vancouver.`) : "",
+    p ? `${p.t} · Photography` : "Photography",
+    p ? (p.note || p.intro || `${p.t}, a photography set by Viraj Mehta, Vancouver.`) : "",
   );
 
   /* No parallax on the hero: it worked by scaling the picture to 1.12 and

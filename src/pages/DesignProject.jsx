@@ -35,8 +35,8 @@ export default function DesignProject() {
   }, [i, go]);
 
   useSeo(
-    w ? `${w.t} — Design` : "Web Design & Build",
-    w ? (w.intro || w.note || `${w.t} — a design project by Viraj Mehta.`) : "",
+    w ? `${w.t} · Design` : "Web Design & Build",
+    w ? (w.intro || w.note || `${w.t}, a design project by Viraj Mehta.`) : "",
   );
 
   /* gentle parallax on each screen as it passes through the viewport */
