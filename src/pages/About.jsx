@@ -127,7 +127,6 @@ export default function About() {
             <dt className="mono">Contact</dt>
             <dd>
               <a href={`mailto:${P.email}`}>{P.email}</a><br />
-              <a href={`mailto:${P.email2}`}>{P.email2}</a><br />
               <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
             </dd>
           </div>
