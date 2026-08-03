@@ -337,9 +337,6 @@ export function ContactModal({ email, onClose, reduced }) {
           <button type="button" className="cmodal-x" onClick={onClose} aria-label="Close enquiry form">✕</button>
         </div>
         <ContactForm email={email} />
-        <div className="mono cmodal-foot">
-          Prefer email? <a href={`mailto:${email}`}>{email}</a> · {P.phone}
-        </div>
       </motion.div>
     </motion.div>
   );

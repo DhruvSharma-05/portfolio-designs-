@@ -37,12 +37,10 @@ export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
   photographer: "Viraj Mehta",  // the person the home page is about
   photoBrand: "Lensofviraj",    // the photography practice — /photography
-  designBrand: "Design & Build",// the web practice — /design
-  role: "Photographer & Designer",
-  email: "virajmehta@outlook.in",
-  email2: "virajmehta227@gmail.com", // secondary contact
+  email: "craftedandcaptured@gmail.com",  // the only contact address — no personal ones
   phone: "+1 (672) 968-9680",
   city: "Vancouver",
+  area: "Lower Mainland",       // the wider area he actually travels for
   region: "British Columbia, Canada",
   socials: [
     { k: "Instagram", v: "@lensofviraj", href: "https://www.instagram.com/lensofviraj/" },
@@ -66,20 +64,12 @@ export const INTRO = {
     "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling, designing intuitive digital products and capturing moments through photography.",
     "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws and ships the sites and apps those pictures end up on, so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
   ],
-  /* the two doors — the practice cards under the home hero */
+  /* the two doors — the practice cards under the home hero. The card
+     carries the craft's name and nothing else; the pages themselves do
+     the explaining. */
   does: [
-    {
-      k: "Photography",
-      brand: "Lensofviraj",
-      to: "/photography",
-      v: "Portraits, events and visual stories. Shot, selected and graded as one body of work.",
-    },
-    {
-      k: "Web design & build",
-      brand: "Design & Build",
-      to: "/design",
-      v: "Apps and sites designed and shipped end to end, from UI/UX through to a live, fast, editable page.",
-    },
+    { t: "Photography", to: "/photography" },
+    { t: "Mobile App & Web Design", to: "/design" },
   ],
   /* what a client actually walks away with — framed on the two crafts he
      does himself: photography and design (not development/build). */
@@ -315,7 +305,7 @@ const heroByRecipe = (() => {
     const pick = (seed && pool.includes(seed) && seed) || pool[0];
     if (!pick) return null;
     taken.add(pick);
-    return { seed: pick, t: proj.t, slug: proj.slug, kind: proj.kind };
+    return { seed: pick, t: proj.t, slug: proj.slug };
   }).filter(Boolean);
 })();
 
@@ -329,17 +319,19 @@ export const HERO_FRAMES = heroByRecipe.length
       seed: (p.photos || []).find(isLandscape) || p.photos?.[0],
       t: p.t,
       slug: p.slug,
-      kind: p.kind,
     }))
     .filter((f) => f.seed);
 
-/* Hero slideshow: the opening frame of each project, so the hero doubles
-   as a table of contents. */
+/* Hero slideshow: one frame per project, so the hero doubles as a table
+   of contents. Same rule as the home hero and the cards — take the
+   collection's opening *landscape* frame, not photos[0]. The banner is
+   ~2.4:1 on a desktop, so a portrait opener showed about a third of
+   itself; projectCover's fallback still renders an all-portrait
+   collection, it just can't do better than the crop. */
 export const FEATURED = PHOTO_PROJECTS.map((p) => ({
-  seed: p.photos[0],
+  seed: projectCover(p),
   t: p.t,
   slug: p.slug,
-  kind: p.kind,
   loc: p.loc,
   year: p.year,
 }));
@@ -472,23 +464,13 @@ export const METRICS = [
   { v: 4, s: "wks", k: "Shoot to live site" },
 ];
 
-export const SHOTLIST = [
-  { k: "Editorial & campaign", v: "Shoot, select, grade, deliver. Usually two weeks." },
-  { k: "Events & nightlife", v: "Available light. No flash unless you ask twice." },
-  { k: "Portraits", v: "Studio or location. One light, mostly." },
-  { k: "Art direction", v: "For when the pictures exist but nothing holds them together." },
-  { k: "Design & build", v: "Framer, Webflow, or React. I ship what I design." },
-  { k: "Colour grading", v: "Yours or mine. Consistent across a set, not just pretty alone." },
-];
-
 /* Viraj's real bio — condensed from his own words. */
 export const ABOUT = {
   portrait: manifest.portrait?.seed ?? "pf-about",
   lead: "I create meaningful visual experiences: digital products designed with intent, and moments captured through a lens.",
   body: [
-    "My creative journey started with technology. While studying Computer Science Engineering I built a foundation in programming and problem-solving, working as a developer and building solutions through code. But I kept being drawn to the creative side of technology: not just how things work, but how they look, feel and connect with people. That curiosity led me into UI/UX design, and to designing applications and websites that pair functionality with meaningful experiences.",
-    "Photography has run alongside all of it. In 2014 I held my first point-and-shoot camera, and what started as simple curiosity grew into a passion for visual storytelling. In 2018 I bought my first DSLR and went deeper, eventually sharing what I'd learned by teaching others, and leading a photography group in college: organising shoots, collaborating with fellow creators, and helping people find their own perspective.",
-    "Today, based in Vancouver, I bring engineering, design and photography together, creating digital experiences and capturing visual stories that connect technology with human emotion.",
+    "My creative journey began with technology. I studied Computer Science Engineering, where I built a foundation in programming, problem solving, and software development. While I enjoyed building solutions through code, I became more interested in the creative side of technology and how design can shape the way people interact with digital experiences. This led me into UI/UX design, where I started creating applications and websites that focus on both usability and visual storytelling.",
+    "Photography became another way for me to express creativity and tell stories. From designing digital experiences to capturing moments through my camera, I enjoy finding the balance between technology, design, and creativity to create work that connects with people.",
   ],
   approach: [
     { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs: analytical where it helps, intuitive where it matters." },
@@ -499,13 +481,11 @@ export const ABOUT = {
     { y: "2014", t: "First point-and-shoot camera. Curiosity becomes a habit." },
     { y: "2018", t: "First DSLR. Photography turns serious, and he starts teaching it." },
     { y: "2019", t: "Leads the college photography group: shoots, collabs, mentoring." },
-    { y: "2026", t: "Vancouver. Designing digital products, shooting as Lensofviraj." },
+    { y: "Today", t: "Vancouver. Designing digital products, shooting as Lensofviraj." },
   ],
   kit: [
     { k: "Camera", v: "Sony A7 IV, A7 V" },
     { k: "Lens", v: "24-70mm, 50mm, 70-200mm" },
-    { k: "Location", v: "Richmond · Vancouver · Lower Mainland" },
-    { k: "Available for", v: "Portraits · Events · Fashion · Graduation" },
   ],
 };
 
@@ -534,6 +514,11 @@ export const CSS = `
   overflow-x: clip; }
 .pf a { color: inherit; text-decoration: none; }
 .pf button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+/* The font:inherit above out-specifies .mono (0,1,1 vs 0,1,0), so a button
+   carrying .mono silently fell back to Inter at body size — which is why
+   the bar's "Contact me" CTA didn't match the nav links beside it. Give
+   the mono face back to any .mono button. */
+.pf button.mono { font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
 .pf img { display: block; width: 100%; height: 100%; object-fit: cover;
   filter: var(--filter); transition: filter .6s ease, transform 1.1s cubic-bezier(.2,.8,.2,1); }
 .pf ::selection { background: var(--accent); color: var(--bg); }
@@ -550,6 +535,31 @@ export const CSS = `
 .mono { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em;
   text-transform: uppercase; color: var(--dim); }
 .rule { height: 1px; background: var(--rule); border: 0; }
+
+/* HEADINGS LEAD — site-wide rule, see CLAUDE.md.
+   A section's own name is the brightest thing in its block. .mono is
+   dim by default because most mono text is secondary (badges, meta,
+   "all collections" links); but where a mono label IS the section's
+   heading — no h1/h2 above it — it must not read quieter than the cards
+   underneath, so it takes full ink and weight.
+   Only labels that are the heading belong here: a kicker sitting above a
+   real <h1> (.about-kicker, .dz-kicker) stays dim, because there the
+   headline is what leads. Add new section labels to this list rather
+   than patching them one page at a time.
+
+   Colour only — no weight bump. Bolding the mono face at 11px thickened
+   the letterforms and read as shouting; brightness alone is enough to
+   put the label ahead of the cards. */
+.gwork-head > .mono:first-child,
+.sec-label,
+.shead-label { color: var(--ink); }
+
+/* …and the cards under a section label sit one step back from it, so the
+   eye reads the section first and the items second. Hover still lifts
+   them to the accent. */
+.projcap h3,
+.wcard-cap h3,
+.dz-card-line h3 { color: color-mix(in srgb, var(--ink) 72%, transparent); }
 
 /* --- aperture page transition ---
    A single accent circle scaled up to cover the screen (shutter closing)
@@ -643,22 +653,6 @@ export const CSS = `
     color-mix(in srgb, var(--bg) 40%, transparent) 48%,
     color-mix(in srgb, var(--bg) 70%, transparent) 100%); }
 
-/* Scroll cue — the only thing in the hero you can act on, parked in the
-   bottom-right corner the frame counter used to hold. .pf-scoped so its
-   colour beats .mono's var(--dim). */
-.pf .mast-scroll { position: absolute; z-index: 3;
-  right: clamp(18px, 4vw, 46px); bottom: clamp(22px, 4vw, 40px);
-  display: inline-flex; align-items: center; gap: 10px; padding: 8px 6px;
-  color: color-mix(in srgb, var(--ink) 62%, transparent);
-  transition: color .3s ease; }
-.pf .mast-scroll:hover { color: var(--accent); }
-.mast-arrow { display: inline-block; font-size: 13px;
-  animation: scrollNudge 2.4s cubic-bezier(.4, 0, .2, 1) infinite; }
-@keyframes scrollNudge {
-  0%, 100% { transform: translateY(0); opacity: .55; }
-  50% { transform: translateY(5px); opacity: 1; }
-}
-
 .display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
   font-size: clamp(44px, 10.5vw, 140px); text-wrap: balance;
   overflow-wrap: break-word; max-width: 100%; }
@@ -673,9 +667,6 @@ export const CSS = `
   color: color-mix(in srgb, var(--ink) 78%, transparent); }
 /* the bar wraps to two rows below 720px, so it eats more of the screen */
 @media (max-width: 720px) { .mast { min-height: calc(100svh - 96px); } }
-@media (max-width: 640px) {
-  .pf .mast-scroll { right: 16px; bottom: 20px; }
-}
 
 /* standfirst / disciplines / role: fade+rise in after the headline
    resolves (--rd, set inline per element), so the primary hero text
@@ -686,8 +677,6 @@ export const CSS = `
 
 /* --- the two practices, moved out of the hero and given their own room --- */
 .intro-sec { padding: 12vh 0 2vh; }
-.intro-sec .role { display: flex; justify-content: space-between; gap: 20px;
-  flex-wrap: wrap; margin-top: 34px; }
 .intro-sec .drawline { height: 1px; background: var(--accent); transform: scaleX(0);
   transform-origin: left; margin-top: 40px;
   animation: draw 1.1s cubic-bezier(.76,0,.24,1) forwards; }
@@ -740,8 +729,6 @@ export const CSS = `
    margins centre the copy in whatever space is left over; the meta keeps
    its place on the bottom rule. */
 .cap > :first-child { margin-block: auto; }
-.cap .kind { display: inline-block; border: 1px solid var(--rule); border-radius: 100px;
-  padding: 4px 12px; margin-bottom: 18px; }
 .cap h2 { font-weight: 400; letter-spacing: -0.03em; font-size: clamp(24px, 3vw, 38px); line-height: 1.05; }
 .cap p { color: var(--dim); line-height: 1.68; font-size: 15px; margin-top: 14px; }
 .cap .meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
@@ -825,10 +812,6 @@ export const CSS = `
 .projcap h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(19px, 2.2vw, 25px);
   transition: color .3s; }
 .projcard:hover .projcap h3 { color: var(--accent); }
-/* the category label shares the title's typeface (Inter) and reads as a
-   smaller, dimmer subtitle rather than a mono tag, so the two lines match. */
-.projcap .mono { flex: 0 0 auto; color: var(--dim); font-family: inherit;
-  font-size: 14px; letter-spacing: -0.01em; text-transform: none; line-height: 1.2; }
 /* --- reserved room (design work not published yet) --- */
 .reserved { border: 1px dashed var(--rule); border-radius: 6px; padding: 8vh 36px;
   display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -961,9 +944,6 @@ export const CSS = `
 /* the form fills the panel here, unlike the wide page version */
 .cmodal-panel .contact-form { max-width: none; margin-top: 24px; }
 .cmodal-panel .form-done { margin-top: 24px; }
-.cmodal-foot { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--rule);
-  text-transform: none; letter-spacing: .04em; }
-.cmodal-foot a { color: var(--accent); }
 
 /* --- work detail page --- */
 .detail { padding: 12vh 0 10vh; }
@@ -1010,7 +990,7 @@ export const CSS = `
 @media (max-width: 720px) {
   .bar-in { flex-wrap: wrap; gap: 10px 14px; padding: 12px 20px; }
   .nav { order: 3; width: 100%; gap: 16px; justify-content: space-between; }
-  .nav a { font-size: 10.5px; letter-spacing: .1em; }
+  .nav a, .pf button.barcta { font-size: 10.5px; letter-spacing: .1em; }
 }
 
 /* --- about page --- */
@@ -1038,14 +1018,12 @@ export const CSS = `
 .kitgrid dd { margin: 10px 0 0; font-weight: 300; letter-spacing: -0.01em;
   font-size: 17px; line-height: 1.5; color: var(--ink); }
 .about-portrait img { will-change: transform; }
-.about-portrait figcaption { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
-  padding: 46px 16px 15px; color: var(--ink);
-  background: linear-gradient(to top, color-mix(in srgb, var(--bg) 90%, transparent), transparent); }
 
 /* --- section header: numbered label + a rule that draws in --- */
 .shead { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; }
 .shead-n { flex: none; color: var(--accent); font-variant-numeric: tabular-nums; }
-.shead-label { flex: none; white-space: nowrap; color: var(--dim); }
+/* colour/weight come from the "headings lead" block near .mono */
+.shead-label { flex: none; white-space: nowrap; }
 .shead-rule { flex: 1 1 auto; height: 1px; background: var(--rule);
   transform: scaleX(0); transform-origin: left; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
 .shead.in .shead-rule { transform: scaleX(1); }
@@ -1172,24 +1150,6 @@ export const CSS = `
 .tcard blockquote::after { content: "\\201D"; color: var(--accent); }
 .tcard-by { color: var(--dim); margin-top: auto; }
 
-/* --- "What I'm hired for" — capability pills + live caption ---
-   The services wrap like a keyword cloud; hovering or tapping one fills
-   it and swaps the large caption below to that service's description. */
-.hire { margin-top: 34px; }
-.hire-tags { display: flex; flex-wrap: wrap; gap: 12px; }
-.pf .hire-tag { display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px;
-  border: 1px solid var(--rule); border-radius: 100px; letter-spacing: -0.01em;
-  font-size: clamp(16px, 1.8vw, 22px); color: var(--ink);
-  transition: color .35s ease, background-color .35s ease, border-color .35s ease; }
-.hire-tag .mono { color: var(--accent); font-size: 11px; transition: color .35s ease; }
-.pf .hire-tag:hover, .pf .hire-tag.on { background: var(--accent);
-  border-color: var(--accent); color: var(--bg); }
-.hire-tag:hover .mono, .hire-tag.on .mono { color: var(--bg); }
-.hire-desc { margin-top: 28px; min-height: 3em; }
-.hire-desc p { font-weight: 300; letter-spacing: -0.02em; color: var(--dim);
-  font-size: clamp(18px, 2.3vw, 27px); line-height: 1.4; max-width: 40ch; }
-.hire-desc b { font-weight: 400; color: var(--ink); font-style: normal; }
-
 /* ==================================================================
    PHOTOGRAPHY PAGE
    ================================================================== */
@@ -1213,9 +1173,7 @@ export const CSS = `
     color-mix(in srgb, var(--bg) 94%, transparent) 100%); }
 .phero-in { position: relative; z-index: 2; height: 100%; display: flex;
   flex-direction: column; justify-content: flex-end; gap: 26px; padding: 8vh 28px 40px; }
-/* top labels stay pinned to the top; caption + rail sit at the bottom */
-.phero-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
-  margin-bottom: auto; }
+/* caption + rail sit at the bottom of the frame */
 .phero-cap h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
   font-size: clamp(44px, 9vw, 120px); text-wrap: balance; }
 .phero-cap .sub { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 18px; }
@@ -1245,7 +1203,9 @@ export const CSS = `
 @media (max-width: 640px) { .phero { height: 78vh; } .tick-btn { width: 32px; } }
 
 /* --- project intro band --- */
-.band { padding: 12vh 0 2vh; }
+/* the bottom padding is the gap down to the frames carousel — 2vh let the
+   copy sit almost on top of the first slide */
+.band { padding: 12vh 0 7vh; }
 .band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
   font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
 .band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
@@ -1281,10 +1241,12 @@ export const CSS = `
   height: min(60vh, 640px, calc(100svh - 330px));
   /* fit-content, not auto: a block-level box with width:auto stretches to
      the column and ignores aspect-ratio, which is what left the black
-     margins. max-width keeps a very wide frame inside the column, and the
-     frame stays hard-left so a narrow portrait lines up with the title
-     above it and the grid below rather than floating in the middle. */
-  width: fit-content; max-width: 100%; }
+     margins. max-width keeps a very wide frame inside the column.
+     margin-inline: auto centres it: a portrait fills only about a third
+     of the 1180px column, and hard-left left a dead void down its right
+     side. Centred it holds the page on every project, portrait or
+     landscape, without changing the shape of the frame itself. */
+  width: fit-content; max-width: 100%; margin-inline: auto; }
 /* scoped to this page — /work/:seed and /design/:slug share .detail and
    want their original, roomier lead-in */
 .detail-pj { padding-top: 7vh; }
@@ -1456,18 +1418,20 @@ export const CSS = `
 .dz-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
 @media (max-width: 900px) { .dz-hero { grid-template-columns: 1fr; gap: 40px; } }
 .dz-hero-copy { min-width: 0; }
-.dz-kicker { display: flex; justify-content: space-between; align-items: baseline;
-  gap: 14px 24px; flex-wrap: wrap; margin-bottom: 30px; }
+.dz-kicker { margin-bottom: 30px; }
 .dz-hero-copy h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
   font-size: clamp(42px, 6.4vw, 92px); text-wrap: balance; }
 .dz-role { margin-top: 18px; }
-.dz-hero-cta { margin-top: 28px; }
 
-/* the featured preview is a single link; a small label rides above the
-   browser frame so the slot reads as "featured", not just another card */
-.dz-hero-media { display: block; min-width: 0; }
+/* the featured slot: a label rides above the browser frame so it reads as
+   "featured" rather than just another card, and the CTA sits under the
+   frame it opens. Both are links to the same project — the shot is the
+   big target, the CTA the worded one. */
+.dz-hero-media { min-width: 0; }
+.dz-hero-shot { display: block; }
 .dz-hero-tag { display: block; color: var(--dim); margin-bottom: 14px; }
-.dz-hero-media:hover .dz-hero-tag { color: var(--accent); }
+.dz-hero-shot:hover .dz-hero-tag { color: var(--accent); }
+.dz-hero-cta { margin-top: 20px; }
 
 .dz-open { display: inline-flex; align-items: center; gap: 10px; color: var(--accent); }
 .dz-open .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
@@ -1527,7 +1491,6 @@ export const CSS = `
 .teaser h3 { font-weight: 300; letter-spacing: -0.03em; font-size: clamp(26px, 3.4vw, 42px);
   line-height: 1.05; transition: color .3s; }
 .teaser a:hover h3 { color: var(--accent); }
-.teaser p { color: var(--dim); font-size: 14.5px; line-height: 1.65; max-width: 34ch; }
 .teaser .go { display: inline-flex; align-items: center; gap: 10px; }
 .teaser a:hover .go .arrow { transform: translateX(6px); }
 .teaser .go .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }

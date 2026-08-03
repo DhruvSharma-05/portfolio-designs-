@@ -65,7 +65,6 @@ export default function Design() {
   const root = useRef(null);
 
   const [feat, ...rest] = WEB_PROJECTS;
-  const total = String(WEB_PROJECTS.length).padStart(2, "0");
 
   return (
     <motion.main ref={root} id="main" className="wrap dz" style={{ paddingTop: "12vh" }}
@@ -74,26 +73,29 @@ export default function Design() {
       <header className="dz-hero">
         <div className="dz-hero-copy">
           <div className="dz-kicker">
-            <span className="mono">Design &amp; Build · {P.city}</span>
-            <span className="mono">{total} selected projects</span>
+            <span className="mono">Design &amp; Build</span>
           </div>
           <h1>Sites &amp; apps,<br />drawn and<br />shipped whole.</h1>
           <div className="drawline" style={{ height: 1, background: "var(--accent)", marginTop: 34 }} />
           <div className="dz-role">
             <span className="mono">Figma · Canva · React · Webflow</span>
           </div>
-          {feat && (
+        </div>
+
+        {/* the CTA is a sibling of the preview link, not a child: an <a>
+            inside an <a> is invalid, and it belongs under the thing it
+            opens rather than across the page in the copy column */}
+        {feat && (
+          <div className="dz-hero-media">
+            <TLink to={`/design/${feat.slug}`} className="dz-hero-shot"
+              aria-label={`Open ${feat.t}`}>
+              <span className="mono dz-hero-tag">Featured · {feat.tag}</span>
+              <Preview w={feat} reduced={reduced} sizes="(max-width: 900px) 100vw, 50vw" eager />
+            </TLink>
             <TLink to={`/design/${feat.slug}`} className="dz-open mono dz-hero-cta">
               Open {feat.t} <span className="arrow">→</span>
             </TLink>
-          )}
-        </div>
-
-        {feat && (
-          <TLink to={`/design/${feat.slug}`} className="dz-hero-media" aria-label={`Open ${feat.t}`}>
-            <span className="mono dz-hero-tag">Featured · {feat.tag}</span>
-            <Preview w={feat} reduced={reduced} sizes="(max-width: 900px) 100vw, 50vw" eager />
-          </TLink>
+          </div>
         )}
       </header>
 
@@ -143,15 +145,11 @@ export default function Design() {
       <section className="sec">
         <Reveal className="teaser">
           <TLink to="/photography">
-            <span className="mono">The other half</span>
-            <h3>{P.photoBrand}</h3>
-            <p>Editorial, portrait and event sets. The full edits.</p>
+            <h3>Photography</h3>
             <span className="go mono">See the projects <span className="arrow">→</span></span>
           </TLink>
           <TLink to="/about">
-            <span className="mono">Who's behind it</span>
             <h3>About {P.photographer}</h3>
-            <p>How the two crafts feed each other, and what I'm booking now.</p>
             <span className="go mono">Read more <span className="arrow">→</span></span>
           </TLink>
         </Reveal>
@@ -165,9 +163,6 @@ export default function Design() {
             <button type="button" className="extlink" onClick={openContact}>
               Contact me <span className="arrow">→</span>
             </button>
-          </div>
-          <div className="mono" style={{ marginTop: 18 }}>
-            or email <a href={`mailto:${P.email}`} style={{ color: "var(--accent)" }}>{P.email}</a>
           </div>
         </Reveal>
         <div style={{ marginTop: 44 }}>

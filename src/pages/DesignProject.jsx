@@ -126,7 +126,6 @@ export default function DesignProject() {
             {w.specs.map((s) => (
               <div key={s.k}><dt className="mono">{s.k}</dt><dd>{s.v}</dd></div>
             ))}
-            <div><dt className="mono">Year</dt><dd>{w.year}</dd></div>
           </dl>
           <div className="stack-pills" style={{ marginTop: 26 }}>
             {w.stack.map((s) => <span className="pill" key={s}>{s}</span>)}
