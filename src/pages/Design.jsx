@@ -13,8 +13,8 @@ const page = {
 const PROCESS = [
   { k: "Look first", v: "We start from the pictures and the words, never from a template." },
   { k: "One accent", v: "A dark, quiet frame so the work is the only loud thing on the page." },
-  { k: "Design in the browser", v: "Figma for the thinking, real code for the deciding." },
-  { k: "Ship and hand over", v: "Live site, source file, and a way for you to change it yourself." },
+  { k: "Prototype, don't describe", v: "Every screen clickable in Figma, so you can use the thing before anyone builds it." },
+  { k: "Hand over", v: "The editable Figma file and the prototype link, ready for your developer to build from." },
 ];
 
 /* The browser-chrome preview shared by the hero and the grid — a synced
@@ -54,12 +54,16 @@ function Preview({ w, reduced, sizes, eager = false }) {
    DESIGN — the web-design half of the portfolio.
 
    A magazine-style index: a masthead that states the practice, one
-   featured build shown large (a live Figma preview + the brief beside
-   it), then the rest of the work as a numbered grid. Every card is a
-   single link into /design/:slug.
+   featured project shown large (a live Figma preview + the brief
+   beside it), then the rest of the work as a numbered grid. Every card
+   is a single link into /design/:slug.
+
+   Viraj designs; he does not build. Every line of copy here has to
+   stop at the handover — prototypes, files and specs, never shipped
+   sites or code. See the INTRO note in data.js.
    ================================================================== */
 export default function Design() {
-  useSeo("Web Design & Build", "UI/UX and web design by Viraj Mehta: interactive product prototypes and sites, designed and built end to end in Vancouver.");
+  useSeo("Design", "UI/UX and web design by Viraj Mehta, Vancouver: apps and sites designed screen by screen in Figma, handed over as interactive prototypes ready to build.");
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
@@ -73,12 +77,14 @@ export default function Design() {
       <header className="dz-hero">
         <div className="dz-hero-copy">
           <div className="dz-kicker">
-            <span className="mono">Design &amp; Build</span>
+            <span className="mono">UI/UX &amp; Web Design</span>
           </div>
-          <h1>Sites &amp; apps,<br />drawn and<br />shipped whole.</h1>
+          {/* three short lines, ~13 characters each: at the clamp's 92px
+              ceiling a longer one wraps and orphans a word of its own */}
+          <h1>Sites &amp; apps,<br />drawn before<br />they&rsquo;re built.</h1>
           <div className="drawline" style={{ height: 1, background: "var(--accent)", marginTop: 34 }} />
           <div className="dz-role">
-            <span className="mono">Figma · Canva · React · Webflow</span>
+            <span className="mono">Figma · Canva · Prototyping · Design systems</span>
           </div>
         </div>
 
@@ -126,7 +132,7 @@ export default function Design() {
       {/* ---------- process ---------- */}
       <section className="sec">
         <div className="sec-grid">
-          <div className="sec-label mono">How a build goes</div>
+          <div className="sec-label mono">How a project goes</div>
           {/* no reveal on these — the rows just sit there, and the only
               motion is the hover lift */}
           <div>

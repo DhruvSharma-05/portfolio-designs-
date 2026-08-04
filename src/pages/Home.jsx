@@ -29,7 +29,7 @@ const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
    design work. Everything about the person lives on /about.
    ================================================================== */
 export default function Home() {
-  useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus web design and build. Shot, designed and shipped by the same person.");
+  useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus UI/UX and web design in Figma. Shot and designed by the same person.");
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
@@ -84,7 +84,7 @@ export default function Home() {
             <p className="standfirst">
               Two practices, one pair of hands. Photographs made as{" "}
               <strong>lensofviraj</strong>, and the sites they live on designed
-              and built by the same person.
+              by the same person.
               <i> Hire either. Hiring both is the point.</i>
             </p>
             <div className="drawline" />
@@ -164,12 +164,12 @@ export default function Home() {
                 <span className="mono">Reserved</span>
                 <h3>The design work is on its way.</h3>
                 <p>
-                  This space is held for the design &amp; build side: identities,
-                  layouts and shipped sites. Projects appear here as they are
+                  This space is held for the design side: identities, layouts
+                  and product prototypes. Projects appear here as they are
                   published.
                 </p>
                 <TLink to="/design" className="extlink">
-                  Design &amp; build <span className="arrow">→</span>
+                  Design work <span className="arrow">→</span>
                 </TLink>
               </Reveal>
             )}

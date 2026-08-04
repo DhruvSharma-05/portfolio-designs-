@@ -52,9 +52,12 @@ export const P = {
    INTRO — the home page introduces the person, not one of the crafts.
 
    Viraj runs two practices in parallel: photography as Lenzofviraj,
-   and web design & build. A visitor landing cold should learn who he
-   is, what he does, and what they walk away with — then choose a
-   door. Each craft keeps its own page.
+   and UI/UX design. He designs — Figma screens and clickable
+   prototypes — and hands them to a developer to build; he does not
+   write the code himself, so no copy on this site may claim he
+   builds, ships or codes anything. A visitor landing cold should
+   learn who he is, what he does, and what they walk away with — then
+   choose a door. Each craft keeps its own page.
 
    PLACEHOLDER COPY: replace with Viraj's own words.
    ================================================================== */
@@ -62,7 +65,7 @@ export const INTRO = {
   lead: "Engineering taught him how things work. Design and photography taught him how they feel.",
   body: [
     "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling, designing intuitive digital products and capturing moments through photography.",
-    "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws and ships the sites and apps those pictures end up on, so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
+    "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws the apps and sites those pictures end up on — every screen prototyped in Figma and handed over ready to build, so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
   ],
   /* the two doors — the practice cards under the home hero. The card
      carries the craft's name and nothing else; the pages themselves do
@@ -479,7 +482,7 @@ export const METRICS = [
   { v: 68, s: "", k: "Projects delivered" },
   { v: 92, s: "%", k: "Clients who returned" },
   { v: 10, s: "+", k: "Years behind a lens" },
-  { v: 4, s: "wks", k: "Shoot to live site" },
+  { v: 4, s: "wks", k: "Shoot to final delivery" },
 ];
 
 /* Viraj's real bio — condensed from his own words. */
@@ -492,7 +495,7 @@ export const ABOUT = {
   ],
   approach: [
     { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs: analytical where it helps, intuitive where it matters." },
-    { k: "One pair of hands", v: "Shot, designed and built by the same person, so nothing gets lost in a handover." },
+    { k: "One pair of hands", v: "Shot and designed by the same person, so nothing gets lost between the pictures and the page." },
     { k: "Technology with emotion", v: "Products people can use without thinking; pictures people feel before they think." },
   ],
   timeline: [
