@@ -77,6 +77,7 @@ export default function App() {
   const irisRef = useRef(null);
   const lenisRef = useRef(null);
   const topRef = useRef(null);
+  const barRef = useRef(null);
   const busy = useRef(false);
 
   /* Lenis smooth scroll (native scroll, so sticky keeps working) driven
@@ -98,6 +99,18 @@ export default function App() {
       onUpdate: (self) => {
         if (progRef.current) progRef.current.style.width = `${self.progress * 100}%`;
         topRef.current?.classList.toggle("show", self.scroll() > 600);
+        /* The masthead CTA tucks itself away to its mark while you read
+           down the page and springs back open the moment you scroll up —
+           the bar itself never moves (see the .bar comment in data.js),
+           so navigation stays put and only the loud element recedes.
+           Not under reduced motion: content that rearranges itself as
+           you scroll is the thing that preference is asking us not to
+           do, so there the pill simply stays open. */
+        if (!reduced) {
+          barRef.current?.classList.toggle(
+            "tuck", self.scroll() > 220 && self.direction === 1,
+          );
+        }
       },
     });
     return () => {
@@ -186,7 +199,7 @@ export default function App() {
         </div>
 
         {/* masthead bar — sticky, always on screen */}
-        <div className="bar" hidden={isAdmin}>
+        <div className="bar" ref={barRef} hidden={isAdmin}>
           <div className="bar-in">
             <TLink to="/" className="mono brand" aria-label={`${P.name} home`}>
               <Logo photo={location.pathname.startsWith("/photography")} />
@@ -202,8 +215,16 @@ export default function App() {
                 </TLink>
               ))}
             </nav>
+            {/* The label stays in the DOM when the pill is tucked — it is
+                clipped by the button's overflow, not removed — so the
+                button keeps its accessible name either way and needs no
+                aria-label of its own. The envelope is decorative. */}
             <button type="button" className="mono barcta" onClick={openContact}>
-              Contact me
+              <span className="barcta-label">Contact me</span>
+              <svg className="barcta-mark" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="2.75" y="5.75" width="18.5" height="12.5" rx="1.5" />
+                <path d="m3.5 7 8.5 5.75L20.5 7" />
+              </svg>
             </button>
           </div>
           <div className="prog" ref={progRef} style={{ width: "0%" }} />
