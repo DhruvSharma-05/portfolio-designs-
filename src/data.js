@@ -487,8 +487,8 @@ export const ABOUT = {
   portrait: manifest.portrait?.seed ?? "pf-about",
   lead: "I create meaningful visual experiences: digital products designed with intent, and moments captured through a lens.",
   body: [
-    "My creative journey began with technology. I studied Computer Science Engineering, where I built a foundation in programming, problem solving, and software development. While I enjoyed building solutions through code, I became more interested in the creative side of technology and how design can shape the way people interact with digital experiences. This led me into UI/UX design, where I started creating applications and websites that focus on both usability and visual storytelling.",
-    "Photography became another way for me to express creativity and tell stories. From designing digital experiences to capturing moments through my camera, I enjoy finding the balance between technology, design, and creativity to create work that connects with people.",
+    "My creative journey started with photography. I picked up my first camera in 2014, and it changed the way I saw the world. A few years later, while studying Computer Science Engineering, I built a foundation in programming and software development. Although I enjoyed solving problems through code, I found myself drawn to the creative side of technology, which eventually led me into UI/UX design and creating digital experiences that are both functional and visually engaging.",
+    "Today, I combine both passions in my work. Whether I’m designing an app or website, or capturing moments through my camera, I enjoy creating work that tells a story and connects with people.",
   ],
   approach: [
     { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs: analytical where it helps, intuitive where it matters." },
