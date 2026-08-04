@@ -86,7 +86,11 @@ export default function Photography() {
         <div className="wrap phero-in">
           <div className="phero-cap">
             <AnimatePresence mode="wait">
-              <motion.div key={f.slug}
+              {/* keyed on the seed, not the slug: a collection can supply
+                  several hero frames, and two consecutive slides from the
+                  same project would otherwise reuse the node and skip the
+                  caption transition */}
+              <motion.div key={f.seed}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
@@ -108,8 +112,8 @@ export default function Photography() {
           <div className="phero-foot">
             <div className="ticks" role="tablist" aria-label="Featured projects">
               {FEATURED.map((s, n) => (
-                <button key={s.slug} className="tick-btn" role="tab"
-                  aria-current={n === i} aria-label={s.t}
+                <button key={s.seed} className="tick-btn" role="tab"
+                  aria-current={n === i} aria-label={`${s.t} — frame ${n + 1}`}
                   onClick={() => setI(n)}><i /></button>
               ))}
             </div>

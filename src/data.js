@@ -322,19 +322,37 @@ export const HERO_FRAMES = heroByRecipe.length
     }))
     .filter((f) => f.seed);
 
-/* Hero slideshow: one frame per project, so the hero doubles as a table
-   of contents. Same rule as the home hero and the cards — take the
-   collection's opening *landscape* frame, not photos[0]. The banner is
-   ~2.4:1 on a desktop, so a portrait opener showed about a third of
-   itself; projectCover's fallback still renders an all-portrait
-   collection, it just can't do better than the crop. */
-export const FEATURED = PHOTO_PROJECTS.map((p) => ({
-  seed: projectCover(p),
-  t: p.t,
-  slug: p.slug,
-  loc: p.loc,
-  year: p.year,
-}));
+/* Hero slideshow — landscape frames only, found rather than listed.
+
+   The banner is ~2.4:1 on a desktop, so a portrait shows about a third
+   of itself; every candidate is filtered through isLandscape(), which
+   reads the real pixel dimensions the Contentful sync wrote into the
+   manifest. Nothing is hand-picked: publish a wide frame to any
+   collection and it becomes eligible on the next build.
+
+   The collections are interleaved round-robin so consecutive slides come
+   from different sets, and the run is capped — the hero is a taste of the
+   work, not the whole library, and each extra slide is another full-width
+   image the page may end up fetching. A collection with no landscape
+   frame at all still contributes its opening one, so a project is never
+   dropped from the hero entirely (it just crops, as it did before). */
+const HERO_MAX = 6;
+
+export const FEATURED = (() => {
+  const lists = PHOTO_PROJECTS.map((p) => {
+    const wide = (p.photos || []).filter(isLandscape);
+    return { p, photos: wide.length ? wide : (p.photos || []).slice(0, 1) };
+  });
+  const out = [];
+  const longest = Math.max(0, ...lists.map((l) => l.photos.length));
+  for (let i = 0; i < longest && out.length < HERO_MAX; i++) {
+    for (const { p, photos } of lists) {
+      if (!photos[i] || out.length >= HERO_MAX) continue;
+      out.push({ seed: photos[i], t: p.t, slug: p.slug, loc: p.loc, year: p.year });
+    }
+  }
+  return out;
+})();
 
 /* A flat pool of every project photo, round-robin interleaved across the
    projects — so a home-page grid mixes the collections (one wildlife, one
