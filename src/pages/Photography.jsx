@@ -130,7 +130,14 @@ export default function Photography() {
           <div className="mono" style={{ marginBottom: 20 }}>
             Photography by {P.photographer}
           </div>
-          <h2>{P.photoBrand}</h2>
+          {/* the practice's name, set as a wordmark: the joint drops to the
+              mono face so "Lens · of · viraj" reads as three parts without
+              a space being put into the name itself */}
+          <h2 className="pbrand">
+            <span>{P.photoBrandParts[0]}</span>
+            <span className="pbrand-of">{P.photoBrandParts[1]}</span>
+            <span className="pbrand-tail">{P.photoBrandParts[2]}</span>
+          </h2>
           <p className="band-lead">
             Every photograph begins long before I press the shutter. Understanding
             people, light, and emotion is just as important as the camera itself.
