@@ -2,8 +2,8 @@ import { useRef, useState, lazy, Suspense } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { motion, AnimatePresence } from "motion/react";
-import { P, img, srcSet, ABOUT, SHOTLIST, prefersReduced, heavyVisualsAllowed } from "../data.js";
+import { motion } from "motion/react";
+import { P, img, srcSet, ABOUT, prefersReduced, heavyVisualsAllowed } from "../data.js";
 import { Reveal, TLink, SectionHead } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
@@ -21,9 +21,9 @@ const page = {
    ABOUT — the long-form half of the site.
 
    Structure follows the personal-version build: bio beside a particle
-   globe, then how-I-work, the timeline and what-I'm-hired-for. This page
-   is about the person; what a client walks away with and the headline
-   numbers are a sales argument, so they live on the Work page instead.
+   globe, then how-I-work and the timeline. This page is about the
+   person; what a client walks away with and the headline numbers are a
+   sales argument, so they live on the Work page instead.
 
    The closing block is deliberately left as it was — the same contact
    CTA and colophon as the rest of this site uses.
@@ -62,7 +62,6 @@ export default function About() {
         <figure className="about-portrait">
           <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} srcSet={srcSet(ABOUT.portrait)}
             sizes="(max-width: 820px) 100vw, 45vw" alt={`${P.photographer}, portrait`} />
-          <figcaption className="mono">{P.city}, {P.region} · Lensofviraj</figcaption>
         </figure>
       </div>
 
@@ -117,12 +116,6 @@ export default function About() {
         ))}
       </section>
 
-      {/* the services — an interactive pill cloud with a live caption */}
-      <section style={{ marginTop: "10vh" }}>
-        <SectionHead n="03">What I'm hired for</SectionHead>
-        <HiredFor />
-      </section>
-
       {/* closing block — unchanged from the rest of the site */}
       <section className="end" style={{ marginTop: "12vh" }}>
         <Reveal>
@@ -144,7 +137,7 @@ export default function About() {
           </div>
           <div>
             <dt className="mono">Based in</dt>
-            <dd>{P.city}<br />{P.region}</dd>
+            <dd>{P.city} · {P.area}<br />{P.region}</dd>
           </div>
           <div>
             <dt className="mono">Elsewhere</dt>
@@ -168,36 +161,3 @@ export default function About() {
   );
 }
 
-/* HiredFor — the services as a wrapping pill cloud. Hovering or tapping a
-   pill selects it and swaps the large caption below to that service's
-   description (crossfaded). Defaults to the first service so the caption
-   is never empty on load. */
-function HiredFor() {
-  const [active, setActive] = useState(0);
-  return (
-    <div className="hire">
-      <div className="hire-tags" role="tablist" aria-label="Services">
-        {SHOTLIST.map((s, i) => (
-          <button key={s.k} type="button" role="tab" aria-selected={i === active}
-            className={`hire-tag ${i === active ? "on" : ""}`}
-            onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)}
-            onClick={() => setActive(i)}>
-            <span className="mono">{String(i + 1).padStart(2, "0")}</span>
-            {s.k}
-          </button>
-        ))}
-      </div>
-      <div className="hire-desc">
-        <AnimatePresence mode="wait">
-          <motion.p key={active}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}>
-            <b>{SHOTLIST[active].k}.</b> {SHOTLIST[active].v}
-          </motion.p>
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}

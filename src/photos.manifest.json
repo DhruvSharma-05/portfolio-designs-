@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T17:07:06.787Z",
+  "generatedAt": "2026-08-04T04:25:47.228Z",
   "work": [],
   "gallery": [],
   "portrait": {
@@ -253,11 +253,9 @@
     {
       "slug": "traditional",
       "t": "Traditional",
-      "kind": "Traditional",
       "loc": "",
       "year": "",
       "exif": "50mm · f/5 · 1/200 · ISO 100",
-      "role": "Photography",
       "intro": "Selected traditional photography. The full set, shot and graded as one.",
       "note": "",
       "photos": [
@@ -284,11 +282,9 @@
     {
       "slug": "wildlife",
       "t": "Wildlife",
-      "kind": "Wildlife",
       "loc": "",
       "year": "",
       "exif": "191mm · f/4 · 1/200 · ISO 100",
-      "role": "Photography",
       "intro": "Selected wildlife photography. The full set, shot and graded as one.",
       "note": "",
       "photos": [
@@ -305,11 +301,9 @@
     {
       "slug": "modern",
       "t": "Modern",
-      "kind": "Modern",
       "loc": "",
       "year": "",
       "exif": "50mm · f/2 · 1/60 · ISO 1000",
-      "role": "Photography",
       "intro": "Selected modern photography. The full set, shot and graded as one.",
       "note": "",
       "photos": [

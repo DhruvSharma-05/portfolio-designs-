@@ -3,6 +3,50 @@
 Photographer portfolio — a dark, type-led single-page site (React 19 + Vite,
 deployed on Vercel). Studio brand **Crafted & Captured**, photographer **Viraj**.
 
+## Copy rule: no filler text — this one is not negotiable
+
+**Never add words that don't earn their place.** No decorative kickers, no
+mono-caps labels that repeat the heading right below them, no taglines,
+status lines ("Booking 2026"), city stamps, or numbered `01 ·` prefixes
+unless the visitor genuinely needs them there.
+
+- If a word appears twice on one screen, the second one goes.
+- If removing a line costs the visitor nothing, remove it.
+- A card, header or section gets its name and the one thing you can act
+  on — nothing more.
+- The same goes for facts (city, year, role): state them once, in the one
+  place they're actually useful (footer, About, contact), never as
+  atmosphere sprinkled across every section.
+
+When in doubt, leave it out and say so — adding filler back is one line;
+the client has repeatedly had to ask for it to be stripped.
+
+## Type rule: headings lead — also not negotiable
+
+**A heading is never dimmer than the text under it.** The site's `.mono`
+label style is `var(--dim)` by default, and that default kept getting
+applied to *section headings*, so the cards below out-shouted the section
+they belonged to. That is backwards, everywhere, always.
+
+- If a mono label **is** the section's heading (no `h1`/`h2` above it),
+  it gets `var(--ink)` — brightness only, **never a weight bump**. The
+  mono face at 11px thickens badly when bolded and reads as shouting. The
+  shared list lives in the "HEADINGS LEAD" block next to `.mono` in
+  [src/data.js](src/data.js) — add new section labels there, don't
+  re-style them per page.
+- A kicker that sits *above* a real headline (`.about-kicker`,
+  `.dz-kicker`) stays dim — there the `h1` is what leads.
+- Item titles under a section label sit one step back
+  (`color-mix(… var(--ink) 72% …)`), so the eye reads section → items.
+- Before shipping any new block, check the visual order top-down: heading
+  brightest, then its items, then meta. If something below the heading
+  pops harder, fix the heading — don't dim the content further.
+- **The project hero frame is centred**, not hard-left. `.pj-hero` takes
+  the photo's own aspect ratio, so a portrait is only about a third of the
+  column — left-aligned it leaves a dead void down the right. It is
+  centred via `margin-inline: auto` and must stay that way for every
+  collection, portrait or landscape, existing or new.
+
 ## Photos come from Contentful (build-time sync)
 
 Real Work/Gallery/Portrait photos are pulled from **Contentful** at **build
@@ -24,6 +68,13 @@ photography cards, the `/photography` stack + hero, and each
 collection). `order` controls both the collection sort and the photo sort
 within it.
 
+- **Every collection wants at least one landscape photo.** The wide
+  frames (home hero, the `/photography` hero slideshow, the collection
+  cards) all pick a collection's first landscape frame via
+  `projectCover` / `isLandscape` — a portrait in a ~2.4:1 banner only
+  shows about a third of itself. A collection uploaded as all-portrait
+  falls back to its opening frame and gets cropped; nothing in the code
+  can fix that, only a wide photo in the set can.
 - **Content type:** `Photo` — fields `title`, `collection` (`work` |
   `gallery` | `portrait` | any project-collection name, e.g. `wildlife`),
   `order` (int, controls sort), `image` (media, one file).

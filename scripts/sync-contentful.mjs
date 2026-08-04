@@ -327,14 +327,16 @@ async function main() {
 
     if (!photos.length) continue;
     const title = coll.replace(/\b\w/g, (m) => m.toUpperCase());
+    /* No `kind` and no `role`: both used to be invented here — `kind` was a
+       copy of the title and `role` was the literal "Photography" — so every
+       card and detail page printed the collection name twice and tagged it
+       with a word that told the visitor nothing. */
     photoProjects.push({
       slug: collSlug,
       t: title,
-      kind: title,
       loc: "",
       year: "",
       exif: firstExif,
-      role: "Photography",
       intro: `Selected ${title.toLowerCase()} photography. The full set, shot and graded as one.`,
       note: "",
       photos,

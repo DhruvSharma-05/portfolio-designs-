@@ -29,8 +29,8 @@ const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
    design work. Everything about the person lives on /about.
    ================================================================== */
 export default function Home() {
-  useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus web design and build. Shot, designed and shipped by the same person. Booking 2026.");
-  const { openContact, go } = useApp();
+  useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus UI/UX and web design in Figma. Shot and designed by the same person.");
+  const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
 
@@ -59,14 +59,11 @@ export default function Home() {
           studio name and one line. Everything that used to crowd it in
           here now has its own room in .intro-sec below. */}
       <header className="mast" id="main">
-        {/* the cue reuses the shell's hash scroll, so it lands with the
-            same easing as every other in-page jump on the site */}
-        <HeroFrames frames={HERO_FRAMES} reduced={reduced}
-          onScrollDown={() => go("/#intro")}>
+        <HeroFrames frames={HERO_FRAMES} reduced={reduced}>
           <div className="wrap">
             <div className="mast-copy">
               <div className="mono" style={{ marginBottom: 22 }}>
-                {P.photographer} · {P.city}
+                {P.photographer}
               </div>
               <h1 className="display hero-reveal" style={{ "--rd": `${HEADLINE_DELAY}s` }}>
                 {P.name}
@@ -86,8 +83,8 @@ export default function Home() {
           <Reveal>
             <p className="standfirst">
               Two practices, one pair of hands. Photographs made as{" "}
-              <strong>{P.photoBrand}</strong>, and the sites they live on designed
-              and built by the same person.
+              <strong>lensofviraj</strong>, and the sites they live on designed
+              by the same person.
               <i> Hire either. Hiring both is the point.</i>
             </p>
             <div className="drawline" />
@@ -95,16 +92,12 @@ export default function Home() {
 
           <Reveal delay={0.08}>
             <div className="disciplines">
-              {INTRO.does.map((d, i) => (
+              {INTRO.does.map((d) => (
                 <TLink key={d.to} to={d.to} className="disc">
-                  <span className="mono">{String(i + 1).padStart(2, "0")} · {d.k}</span>
-                  <strong>{d.brand}</strong>
+                  <strong>{d.t}</strong>
                   <span className="mono go">Enter <span className="arrow">→</span></span>
                 </TLink>
               ))}
-            </div>
-            <div className="role">
-              <span className="mono">{P.role} · {P.city} · Booking 2026</span>
             </div>
           </Reveal>
         </div>
@@ -171,12 +164,12 @@ export default function Home() {
                 <span className="mono">Reserved</span>
                 <h3>The design work is on its way.</h3>
                 <p>
-                  This space is held for the design &amp; build side: identities,
-                  layouts and shipped sites. Projects appear here as they are
+                  This space is held for the design side: identities, layouts
+                  and product prototypes. Projects appear here as they are
                   published.
                 </p>
                 <TLink to="/design" className="extlink">
-                  Design &amp; build <span className="arrow">→</span>
+                  Design work <span className="arrow">→</span>
                 </TLink>
               </Reveal>
             )}
@@ -250,10 +243,6 @@ export default function Home() {
                 Contact me <span className="arrow">→</span>
               </button>
             </div>
-            <div className="mono" style={{ marginTop: 20 }}>
-              Prefer email? <a href={`mailto:${P.email}`} style={{ color: "var(--accent)" }}>{P.email}</a>
-              {" · "}{P.phone} · {P.city}, {P.region}
-            </div>
           </Reveal>
 
           <Reveal as="dl" className="colophon">
@@ -265,8 +254,8 @@ export default function Home() {
               </dd>
             </div>
             <div>
-              <dt className="mono">Built with</dt>
-              <dd>Figma · React · Framer<br />Capture One · DaVinci</dd>
+              <dt className="mono">Based in</dt>
+              <dd>{P.city} · {P.area}<br />{P.region}</dd>
             </div>
             <div>
               <dt className="mono">Elsewhere</dt>
@@ -283,9 +272,8 @@ export default function Home() {
           </Reveal>
 
           <hr className="rule" style={{ marginTop: 44 }} />
-          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, paddingTop: 18 }}>
-            <span className="mono">© 2026 {P.name}</span>
-            <span className="mono">{P.city}, {P.region} · Booking 2026</span>
+          <div style={{ paddingTop: 18 }}>
+            <span className="mono">© {P.name}</span>
           </div>
         </div>
       </section>
@@ -334,7 +322,6 @@ function PhotoProjects() {
                 )}
                 <div className="projcap">
                   <h3>{p.t}</h3>
-                  <span className="mono">{p.kind}</span>
                 </div>
               </TLink>
             </Reveal>

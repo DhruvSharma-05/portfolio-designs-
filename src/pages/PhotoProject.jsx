@@ -57,12 +57,11 @@ export default function PhotoProject() {
 
         <div className="detail-head">
           <div>
-            <div className="mono" style={{ marginBottom: 16 }}>
-              {p.kind}{p.year ? ` · ${p.year}` : ""}
-            </div>
+            {p.year && (
+              <div className="mono" style={{ marginBottom: 16 }}>{p.year}</div>
+            )}
             <h1>{p.t}</h1>
           </div>
-          {p.role && <div className="mono" style={{ color: "var(--accent)" }}>{p.role}</div>}
         </div>
 
         {/* the frame carries the photo's own ratio so it hugs the picture
@@ -72,14 +71,11 @@ export default function PhotoProject() {
             sizes="(max-width: 1180px) 100vw, 1180px" alt={p.t} />
         </figure>
 
+        {/* still .detail-grid with one child: the intro keeps its half-width
+            column and the 56px it sits below the hero */}
         <div className="detail-grid">
           <Reveal>
             <p className="pj-intro">{p.intro}</p>
-          </Reveal>
-          <Reveal as="dl" className="spec" delay={0.08}>
-            {p.role && <div><dt className="mono">Role</dt><dd>{p.role}</dd></div>}
-            <div><dt className="mono">Collection</dt><dd>{p.kind}</dd></div>
-            <div><dt className="mono">Frames</dt><dd>{p.photos.length}</dd></div>
           </Reveal>
         </div>
 

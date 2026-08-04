@@ -84,26 +84,24 @@ export default function Photography() {
         </div>
 
         <div className="wrap phero-in">
-          <div className="phero-top">
-            <span className="mono" style={{ color: "var(--accent)" }}>
-              {P.photoBrand} · the photography practice
-            </span>
-            <span className="mono">{P.city} · booking 2026</span>
-          </div>
-
           <div className="phero-cap">
             <AnimatePresence mode="wait">
-              <motion.div key={f.slug}
+              {/* keyed on the seed, not the slug: a collection can supply
+                  several hero frames, and two consecutive slides from the
+                  same project would otherwise reuse the node and skip the
+                  caption transition */}
+              <motion.div key={f.seed}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: reduced ? 0 : 0.5, ease: "easeOut" }}>
                 <h1>{f.t}</h1>
-                <div className="sub">
-                  <span className="mono">{f.kind}</span>
-                  <span className="mono">{f.loc}</span>
-                  <span className="mono" style={{ color: "var(--accent)" }}>{f.year}</span>
-                </div>
+                {(f.loc || f.year) && (
+                  <div className="sub">
+                    {f.loc && <span className="mono">{f.loc}</span>}
+                    {f.year && <span className="mono" style={{ color: "var(--accent)" }}>{f.year}</span>}
+                  </div>
+                )}
                 <TLink to={`/photography/${f.slug}`} className="phero-open">
                   Open project <span className="arrow">→</span>
                 </TLink>
@@ -114,8 +112,8 @@ export default function Photography() {
           <div className="phero-foot">
             <div className="ticks" role="tablist" aria-label="Featured projects">
               {FEATURED.map((s, n) => (
-                <button key={s.slug} className="tick-btn" role="tab"
-                  aria-current={n === i} aria-label={s.t}
+                <button key={s.seed} className="tick-btn" role="tab"
+                  aria-current={n === i} aria-label={`${s.t} — frame ${n + 1}`}
                   onClick={() => setI(n)}><i /></button>
               ))}
             </div>
@@ -180,16 +178,16 @@ export default function Photography() {
                 </TLink>
                 <div className="cap">
                   <div>
-                    <span className="kind mono">{p.kind}</span>
                     <h2>{p.t}</h2>
                     <p>{p.note || p.intro}</p>
                   </div>
-                  <div className="meta">
-                    <span className="mono">
-                      {[p.loc, p.year].filter(Boolean).join(" · ") || `${p.photos.length} frames`}
-                    </span>
-                    {p.role && <span className="mono" style={{ color: "var(--accent)" }}>{p.role}</span>}
-                  </div>
+                  {/* only when there's something to say: the frame count is
+                      already on the cover badge, so no fallback here */}
+                  {(p.loc || p.year) && (
+                    <div className="meta">
+                      <span className="mono">{[p.loc, p.year].filter(Boolean).join(" · ")}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </Reveal>
@@ -207,9 +205,6 @@ export default function Photography() {
               <button type="button" className="extlink" onClick={openContact}>
                 Contact me <span className="arrow">→</span>
               </button>
-            </div>
-            <div className="mono" style={{ marginTop: 18 }}>
-              or email <a href={`mailto:${P.email}`} style={{ color: "var(--accent)" }}>{P.email}</a>
             </div>
           </Reveal>
           <div style={{ marginTop: 44 }}>

@@ -5,9 +5,8 @@ import { img, srcSet } from "./data.js";
    HERO FRAMES — the home-page masthead.
 
    A full-bleed photograph behind the studio name, cross-fading through
-   the set on its own. Nothing here is a control: the picture is
-   atmosphere, and the only thing to act on is the scroll cue in the
-   corner. Frames drift slowly the whole time so a held shot never
+   the set on its own. Nothing here is a control — the picture is pure
+   atmosphere. Frames drift slowly the whole time so a held shot never
    looks like a stalled page.
 
    The reel pauses whenever the hero is off screen — no point paying
@@ -18,7 +17,7 @@ import { img, srcSet } from "./data.js";
    visitor sees the whole set inside a short look at the page. */
 const HOLD = 3800;
 
-export default function HeroFrames({ frames, reduced, onScrollDown, children }) {
+export default function HeroFrames({ frames, reduced, children }) {
   const [at, setAt] = useState(0);
   /* frames mount as they're reached, so the first paint fetches one
      hero image rather than the whole set */
@@ -81,10 +80,6 @@ export default function HeroFrames({ frames, reduced, onScrollDown, children }) 
       <div className="mast-scrim" />
 
       {children}
-
-      <button type="button" className="mast-scroll mono" onClick={() => onScrollDown?.()}>
-        Scroll <span className="mast-arrow" aria-hidden="true">↓</span>
-      </button>
     </div>
   );
 }

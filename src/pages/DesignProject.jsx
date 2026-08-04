@@ -15,7 +15,7 @@ const page = {
 };
 
 /* ==================================================================
-   DESIGN PROJECT — one build, end to end.
+   DESIGN PROJECT — one design, end to end.
 
    Browser-framed hero, the brief, the spec, a link out to the source
    file (Figma / Canva / live), then every screen at full width.
@@ -35,7 +35,7 @@ export default function DesignProject() {
   }, [i, go]);
 
   useSeo(
-    w ? `${w.t} · Design` : "Web Design & Build",
+    w ? `${w.t} · Design` : "Design",
     w ? (w.intro || w.note || `${w.t}, a design project by Viraj Mehta.`) : "",
   );
 
@@ -126,7 +126,6 @@ export default function DesignProject() {
             {w.specs.map((s) => (
               <div key={s.k}><dt className="mono">{s.k}</dt><dd>{s.v}</dd></div>
             ))}
-            <div><dt className="mono">Year</dt><dd>{w.year}</dd></div>
           </dl>
           <div className="stack-pills" style={{ marginTop: 26 }}>
             {w.stack.map((s) => <span className="pill" key={s}>{s}</span>)}
