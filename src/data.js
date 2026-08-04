@@ -1227,8 +1227,12 @@ export const CSS = `
 .band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
   font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
 .band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
-/* the photography philosophy line — brighter and larger than the note below it */
-.band-lead { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
+/* the photography philosophy line — brighter and larger than the note below it.
+   Written as .band p.band-lead, not .band-lead: a bare class (0,1,0) loses
+   to the .band p rule above (0,1,1), so every declaration here was being
+   discarded and the lead rendered as an identical second note — same 15px,
+   same dim grey, same 46ch. Same trap as .pf button.mono near the top. */
+.band p.band-lead { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
   font-size: clamp(19px, 2.4vw, 27px); line-height: 1.45; max-width: 30ch; margin-top: 26px; }
 
 /* --- photo project detail --- */
@@ -1540,7 +1544,55 @@ export const CSS = `
 .disc:hover .go .arrow { transform: translateX(6px); }
 .disc:hover strong, .disc:hover .mono { color: var(--bg); }
 
+/* ==================================================================
+   PHONE PASS — one inset, one size for secondary copy.
 
+   Every card on this site carries its own padding (32/30 on .get-card,
+   34/26 on .approach, 30/30 on .tcard, 34/32 on .cap, 44/34 on .teaser)
+   and its own body size (14 → 16px). At 1180px none of that shows: each
+   block sits in its own room, and the variation reads as rhythm.
+
+   On a 390px screen they all collapse into one column and stack
+   directly on top of each other, and the variation becomes the only
+   thing you see — running down a single page, text starts at x52, x54,
+   x58, x61, x70 and x78 while every heading beside it starts at x28,
+   and paragraphs half a pixel apart in size sit back to back. It reads
+   as sloppiness rather than hierarchy.
+
+   So on phones the cards give up their individual spacing: one inset for
+   anything with a border round it, one gutter for the marker rows, one
+   size for secondary copy. Everything here is inside the breakpoint, so
+   the desktop layout is untouched.
+   ================================================================== */
+@media (max-width: 560px) {
+  /* the page margin itself. 28px is a desktop measure; here it costs
+     56px of an already narrow column before a card has inset its text
+     on top of it. padding-inline, not padding — .about, .detail and
+     .phero-in set their own vertical padding on this same element. */
+  .wrap { padding-inline: 20px; }
+
+  /* one inset for every bordered text block, so all boxed copy starts on
+     the same vertical line down the page */
+  .get-card, .tcard, .metric, .cap, .approach div, .approach a,
+  .teaser a, .disc { padding: 22px; }
+  /* the teaser leant on 240px of height to hold its shape at desktop
+     padding; at this inset that is just a hole under the text */
+  .teaser a { min-height: 0; gap: 12px; }
+
+  /* the two marker-gutter rows. Both keep their gutter — the timeline's
+     dot rail and the shot list's number are the point of the layout —
+     but sized for this column instead of a 1180px one, where they were
+     pushing copy 50px past every other left edge on the page. */
+  .tl-row { padding-left: 34px; grid-template-columns: 52px 1fr; gap: 14px; }
+  .tl-row:hover { padding-left: 40px; }
+  .sl-row { grid-template-columns: 24px 1fr; gap: 14px; }
+
+  /* one size for supporting copy. These ranged 14 / 14.5 / 15px, a
+     difference too small to read as hierarchy and large enough to look
+     like a mistake once the cards are stacked in one column. */
+  .get-card p, .approach p, .sl-row p, .cap p, .band p,
+  .wcard-cap p, .dz-card-cap p, .colophon dd { font-size: 15px; }
+}
 
 /* ==================================================================
    ADMIN — /admin. Same palette as the site, but the site's display
