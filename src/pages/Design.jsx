@@ -172,7 +172,7 @@ export default function Design() {
           </div>
         </Reveal>
         <div style={{ marginTop: 44 }}>
-          <TLink to="/" className="mono back"><span className="arrow">←</span> Back to work</TLink>
+          <TLink to="/" className="mono back"><span className="arrow">←</span> Back to home</TLink>
         </div>
       </section>
     </motion.main>

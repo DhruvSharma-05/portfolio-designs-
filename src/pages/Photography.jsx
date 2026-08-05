@@ -210,12 +210,12 @@ export default function Photography() {
             <h2 className="display">Shooting<br />this year?</h2>
             <div style={{ marginTop: 30 }}>
               <button type="button" className="extlink" onClick={openContact}>
-                Contact me <span className="arrow">→</span>
+                Book a session <span className="arrow">→</span>
               </button>
             </div>
           </Reveal>
           <div style={{ marginTop: 44 }}>
-            <TLink to="/" className="mono back"><span className="arrow">←</span> Back to work</TLink>
+            <TLink to="/" className="mono back"><span className="arrow">←</span> Back to home</TLink>
           </div>
         </div>
       </section>
