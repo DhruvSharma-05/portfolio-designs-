@@ -27,7 +27,7 @@ const Client = lazy(() => import("./pages/Client.jsx"));
 /* Primary navigation. `/` matches exactly; the others also light up on
    their detail pages (/photography/:slug, /design/:slug). */
 const NAV = [
-  { to: "/", label: "Work" },
+  { to: "/", label: "Home" },
   { to: "/photography", label: "Photography" },
   { to: "/design", label: "Design" },
   { to: "/about", label: "About" },

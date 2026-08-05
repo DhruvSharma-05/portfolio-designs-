@@ -10,6 +10,17 @@
     },
     "exif": ""
   },
+  "projects/modern/6xk7Y5HpfgFN9gphz48GlI": {
+    "seed": "modern-example",
+    "stamp": "1zrllB0iylMTAM4qaBcZHE:2026-08-05T19:01:11.010Z",
+    "variants": {
+      "sm": "/photos/projects/modern/modern-example-sm.webp",
+      "lg": "/photos/projects/modern/modern-example-lg.webp",
+      "w": 736,
+      "h": 939
+    },
+    "exif": ""
+  },
   "projects/traditional/3WUINXDvklrSJkB8Es51QT": {
     "seed": "traditional-cream-gold",
     "stamp": "79RfuxQFnRRXiY5jfixVvv:2026-07-23T11:20:10.385Z",

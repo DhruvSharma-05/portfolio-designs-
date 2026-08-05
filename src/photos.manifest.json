@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T04:25:47.228Z",
+  "generatedAt": "2026-08-05T19:56:58.597Z",
   "work": [],
   "gallery": [],
   "portrait": {
@@ -10,6 +10,13 @@
     "h": 2667
   },
   "projectPhotos": [
+    {
+      "seed": "modern-example",
+      "sm": "/photos/projects/modern/modern-example-sm.webp",
+      "lg": "/photos/projects/modern/modern-example-lg.webp",
+      "w": 736,
+      "h": 939
+    },
     {
       "seed": "traditional-cream-gold",
       "sm": "/photos/projects/traditional/traditional-cream-gold-sm.webp",
@@ -250,6 +257,18 @@
     }
   ],
   "photoProjects": [
+    {
+      "slug": "modern",
+      "t": "Modern",
+      "loc": "",
+      "year": "",
+      "exif": "",
+      "intro": "Selected modern photography. The full set, shot and graded as one.",
+      "note": "",
+      "photos": [
+        "modern-example"
+      ]
+    },
     {
       "slug": "traditional",
       "t": "Traditional",

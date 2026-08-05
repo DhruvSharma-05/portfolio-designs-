@@ -77,8 +77,8 @@ export const INTRO = {
      carries the craft's name and nothing else; the pages themselves do
      the explaining. */
   does: [
-    { t: "Photography", to: "/photography" },
     { t: "Mobile App & Web Design", to: "/design" },
+    { t: "Photography", to: "/photography" },
   ],
   /* what a client actually walks away with — framed on the two crafts he
      does himself: photography and design (not development/build). */

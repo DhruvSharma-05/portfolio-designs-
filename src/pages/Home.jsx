@@ -103,9 +103,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* photography — one card per collection, opening the gallery view */}
-      <PhotoProjects />
-
       {/* design — real projects once they're published; until then the
           space is visibly held for them */}
       <section className="sec" id="design">
@@ -176,6 +173,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* photography — one card per collection, opening the gallery view */}
+      <PhotoProjects />
 
       {/* the studio line — a quiet full-width statement between the work
           and the offer */}
