@@ -54,22 +54,11 @@ function PhotoLogo() {
 }
 
 export function Logo({ photo = false }) {
-  // Replaying the draw-in every so often (not just once on load) — remount
-  // the mark + wordmark via a changing key so the CSS animations (which use
-  // animation-fill-mode: forwards and only ever run once per element)
-  // restart clean. Skipped under reduced motion.
-  const [replay, setReplay] = useState(0);
-  useEffect(() => {
-    if (photo || prefersReduced()) return;
-    const id = setInterval(() => setReplay((n) => n + 1), 15000);
-    return () => clearInterval(id);
-  }, [photo]);
-
   // photography routes swap the C& monogram for the Lensofviraj mark
   if (photo) return <PhotoLogo />;
 
   return (
-    <span className="logo" key={replay}>
+    <span className="logo">
       <svg className="logo-mark" viewBox="4749 6624 13113 11894"
         role="img" aria-label={P.name} focusable="false">
         <path d={LOGO_PATH} pathLength="1" />
@@ -342,6 +331,26 @@ export function ContactModal({ email, onClose, reduced }) {
   );
 }
 
+/* ---------------- swipe ----------------
+   Minimal horizontal touch-swipe: a drag past `threshold` px fires onLeft
+   (swipe left → next) or onRight (swipe right → prev) once the finger
+   lifts. Short taps and vertical scrolls fall under the threshold and are
+   left alone, so they don't hijack normal scrolling or button clicks. */
+// eslint-disable-next-line react-refresh/only-export-components -- hook, shared by Lightbox (below) and PhotoCarousel
+export function useSwipe(onLeft, onRight, threshold = 40) {
+  const x = useRef(null);
+  return {
+    onTouchStart: (e) => { x.current = e.touches[0].clientX; },
+    onTouchEnd: (e) => {
+      if (x.current == null) return;
+      const dx = e.changedTouches[0].clientX - x.current;
+      x.current = null;
+      if (dx <= -threshold) onLeft?.();
+      else if (dx >= threshold) onRight?.();
+    },
+  };
+}
+
 /* ---------------- shared animated primitives ----------------
    Reveal and Counter run inside useGSAP (a scoped layout effect); under
    reduced motion they skip the animation and render final state. */
@@ -455,6 +464,7 @@ export function Lightbox({ photos, title, index, setIndex, reduced, single = fal
     [setIndex, photos.length],
   );
   const boxRef = useRef(null);
+  const swipe = useSwipe(() => shift(1), () => shift(-1));
 
   useEffect(() => {
     const opener = document.activeElement;
@@ -495,7 +505,7 @@ export function Lightbox({ photos, title, index, setIndex, reduced, single = fal
         <button className="lb-x" onClick={close} aria-label="Close viewer">Close ✕</button>
       </div>
 
-      <div className="lb-stage">
+      <div className="lb-stage" {...(!single ? swipe : {})}>
         {!single && (
           <button className="lb-arrow prev" onClick={() => shift(-1)} aria-label="Previous frame">←</button>
         )}

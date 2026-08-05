@@ -6,10 +6,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  P, img, srcSet, ratio, FEATURED, PHOTO_PROJECTS, PHOTO_POOL, projectCover,
+  P, img, srcSet, ratio, isLandscape, FEATURED, PHOTO_PROJECTS, PHOTO_POOL, projectCover,
   prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
-import { Reveal, TLink, SectionHead } from "../ui.jsx";
+import { Reveal, TLink, SectionHead, useSwipe } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -21,6 +21,13 @@ const page = {
 };
 
 const HOLD = 5400; // ms per hero slide — matches the tick-fill keyframe
+
+const PROCESS = [
+  { k: "Understand", v: "The best photographs begin with a conversation, not a camera." },
+  { k: "Compose", v: "Light, location, and details are planned so every frame feels timeless." },
+  { k: "Capture", v: "Guided when needed, candid whenever possible." },
+  { k: "Refine", v: "Every image is individually edited to preserve the moment, not overpower it." },
+];
 
 /* ==================================================================
    PHOTOGRAPHY — the photo half of the portfolio.
@@ -203,6 +210,24 @@ export default function Photography() {
         </div>
       </section>
 
+      {/* ---------- process ---------- */}
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">How a project goes</div>
+          {/* no reveal on these — the rows just sit there, and the only
+              motion is the hover lift */}
+          <div>
+            {PROCESS.map((s, i) => (
+              <div className="sl-row" key={s.k}>
+                <span className="mono">{String(i + 1).padStart(2, "0")}</span>
+                <h3>{s.k}</h3>
+                <p>{s.v}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ---------- end ---------- */}
       <section className="end">
         <div className="wrap">
@@ -231,8 +256,8 @@ export default function Photography() {
    over them. Clicking a neighbour brings it to the middle.
 
    Every slide is the same HEIGHT and takes its width from the
-   photograph's own aspect ratio, so a portrait is a tall narrow card
-   and a landscape a wide one — both whole, neither cropped or zoomed.
+   photograph's own aspect ratio — portrait only, so every card is a
+   tall narrow frame, whole, neither cropped or zoomed.
    Because the slides differ in width, the track can't be centred by
    arithmetic; it's positioned from the measured offset of the active
    slide. Scaling is done with transform only, which keeps layout width
@@ -246,9 +271,10 @@ const CAR_HOLD = 4200; // ms per carousel frame
 
 /* A short reel, not the whole library — enough to show the range without
    turning the page into a contact sheet. PHOTO_POOL is already
-   round-robin across the collections, so a slice off the front is an
-   even mix of them rather than one set followed by the next. */
-const CAROUSEL = PHOTO_POOL.slice(0, 12);
+   round-robin across the collections, so filtering to portraits and
+   slicing off the front is still an even mix of them rather than one
+   set followed by the next. */
+const CAROUSEL = PHOTO_POOL.filter((s) => !isLandscape(s)).slice(0, 12);
 
 const SLIDE_MS = 800; // must match the .pcar-track transition
 
@@ -270,6 +296,7 @@ function PhotoCarousel({ photos, reduced }) {
   const trackRef = useRef(null);
 
   const step = useCallback((d) => setIdx((n) => n + d), []);
+  const swipe = useSwipe(() => step(1), () => step(-1));
 
   /* centre the active slide: measured, because slide widths vary with
      each photograph's aspect ratio */
@@ -324,7 +351,7 @@ function PhotoCarousel({ photos, reduced }) {
 
   return (
     <div className="pcar" ref={rootRef}>
-      <div className="pcar-stage" ref={stageRef}>
+      <div className="pcar-stage" ref={stageRef} {...swipe}>
         <div className="pcar-track" ref={trackRef}
           style={{ transform: `translateX(${shift}px)`, transition: snap ? "none" : undefined }}>
           {loop.map((s, n) => {

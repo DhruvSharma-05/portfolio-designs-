@@ -64,11 +64,13 @@ export default function PhotoProject() {
           </div>
         </div>
 
-        {/* the frame carries the photo's own ratio so it hugs the picture
-            instead of parking it in the middle of a black panel */}
-        <figure className="pj-hero" style={{ aspectRatio: ratio(p.photos[0], 16, 9) }}>
+        {/* the ratio lives on the img, not the figure: the figure just
+            shrink-wraps whatever size the img resolves to, so it hugs the
+            picture instead of parking it in the middle of a black panel */}
+        <figure className="pj-hero">
           <img src={img(p.photos[0], 2000, 1125)} srcSet={srcSet(p.photos[0])}
-            sizes="(max-width: 1180px) 100vw, 1180px" alt={p.t} />
+            sizes="(max-width: 1180px) 100vw, 1180px" alt={p.t}
+            style={{ aspectRatio: ratio(p.photos[0], 16, 9) }} />
         </figure>
 
         {/* still .detail-grid with one child: the intro keeps its half-width
