@@ -28,8 +28,8 @@ const Client = lazy(() => import("./pages/Client.jsx"));
    their detail pages (/photography/:slug, /design/:slug). */
 const NAV = [
   { to: "/", label: "Home" },
-  { to: "/photography", label: "Photography" },
   { to: "/design", label: "Design" },
+  { to: "/photography", label: "Photography" },
   { to: "/about", label: "About" },
 ];
 
