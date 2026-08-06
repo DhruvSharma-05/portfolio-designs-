@@ -545,8 +545,8 @@ export const CSS = `
      horizontal overflow without creating a scrollport. */
   overflow-x: clip; }
 .pf a { color: inherit; text-decoration: none; }
-.pf button { font: inherit; color: inherit; background: none; border: none; cursor: pointer;
-  padding: 0; margin: 0; }
+.pf button { font: inherit; color: inherit; text-transform: inherit; background: none; border: none;
+  cursor: pointer; padding: 0; margin: 0; }
 /* The font:inherit above out-specifies .mono (0,1,1 vs 0,1,0), so a button
    carrying .mono silently fell back to Inter at body size — which is why
    the bar's "Contact me" CTA didn't match the nav links beside it. Give
@@ -724,20 +724,6 @@ export const CSS = `
   animation: caret 1.05s steps(1) infinite; }
 @keyframes caret { 50% { opacity: 0; } }
 
-/* scroll cue — the one instruction the hero gives, and a real link to
-   the section it points at */
-.mast-scroll { position: absolute; z-index: 4; left: 50%; translate: -50% 0;
-  bottom: max(22px, env(safe-area-inset-bottom));
-  display: grid; justify-items: center; gap: 12px;
-  transition: color .3s ease; }
-.mast-scroll:hover { color: var(--ink); }
-.mast-scroll i { display: block; width: 1px; height: 34px;
-  background: linear-gradient(var(--ink), transparent);
-  transform-origin: 50% 0; animation: cue 2.4s ease-in-out infinite; }
-@keyframes cue {
-  0%, 100% { transform: scaleY(.35); opacity: .45; }
-  45%      { transform: scaleY(1);   opacity: 1; }
-}
 /* the bar wraps to two rows below 720px, so it eats more of the screen:
    44px CTA row + 10px row gap + 14px nav row + 24px padding + 1px rule */
 @media (max-width: 720px) { .mast { min-height: calc(100svh - 93px); } }

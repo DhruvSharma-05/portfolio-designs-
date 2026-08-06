@@ -21,6 +21,94 @@
     },
     "exif": ""
   },
+  "projects/modern/45VOEwbsoD7gNhXGeisAuC": {
+    "seed": "modern-venus",
+    "stamp": "3kApkX3aUJpobOLsl8evls:2026-07-23T11:14:28.013Z",
+    "variants": {
+      "sm": "/photos/projects/modern/modern-venus-sm.webp",
+      "lg": "/photos/projects/modern/modern-venus-lg.webp",
+      "w": 2000,
+      "h": 2858
+    },
+    "exif": "50mm · f/2 · 1/60 · ISO 1000"
+  },
+  "projects/modern/3Ibq7NmJd2A5J2obNNqtAe": {
+    "seed": "modern-green-machine",
+    "stamp": "5ICEdEMXsmQjvdH4oind8t:2026-07-23T11:14:08.919Z",
+    "variants": {
+      "sm": "/photos/projects/modern/modern-green-machine-sm.webp",
+      "lg": "/photos/projects/modern/modern-green-machine-lg.webp",
+      "w": 2000,
+      "h": 3081
+    },
+    "exif": ""
+  },
+  "projects/modern/1id8s0DY5AlsntAmSbi9Il": {
+    "seed": "modern-after-hours",
+    "stamp": "1207ubKaD6sXwz6UaTYrai:2026-07-23T11:14:17.413Z",
+    "variants": {
+      "sm": "/photos/projects/modern/modern-after-hours-sm.webp",
+      "lg": "/photos/projects/modern/modern-after-hours-lg.webp",
+      "w": 2000,
+      "h": 3555
+    },
+    "exif": ""
+  },
+  "projects/modern/4YKwixbVrJJJI1oa2NXgRY": {
+    "seed": "modern-pink-field",
+    "stamp": "45db0fmDfxUFDJJgmg7WXz:2026-07-23T11:20:23.077Z",
+    "variants": {
+      "sm": "/photos/projects/modern/modern-pink-field-sm.webp",
+      "lg": "/photos/projects/modern/modern-pink-field-lg.webp",
+      "w": 2000,
+      "h": 3555
+    },
+    "exif": ""
+  },
+  "projects/modern/30HtQNkFENrbRs7FD0a7hG": {
+    "seed": "modern-motion",
+    "stamp": "4aXWQz2J837pnKQVIVgW2:2026-07-23T11:19:57.904Z",
+    "variants": {
+      "sm": "/photos/projects/modern/modern-motion-sm.webp",
+      "lg": "/photos/projects/modern/modern-motion-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    "exif": "50mm · f/4.5 · 1/4000 · ISO 800"
+  },
+  "projects/modern/VDCNyEl19MNJAz5ZWsLGl": {
+    "seed": "modern-two-men-car",
+    "stamp": "6FwFACqQXFnq4dGupQHXYG:2026-07-23T11:18:55.732Z",
+    "variants": {
+      "sm": "/photos/projects/modern/modern-two-men-car-sm.webp",
+      "lg": "/photos/projects/modern/modern-two-men-car-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    "exif": "50mm · f/1.8 · 1/80 · ISO 320"
+  },
+  "projects/modern/3mGiXWkp0aZ7nMDoEpn4UB": {
+    "seed": "modern-green-car",
+    "stamp": "3H4BOljtZE0PCmG4LoOu8e:2026-07-23T11:19:36.399Z",
+    "variants": {
+      "sm": "/photos/projects/modern/modern-green-car-sm.webp",
+      "lg": "/photos/projects/modern/modern-green-car-lg.webp",
+      "w": 2000,
+      "h": 3062
+    },
+    "exif": "50mm · f/5 · 1/80 · ISO 2000"
+  },
+  "projects/modern/3Rr0jVr4KSPTLZ4CeXmIby": {
+    "seed": "modern-friends",
+    "stamp": "7juT01qZMNweI1Lt6AcGUR:2026-07-23T11:20:48.548Z",
+    "variants": {
+      "sm": "/photos/projects/modern/modern-friends-sm.webp",
+      "lg": "/photos/projects/modern/modern-friends-lg.webp",
+      "w": 2000,
+      "h": 1123
+    },
+    "exif": "90mm · f/4.5 · 1/4000 · ISO 800"
+  },
   "projects/traditional/3WUINXDvklrSJkB8Es51QT": {
     "seed": "traditional-cream-gold",
     "stamp": "79RfuxQFnRRXiY5jfixVvv:2026-07-23T11:20:10.385Z",
@@ -306,93 +394,5 @@
       "h": 1126
     },
     "exif": "197mm · f/4 · 1/200 · ISO 400"
-  },
-  "projects/modern/45VOEwbsoD7gNhXGeisAuC": {
-    "seed": "modern-venus",
-    "stamp": "3kApkX3aUJpobOLsl8evls:2026-07-23T11:14:28.013Z",
-    "variants": {
-      "sm": "/photos/projects/modern/modern-venus-sm.webp",
-      "lg": "/photos/projects/modern/modern-venus-lg.webp",
-      "w": 2000,
-      "h": 2858
-    },
-    "exif": "50mm · f/2 · 1/60 · ISO 1000"
-  },
-  "projects/modern/3Ibq7NmJd2A5J2obNNqtAe": {
-    "seed": "modern-green-machine",
-    "stamp": "5ICEdEMXsmQjvdH4oind8t:2026-07-23T11:14:08.919Z",
-    "variants": {
-      "sm": "/photos/projects/modern/modern-green-machine-sm.webp",
-      "lg": "/photos/projects/modern/modern-green-machine-lg.webp",
-      "w": 2000,
-      "h": 3081
-    },
-    "exif": ""
-  },
-  "projects/modern/1id8s0DY5AlsntAmSbi9Il": {
-    "seed": "modern-after-hours",
-    "stamp": "1207ubKaD6sXwz6UaTYrai:2026-07-23T11:14:17.413Z",
-    "variants": {
-      "sm": "/photos/projects/modern/modern-after-hours-sm.webp",
-      "lg": "/photos/projects/modern/modern-after-hours-lg.webp",
-      "w": 2000,
-      "h": 3555
-    },
-    "exif": ""
-  },
-  "projects/modern/4YKwixbVrJJJI1oa2NXgRY": {
-    "seed": "modern-pink-field",
-    "stamp": "45db0fmDfxUFDJJgmg7WXz:2026-07-23T11:20:23.077Z",
-    "variants": {
-      "sm": "/photos/projects/modern/modern-pink-field-sm.webp",
-      "lg": "/photos/projects/modern/modern-pink-field-lg.webp",
-      "w": 2000,
-      "h": 3555
-    },
-    "exif": ""
-  },
-  "projects/modern/30HtQNkFENrbRs7FD0a7hG": {
-    "seed": "modern-motion",
-    "stamp": "4aXWQz2J837pnKQVIVgW2:2026-07-23T11:19:57.904Z",
-    "variants": {
-      "sm": "/photos/projects/modern/modern-motion-sm.webp",
-      "lg": "/photos/projects/modern/modern-motion-lg.webp",
-      "w": 2000,
-      "h": 3563
-    },
-    "exif": "50mm · f/4.5 · 1/4000 · ISO 800"
-  },
-  "projects/modern/VDCNyEl19MNJAz5ZWsLGl": {
-    "seed": "modern-two-men-car",
-    "stamp": "6FwFACqQXFnq4dGupQHXYG:2026-07-23T11:18:55.732Z",
-    "variants": {
-      "sm": "/photos/projects/modern/modern-two-men-car-sm.webp",
-      "lg": "/photos/projects/modern/modern-two-men-car-lg.webp",
-      "w": 2000,
-      "h": 3563
-    },
-    "exif": "50mm · f/1.8 · 1/80 · ISO 320"
-  },
-  "projects/modern/3mGiXWkp0aZ7nMDoEpn4UB": {
-    "seed": "modern-green-car",
-    "stamp": "3H4BOljtZE0PCmG4LoOu8e:2026-07-23T11:19:36.399Z",
-    "variants": {
-      "sm": "/photos/projects/modern/modern-green-car-sm.webp",
-      "lg": "/photos/projects/modern/modern-green-car-lg.webp",
-      "w": 2000,
-      "h": 3062
-    },
-    "exif": "50mm · f/5 · 1/80 · ISO 2000"
-  },
-  "projects/modern/3Rr0jVr4KSPTLZ4CeXmIby": {
-    "seed": "modern-friends",
-    "stamp": "7juT01qZMNweI1Lt6AcGUR:2026-07-23T11:20:48.548Z",
-    "variants": {
-      "sm": "/photos/projects/modern/modern-friends-sm.webp",
-      "lg": "/photos/projects/modern/modern-friends-lg.webp",
-      "w": 2000,
-      "h": 1123
-    },
-    "exif": "90mm · f/4.5 · 1/4000 · ISO 800"
   }
 }

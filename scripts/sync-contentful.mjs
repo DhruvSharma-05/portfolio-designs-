@@ -161,7 +161,7 @@ async function main() {
 
   for (const role of ROLES) {
     const entries = items
-      .filter((it) => it.fields.collection === role)
+      .filter((it) => slug((it.fields.collection || "").trim()) === role)
       .sort((a, b) => {
         const oa = a.fields.order ?? 9999;
         const ob = b.fields.order ?? 9999;
@@ -241,22 +241,24 @@ async function main() {
   /* ---- project collections -------------------------------------------
      Any `collection` value that isn't a known role (work/gallery/portrait)
      is treated as a photo-project collection — e.g. "wildlife",
-     "traditional", "modern". Each distinct value becomes one project: its
-     photos are optimized under public/photos/projects/<slug>/, listed flat
-     in `projectPhotos` (so data.js can resolve their seeds), and grouped
-     into `photoProjects` with the project meta the pages read. */
-  const projectColls = [
-    ...new Set(
-      items
-        .map((it) => (it.fields.collection || "").trim())
-        .filter((c) => c && !ROLES.includes(c)),
-    ),
-  ].sort((a, b) => {
+     "traditional", "modern". Grouped by the *slugified* value, not the raw
+     text: two entries whose `collection` field differs only in casing or
+     stray whitespace (e.g. "Modern" vs "modern") used to become two
+     separate projects that both resolved to the same /photography/modern
+     URL — now they land in one. */
+  const collLabel = new Map(); // collSlug -> first-seen display label
+  for (const it of items) {
+    const raw = (it.fields.collection || "").trim();
+    const key = slug(raw);
+    if (!raw || ROLES.includes(key)) continue;
+    if (!collLabel.has(key)) collLabel.set(key, raw);
+  }
+  const projectColls = [...collLabel.keys()].sort((a, b) => {
     // order collections by the smallest `order` among their photos
-    const min = (c) =>
+    const min = (key) =>
       Math.min(
         ...items
-          .filter((it) => (it.fields.collection || "").trim() === c)
+          .filter((it) => slug((it.fields.collection || "").trim()) === key)
           .map((it) => it.fields.order ?? 9999),
         9999,
       );
@@ -266,11 +268,11 @@ async function main() {
   const projectPhotos = [];
   const photoProjects = [];
 
-  for (const coll of projectColls) {
-    const collSlug = slug(coll);
+  for (const collSlug of projectColls) {
+    const coll = collLabel.get(collSlug);
     const roleDir = `projects/${collSlug}`;
     const entries = items
-      .filter((it) => (it.fields.collection || "").trim() === coll)
+      .filter((it) => slug((it.fields.collection || "").trim()) === collSlug)
       .sort((a, b) => {
         const oa = a.fields.order ?? 9999;
         const ob = b.fields.order ?? 9999;

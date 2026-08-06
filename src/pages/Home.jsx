@@ -22,13 +22,11 @@ const page = {
 
    The studio name swells out of the frame (2.3s, the .mast-swell
    animation in the CSS); the role line crosses in while it is still
-   growing, starts typing once it has cleared, and the sub and scroll cue
-   follow it. */
+   growing, starts typing once it has cleared, and the sub follows it. */
 const SWELL = 2.3;
 const ROLES_IN = SWELL - 0.45;   // fades in under the name, before it goes
 const ROLES_TYPE = SWELL + 0.05; // first keystroke — the frame is its own
 const SUB_IN = SWELL + 0.35;
-const CUE_IN = SWELL + 0.8;
 
 /* ==================================================================
    WORK — the front page. Deliberately slim: hero, the categorised
@@ -87,13 +85,6 @@ export default function Home() {
             </div>
           </div>
         </HeroFrames>
-
-        {/* TLink, not a bare #hash: App's go() routes a same-page hash
-            through Lenis, so the cue eases down instead of jumping */}
-        <TLink to="/#intro" className="mono mast-scroll hero-reveal"
-          style={{ "--rd": `${CUE_IN}s` }}>
-          Scroll<i />
-        </TLink>
       </header>
 
       {/* the two practices — stated immediately under the hero, so a cold
