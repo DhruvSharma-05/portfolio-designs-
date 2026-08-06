@@ -546,6 +546,7 @@ export const CSS = `
    put the label ahead of the cards. */
 .gwork-head > .mono:first-child,
 .sec-label,
+.hsx-label,
 .shead-label { color: var(--ink); }
 
 /* …and the cards under a section label sit one step back from it, so the
@@ -1108,6 +1109,21 @@ export const CSS = `
   .nav { order: 3; width: 100%; gap: 16px; justify-content: space-between; }
   .nav a, .nav button { font-size: 10.5px; letter-spacing: .1em; }
 }
+/* One row of five stops fitting at about 370px. What happened past that
+   point was two different failures: at 360px "Contact me" broke across
+   two lines inside its own link, and by 320px the whole link had been
+   pushed off the right edge with no way to reach it — the one link that
+   matters. So below 370 the nav wraps to a second row and packs left in
+   reading order (space-between would fling the leftovers to opposite
+   edges of that row), with the labels themselves held on one line.
+   Kept off at 375px and up, where the row genuinely fits: a blanket
+   flex-wrap broke a 375px iPhone to two rows for a few subpixels. The
+   second row makes the bar taller, so the hero's offset matches. */
+@media (max-width: 370px) {
+  .nav { flex-wrap: wrap; justify-content: flex-start; gap: 9px 14px; }
+  .nav a, .nav button { white-space: nowrap; }
+  .mast { min-height: calc(100svh - 118px); }
+}
 
 /* --- about page --- */
 /* vertical padding only: a padding shorthand here would reset .wrap's
@@ -1558,6 +1574,92 @@ export const CSS = `
 .tool-badge { flex: 0 0 auto; border: 1px solid var(--rule); border-radius: 100px;
   padding: 5px 12px; }
 
+/* --- home design run: the projects travel sideways --------------------
+   The section holds the screen while its track slides left, so a project
+   is read one at a time at full width instead of three-up and thumbnail
+   sized. .hsx gets its height from Home.jsx (viewport + however far the
+   track overruns it) — that extra height is what the sticky child scrubs
+   through, and it is why the page's scrollbar still tells the truth
+   about the section's length.
+
+   The pinned run is for screens that can hold a full card. Everything
+   else — narrow, short, or motion-averse — gets the flat layout at the
+   bottom of this block: the panel stacked above a swipe row. A phone
+   already has a horizontal gesture; hijacking its vertical scroll to
+   fake one is worse than the thing it replaces. */
+.hsx { position: relative; border-top: 1px solid var(--rule);
+  /* the bar is sticky, so an anchor jump would land under it */
+  scroll-margin-top: 80px; }
+.hsx-sticky { position: sticky; top: 0; height: 100svh; overflow: hidden;
+  display: flex; align-items: center; background: var(--bg); }
+.hsx-track { display: flex; align-items: flex-start;
+  gap: clamp(28px, 3.4vw, 64px); padding: 0 clamp(24px, 6vw, 90px);
+  will-change: transform; }
+/* the cards' wrapper dissolves here: its children become the track's own
+   flex items, so the desktop row is laid out as though it weren't in the
+   markup at all. It only becomes a box on phones (see the flat layout). */
+.hsx-row { display: contents; }
+/* the opening panel: the section's name and the line that earns the run.
+   Centred against the cards rather than top-aligned with them, so the two
+   read as one row. */
+.hsx-intro { flex: 0 0 auto; width: min(84vw, 420px); align-self: center; }
+/* The name carries the panel, so the mono face is taken up to headline
+   size. Tracking comes down as the size goes up — .mono's .16em is set for
+   an 11px label and turns a 44px word into scattered letters. Size and ink
+   only: no weight bump, which is what thickens this face into shouting. */
+/* font-weight is not decoration here: this is an h2, and the UA's bold
+   default is exactly the weight bump the rule above forbids — at 44px the
+   mono face turns into a slab and out-shouts the whole section. */
+.hsx-label { font-size: clamp(26px, 3.2vw, 44px); letter-spacing: .04em;
+  font-weight: 400; line-height: 1; margin: 0; }
+/* the line under it sits one step back, so the eye reads name then line */
+.hsx-title { font-weight: 300; letter-spacing: -0.02em; line-height: 1.35;
+  font-size: clamp(16px, 1.5vw, 20px); margin-top: 18px; max-width: 24ch;
+  color: color-mix(in srgb, var(--ink) 72%, transparent); }
+/* Three caps, not one: the viewport width holds the card on a laptop, the
+   720px keeps it from becoming a billboard on a wide monitor, and the
+   svh cap is what stops a short screen cropping the caption — the card is
+   a 16/11 frame plus a title and a line of copy under it. */
+.hsx-card { flex: 0 0 auto; width: min(84vw, 720px, 92svh); display: block; }
+.hsx-more { flex: 0 0 auto; align-self: center;
+  padding-inline: clamp(20px, 4vw, 60px); }
+/* --- the flat layout: heading stacked above a swipe row ---------------
+   Three conditions, one block, because the answer to all three is the
+   same. Narrow: no room for a 720px card. Short: a landscape phone is
+   over 820px wide and would take the pinned run at 390px tall, where a
+   card shrinks to a third of the screen and the section becomes 1500px
+   of scrolling for it. Reduced motion: Home.jsx returns before wiring
+   the driver, so the track never moves and the cards past the fold would
+   be unreachable without this. */
+@media (max-width: 819px), (max-height: 619px), (prefers-reduced-motion: reduce) {
+  .hsx { height: auto !important; padding: clamp(70px, 12vw, 120px) 0; }
+  .hsx-sticky { position: static; height: auto; overflow: visible; display: block; }
+  /* the track stops being the row and becomes a plain column: panel on
+     top, cards in their own scroller under it */
+  .hsx-track { display: block; padding: 0 var(--hsx-pad); transform: none !important;
+    will-change: auto; --hsx-pad: clamp(20px, 5vw, 40px); }
+  .hsx-intro { width: auto; max-width: 34ch; margin-bottom: clamp(24px, 5vw, 40px); }
+  /* Bleeds to both edges while its first card still lines up with the
+     heading — the negative margin cancels the track's padding, the
+     matching padding puts the content back where it was. A row that
+     stops at a 20px margin looks like it has run out; one that runs off
+     the edge says there is more. */
+  .hsx-row { display: flex; align-items: flex-start; gap: clamp(18px, 5vw, 34px);
+    overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+    margin-inline: calc(var(--hsx-pad) * -1); padding: 0 var(--hsx-pad) 10px;
+    /* snapping ignores padding — without this the first snap point sits at
+       the scrollport edge, so the row loads already scrolled past its own
+       padding and card one starts flush against the screen */
+    scroll-padding-inline: var(--hsx-pad);
+    overscroll-behavior-x: contain; }
+  .hsx-row::-webkit-scrollbar { display: none; }
+  .hsx-card, .hsx-more { scroll-snap-align: start; }
+  /* under 100% so the next card peeks in — that sliver is the only thing
+     telling a visitor the row scrolls at all */
+  .hsx-card { width: min(84vw, 460px); }
+  .hsx-more { align-self: center; padding-inline: clamp(10px, 4vw, 30px); }
+}
+
 /* ==================================================================
    DESIGN INDEX — /design (magazine-style redesign)
 
@@ -1984,6 +2086,8 @@ export const CSS = `
   .mast-roles { font-size: clamp(18px, 2.6vw, 30px); }
   .shot img, .detail-fig img, .about-portrait img { transform: none !important; }
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
+  /* the design run's flat layout is handled with the narrow/short screens
+     up in the .hsx block — one media query covers all three */
   /* the hero light holds still — the pools stay where they start, so the
      glow is there but nothing moves */
   .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }

@@ -38,6 +38,8 @@ export default function Home() {
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
   const stage = useRef(null);
+  const hsxSec = useRef(null);
+  const hsxTrack = useRef(null);
 
   /* The one pool of light that isn't on a timer: it follows the cursor,
      trailing rather than sticking to it, so it reads as a lamp being
@@ -161,7 +163,52 @@ export default function Home() {
       shot.addEventListener("pointerleave", () => zoom(1.14));
     });
 
+    /* The design run. The section is given extra height equal to the
+       track's overflow, its child sticks to the top of the screen, and
+       the track is translated by however far the section has scrolled —
+       so downward scrolling reads as sideways travel and the page's own
+       scrollbar stays honest about how long the section is.
+
+       A plain transform on scroll rather than a GSAP pin: a pin rewrites
+       the surrounding layout, and this section sits between two others
+       that already own ScrollTriggers. Reduced motion has already
+       returned above, which leaves the flat layout in place. */
+    const track = hsxTrack.current;
+    const sec = hsxSec.current;
+    let dist = 0;
+    /* Must match the flat layout's media query exactly, or the two
+       disagree and the section is left half-wired: the height is set for
+       a run the CSS isn't laying out. The height condition is what keeps
+       landscape phones — wide, but 390px tall — on the swipe row. */
+    const wide = () => window.matchMedia("(min-width: 820px) and (min-height: 620px)").matches;
+
+    const onScroll = () => {
+      if (!track || !sec || dist <= 0 || !wide()) return;
+      const top = sec.getBoundingClientRect().top;   // 0 once the section is pinned
+      track.style.transform = `translate3d(${-Math.min(Math.max(-top, 0), dist)}px,0,0)`;
+    };
+    const measure = () => {
+      if (!track || !sec) return;
+      if (!wide()) { sec.style.height = ""; track.style.transform = ""; dist = 0; return; }
+      dist = Math.max(0, track.scrollWidth - window.innerWidth);
+      sec.style.height = `${window.innerHeight + dist}px`;
+      onScroll();
+    };
+    measure();
+    // the Figma embeds and the webfont land after first paint and change
+    // the track's width, so the run is measured again once they have
+    const settle = window.setTimeout(measure, 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", measure);
+
     ScrollTrigger.refresh();
+    return () => {
+      window.clearTimeout(settle);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", measure);
+      if (sec) sec.style.height = "";
+      if (track) track.style.transform = "";
+    };
   }, { scope: root, dependencies: [reduced] });
 
   return (
@@ -227,60 +274,82 @@ export default function Home() {
         </div>
       </section>
 
-      {/* design — real projects once they're published; until then the
-          space is visibly held for them */}
-      <section className="sec" id="design">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">Design</div>
-          <div>
-            {HAS_REAL_WEB ? (
-              <>
-                <div className="wgrid">
-                  {WEB_PROJECTS.slice(0, 2).map((w, i) => (
-                    <Reveal key={w.slug} delay={i * 0.06}>
-                      <TLink to={`/design/${w.slug}`} className="wcard"
-                        aria-label={`Open ${w.t}`}>
-                        <div className="browser">
-                          <div className="browser-bar">
-                            <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
-                            <span className="browser-url mono">
-                              {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
-                            </span>
-                            <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
-                          </div>
-                          {hasPhoto(w.cover) ? (
-                            <div className="browser-view">
-                              <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
-                                sizes="(max-width: 760px) 100vw, 50vw"
-                                alt={`${w.t} full page`} loading="lazy" />
-                            </div>
-                          ) : w.embed && w.href ? (
-                            <FigmaFrame w={w} />
-                          ) : (
-                            <div className="browser-ph">
-                              <span className="browser-ph-name">{w.t}</span>
-                              <span className="mono">{w.tag}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="wcard-cap">
-                          <div>
-                            <h3>{w.t}</h3>
-                            <p>{w.intro}</p>
-                          </div>
-                          <span className="tool-badge mono">{w.tool}</span>
-                        </div>
-                      </TLink>
-                    </Reveal>
-                  ))}
-                </div>
-                <div style={{ marginTop: 34 }}>
+      {/* design — the projects run sideways: the section holds the screen
+          while the track slides, so each one is read at full size instead
+          of shrunk into a two-up grid. Driver is in the useGSAP above. */}
+      {HAS_REAL_WEB ? (
+        <section className="hsx" id="design" ref={hsxSec}>
+          <div className="hsx-sticky">
+            {/* No Reveal on these cards: they sit inside a sticky frame and
+                never cross a scroll threshold of their own, so a scroll
+                reveal would leave them at opacity 0 for the whole run. The
+                sideways travel is their entrance. */}
+            <div className="hsx-track" ref={hsxTrack}>
+              {/* the section's name and the one line worth reading, standing
+                  where the run starts. The name is the heading here — an h2,
+                  not a kicker over one — so it takes the size and the ink,
+                  and the line under it steps back (see HEADINGS LEAD). */}
+              <div className="hsx-intro">
+                <h2 className="mono hsx-label">Design</h2>
+                <p className="hsx-title">Prototyped, not mocked up.</p>
+              </div>
+
+              {/* The cards are wrapped so a phone can scroll them on their
+                  own, with the panel above stacked out of the way. On the
+                  desktop run this wrapper is display:contents — the cards
+                  go straight back into the track's flex row and the panel
+                  travels with them, exactly as if it weren't here. */}
+              <div className="hsx-row">
+              {WEB_PROJECTS.slice(0, 3).map((w) => (
+                <TLink key={w.slug} to={`/design/${w.slug}`} className="wcard hsx-card"
+                  aria-label={`Open ${w.t}`}>
+                  <div className="browser">
+                    <div className="browser-bar">
+                      <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
+                      <span className="browser-url mono">
+                        {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
+                      </span>
+                      <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
+                    </div>
+                    {hasPhoto(w.cover) ? (
+                      <div className="browser-view">
+                        <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
+                          sizes="(max-width: 819px) 84vw, 720px"
+                          alt={`${w.t} full page`} loading="lazy" />
+                      </div>
+                    ) : w.embed && w.href ? (
+                      <FigmaFrame w={w} />
+                    ) : (
+                      <div className="browser-ph">
+                        <span className="browser-ph-name">{w.t}</span>
+                        <span className="mono">{w.tag}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="wcard-cap">
+                    <div>
+                      <h3>{w.t}</h3>
+                      <p>{w.intro}</p>
+                    </div>
+                    <span className="tool-badge mono">{w.tool}</span>
+                  </div>
+                </TLink>
+              ))}
+
+                <div className="hsx-more">
                   <TLink to="/design" className="extlink">
                     All design work <span className="arrow">→</span>
                   </TLink>
                 </div>
-              </>
-            ) : (
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="sec" id="design">
+          <div className="wrap sec-grid">
+            <div className="sec-label mono">Design</div>
+            <div>
               <Reveal className="reserved">
                 <span className="mono">Reserved</span>
                 <h3>The design work is on its way.</h3>
@@ -293,10 +362,10 @@ export default function Home() {
                   Design work <span className="arrow">→</span>
                 </TLink>
               </Reveal>
-            )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* photography — one card per collection, opening the gallery view */}
       <PhotoProjects />
