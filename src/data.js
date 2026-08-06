@@ -545,7 +545,8 @@ export const CSS = `
      horizontal overflow without creating a scrollport. */
   overflow-x: clip; }
 .pf a { color: inherit; text-decoration: none; }
-.pf button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+.pf button { font: inherit; color: inherit; background: none; border: none; cursor: pointer;
+  padding: 0; margin: 0; }
 /* The font:inherit above out-specifies .mono (0,1,1 vs 0,1,0), so a button
    carrying .mono silently fell back to Inter at body size — which is why
    the bar's "Contact me" CTA didn't match the nav links beside it. Give
@@ -620,73 +621,6 @@ export const CSS = `
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
-/* --- the masthead CTA ---
-   The one way into the enquiry form from anywhere on the site. It used
-   to be styled to read *exactly* like a nav link — same 11px mono, same
-   --dim grey, same underline-on-hover — and three things were wrong with
-   that:
-
-   · it made the page's primary action indistinguishable from navigation,
-     and worse, the active nav link is --accent while this sat at --dim,
-     so the button was the quietest thing in the bar;
-   · with no padding it measured 84x14px, a third of the 44px minimum
-     tap target;
-   · its only affordance was the underline, which is a hover state, so on
-     a phone there was no affordance at all.
-
-   It now takes the site's own CTA shape — the outlined pill from
-   .extlink, which is already what "Contact me" looks like at the foot of
-   every page. Same action, same button. Outlined and not filled on
-   purpose: this bar sits over the photographs on every route, and a
-   solid near-white pill would ride on top of every picture on the site.
-
-   Hierarchy here comes from shape, not brightness: the CTA is the only
-   thing in the bar with an edge round it, which reads at a glance and
-   doesn't depend on a 12-value difference between --ink and --accent
-   that nobody can see. */
-.pf .barcta { flex: 0 0 auto; display: inline-flex; align-items: center;
-  justify-content: center; overflow: hidden;
-  min-height: 38px; padding: 0 18px; border-radius: 100px;
-  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--rule));
-  background: none; color: var(--ink); white-space: nowrap;
-  touch-action: manipulation;
-  transition: background-color .3s ease, color .3s ease, border-color .3s ease,
-    padding .5s cubic-bezier(.2,.8,.2,1); }
-/* font-size needs button in the selector: .pf button.mono up above is
-   (0,2,1) and would otherwise win over a plain .pf .barcta at (0,2,0) */
-.pf button.barcta { font-size: 10.5px; letter-spacing: .16em; }
-.pf .barcta:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-.barcta-mark { flex: 0 0 auto; width: 16px; height: 16px; fill: none;
-  stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
-
-/* --- the CTA tuck ---
-   Scrolling down past the masthead collapses the pill to its envelope;
-   scrolling back up — or hovering, or tabbing to it — springs it open
-   again. The bar itself never moves, so the nav is where it always was
-   and only the one loud element gets out of the way while you read.
-   .tuck is put on .bar by the shell's ScrollTrigger (App.jsx), which
-   also skips the whole behaviour under reduced motion.
-
-   The button is shrink-to-fit, so nothing here animates its width: the
-   label's own max-width closes and the button follows. That leaves
-   padding as the only box property being transitioned, on a toggle that
-   fires once per change of scroll direction rather than per frame.
-
-   10px + the 16px mark + 10px + the two 1px borders = a 38px circle,
-   exactly the pill's height, so it collapses to a round button and not a
-   squashed oval. The borders count because the button is shrink-to-fit:
-   border-box sizing only applies to a width you set, and this width is
-   its content's. Keep the numbers in step if the height ever changes. */
-.barcta-label { display: block; max-width: 12ch; margin-right: 10px; opacity: 1;
-  transition: max-width .5s cubic-bezier(.2,.8,.2,1),
-    margin-right .5s cubic-bezier(.2,.8,.2,1), opacity .26s ease; }
-.bar.tuck .barcta { padding: 0 10px; }
-.bar.tuck .barcta-label { max-width: 0; margin-right: 0; opacity: 0; }
-/* pointing at it (or reaching it with the keyboard) opens it back up, so
-   the mark is never a button whose purpose you have to guess */
-.bar.tuck .barcta:hover, .bar.tuck .barcta:focus-visible { padding: 0 18px; }
-.bar.tuck .barcta:hover .barcta-label,
-.bar.tuck .barcta:focus-visible .barcta-label { max-width: 12ch; margin-right: 10px; opacity: 1; }
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
@@ -1028,9 +962,11 @@ export const CSS = `
 .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 @media (max-width: 620px) { .cf-row { grid-template-columns: 1fr; } }
 .cf-field { display: flex; flex-direction: column; gap: 8px; }
+.cf-field > span.mono { font-size: 13px; }
 .cf-field input, .cf-field textarea, .cf-field select { background: var(--panel); border: 1px solid var(--rule);
   border-radius: 4px; color: var(--ink); font: inherit; font-size: 15px; padding: 13px 15px;
   width: 100%; transition: border-color .25s ease; }
+.cf-field input::placeholder, .cf-field textarea::placeholder { color: var(--dim); opacity: .45; }
 .cf-field input:focus, .cf-field textarea:focus, .cf-field select:focus { border-color: var(--accent); outline: none; }
 .cf-field textarea { resize: vertical; line-height: 1.6; }
 /* select: strip the native chrome, draw our own chevron, and dim the label
@@ -1115,28 +1051,25 @@ export const CSS = `
 .pager a:hover strong { color: var(--accent); }
 
 /* --- nav links in the bar --- */
-/* Generous, viewport-tracking gaps so the four sections read as four
+/* Generous, viewport-tracking gaps so the five sections read as five
    separate destinations rather than one run of text; clamped so they
-   neither crowd at 900px nor drift apart on a wide desktop. */
+   neither crowd at 900px nor drift apart on a wide desktop. Contact me
+   is a button (opens the enquiry modal, not a route) but shares every
+   selector below so it reads exactly like the other four. */
 .nav { display: flex; gap: clamp(24px, 3.4vw, 44px); align-items: center; }
-.nav a { position: relative; }
+.nav a, .nav button { position: relative; }
 .nav a[aria-current="page"] { color: var(--accent); }
-.nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
+.nav a::after, .nav button::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
   background: var(--accent); transform: scaleX(0); transform-origin: right;
   transition: transform .35s cubic-bezier(.76,0,.24,1); }
-.nav a:hover::after, .nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
-/* Four sections don't fit a phone in one row, so the bar wraps and the
+.nav a:hover::after, .nav button:hover::after,
+.nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
+/* Five sections don't fit a phone in one row, so the bar wraps and the
    nav sits on its own line rather than disappearing. */
 @media (max-width: 720px) {
   .bar-in { flex-wrap: wrap; gap: 10px 14px; padding: 12px 20px; }
   .nav { order: 3; width: 100%; gap: 16px; justify-content: space-between; }
-  .nav a { font-size: 10.5px; letter-spacing: .1em; }
-  /* the full 44px tap target here, where it is actually being tapped */
-  .pf button.barcta { font-size: 10.5px; letter-spacing: .12em;
-    min-height: 44px; padding: 0 20px; }
-  /* 13 + 16 + 13 + 2 borders = the 44px circle, same sum as the 38px one */
-  .bar.tuck .barcta { padding: 0 13px; }
-  .bar.tuck .barcta:hover, .bar.tuck .barcta:focus-visible { padding: 0 20px; }
+  .nav a, .nav button { font-size: 10.5px; letter-spacing: .1em; }
 }
 
 /* --- about page --- */
@@ -1391,46 +1324,51 @@ export const CSS = `
   font-size: clamp(19px, 2.4vw, 27px); line-height: 1.45; max-width: 30ch; margin-top: 26px; }
 
 /* --- photo project detail --- */
-/* Fixed, capped hero so a portrait source can't blow the box up to
-   full-width-portrait height; the image covers a 16:9 frame instead. */
 /* Shows the opening frame whole. This was aspect-ratio: 16/9 with the
    site-wide object-fit: cover, which guillotined every portrait — heads
    cropped off the top. Then it was a full-width fixed-height stage with
    the picture contained inside it, which read as a black slab with a
    sliver of photograph in the middle: a portrait at this height only
    fills about a quarter of the 1180px column, and .pj-hero's panel
-   background filled the rest.
+   background filled the rest. That fixed height was then put on the
+   *figure*, with the img at a flat 100%/100% inside it — which fixed
+   portraits but broke landscapes on a narrow phone: a 16:9 frame at the
+   height cap wants far more width than a ~330px column has, so
+   max-width:100% clamped the figure's width while its height stayed
+   fixed, leaving the actual photograph shrunk to a strip in the middle
+   of a tall black box.
 
-   Now the frame takes the photograph's own aspect ratio (set inline from
-   the manifest) and shrinks to fit it, centred. Height stays capped, so a
-   portrait is a tall narrow frame and a landscape a wide one — the whole
-   picture either way, and no letterbox around it.
-
-   Height is set so the whole stage clears the fold: the masthead, the
-   page's top padding, the back link and the title take ~310px above it,
-   and at 76vh the foot of the frame sat 170px below the bottom of a
-   900px window. The tightened spacing below buys most of that back. */
+   The fix is to stop dictating a box and let the img size itself: the
+   aspect-ratio lives on the img (not the figure), with width/height auto
+   and a max-width/max-height pair — the browser finds the largest size
+   that satisfies the ratio within both caps, exactly like .lb-stage img
+   in the lightbox. The figure has no height of its own; it shrink-wraps
+   to whatever the img resolves to, so a portrait is a tall narrow frame
+   and a landscape a wide (or, on a narrow phone, short) one — the whole
+   picture either way, on every viewport, and no letterbox around it. */
 .pj-hero { position: relative; overflow: hidden; border-radius: 4px;
   border: 1px solid var(--rule); background: var(--panel);
-  /* the third term is the one that matters on a short window: what's
-     above the stage is ~310px of largely fixed chrome, so cap the frame
-     at the space actually left rather than at a share of the height */
-  height: min(60vh, 640px, calc(100svh - 330px));
   /* fit-content, not auto: a block-level box with width:auto stretches to
-     the column and ignores aspect-ratio, which is what left the black
-     margins. max-width keeps a very wide frame inside the column.
-     margin-inline: auto centres it: a portrait fills only about a third
-     of the 1180px column, and hard-left left a dead void down its right
-     side. Centred it holds the page on every project, portrait or
-     landscape, without changing the shape of the frame itself. */
+     the column, which is what left the black margins. max-width keeps a
+     very wide frame inside the column. margin-inline: auto centres it: a
+     portrait fills only about a third of the 1180px column, and hard-left
+     left a dead void down its right side. Centred it holds the page on
+     every project, portrait or landscape, without changing the shape of
+     the frame itself. */
   width: fit-content; max-width: 100%; margin-inline: auto; }
 /* scoped to this page — /work/:seed and /design/:slug share .detail and
    want their original, roomier lead-in */
 .detail-pj { padding-top: 7vh; }
 .detail-pj .back { margin-bottom: 26px; }
 .detail-pj .detail-head { margin-bottom: 28px; }
-.pj-hero img { width: 100%; height: 100%; object-fit: contain;
-  transform: none; transition: none; }
+/* width/height auto (not 100%) is what lets the img size itself rather
+   than fill a box dictated from outside; max-height is the one that
+   matters on a short window — what's above the stage is ~310px of
+   largely fixed chrome, so cap the frame at the space actually left
+   rather than at a share of the height. */
+.pj-hero img { display: block; width: auto; height: auto; max-width: 100%;
+  max-height: min(60vh, 640px, calc(100svh - 330px));
+  object-fit: contain; transform: none; transition: none; }
 .pj-intro { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.8vw, 34px);
   line-height: 1.32; max-width: 26ch; }
 

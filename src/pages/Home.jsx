@@ -4,10 +4,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, isLandscape, INTRO, HERO_FRAMES, METRICS, TESTIMONIALS, TAGLINE,
+  P, img, srcSet, ratio, isLandscape, INTRO, HERO_FRAMES, TESTIMONIALS, TAGLINE,
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, ROLES,
 } from "../data.js";
-import { Reveal, TLink, FigmaFrame, Metrics, Typewriter } from "../ui.jsx";
+import { Reveal, TLink, FigmaFrame, Typewriter } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 import HeroFrames from "../HeroFrames.jsx";
@@ -222,15 +222,6 @@ export default function Home() {
                 <p>{o.v}</p>
               </Reveal>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="sec">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">The numbers</div>
-          <div>
-            <Metrics items={METRICS} />
           </div>
         </div>
       </section>
