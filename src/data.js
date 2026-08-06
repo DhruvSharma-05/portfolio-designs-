@@ -297,45 +297,6 @@ export const isLandscape = (seed) => {
 export const projectCover = (p) =>
   (p.photos || []).find(isLandscape) || p.photos?.[0];
 
-/* A hand-picked run rather than one frame per collection: two wildlife,
-   one modern, one traditional, interleaved so no two neighbours come
-   from the same set. `seed` names a specific picture where the choice
-   matters; without one, the next unused landscape frame in that
-   collection is taken, so repeats never show the same photo twice. */
-const HERO_RECIPE = [
-  { slug: "wildlife", seed: "wildlife-bighorn" },
-  { slug: "modern" },
-  { slug: "wildlife", seed: "wildlife-cheetah" },
-  { slug: "traditional" },
-];
-
-const heroByRecipe = (() => {
-  const taken = new Set();
-  return HERO_RECIPE.map(({ slug, seed }) => {
-    const proj = PHOTO_PROJECTS.find((p) => p.slug === slug);
-    if (!proj) return null;
-    const pool = (proj.photos || []).filter((s) => isLandscape(s) && !taken.has(s));
-    // a named seed that has gone from the collection falls back to the pool
-    const pick = (seed && pool.includes(seed) && seed) || pool[0];
-    if (!pick) return null;
-    taken.add(pick);
-    return { seed: pick, t: proj.t, slug: proj.slug };
-  }).filter(Boolean);
-})();
-
-/* A fresh clone with no synced photos runs on the placeholder projects,
-   whose slugs the recipe knows nothing about — fall back to one opening
-   frame per collection there so the hero still has something to show. */
-export const HERO_FRAMES = heroByRecipe.length
-  ? heroByRecipe
-  : PHOTO_PROJECTS
-    .map((p) => ({
-      seed: (p.photos || []).find(isLandscape) || p.photos?.[0],
-      t: p.t,
-      slug: p.slug,
-    }))
-    .filter((f) => f.seed);
-
 /* Hero slideshow — landscape frames only, found rather than listed.
 
    The banner is ~2.4:1 on a desktop, so a portrait shows about a third
@@ -642,41 +603,104 @@ export const CSS = `
 .pf .totop:hover .arrow { transform: translateY(-3px); }
 @media (max-width: 640px) { .pf .totop { width: 44px; height: 44px; right: 16px; bottom: 16px; } }
 
-/* --- masthead: the frame hero (HeroFrames.jsx) ---
+/* --- masthead: the light hero ---
    One full screen: the sticky bar sits above it in flow, so subtract its
    height rather than using a bare 100svh that would push the hero's foot
    below the fold. svh, not vh, so mobile browser chrome doesn't overshoot. */
 /* 68px is the measured bar: 38px CTA pill (the tallest thing in it, taller
    than the 34px logo) + 14px padding top and bottom + its 1px rule. */
 .mast { position: relative; overflow: hidden; display: flex;
-  min-height: calc(100svh - 68px);
-  /* how soft the picture sits behind the copy — one dial, tune here */
-  --hero-soften: 3px; }
+  min-height: calc(100svh - 68px); }
 .mast .wrap { position: relative; z-index: 3; width: 100%; }
 .mast-stage { position: relative; flex: 1; min-width: 0;
   display: flex; align-items: center; }
-.mast-frames { position: absolute; inset: 0; z-index: 0; }
-/* the long cross-fade is the whole transition — two frames overlap for
-   well over a second, so nothing ever cuts */
-.mast-frame { position: absolute; inset: 0; opacity: 0;
-  transition: opacity 1.1s cubic-bezier(.4, 0, .2, 1); }
-.mast-frame.on { opacity: 1; }
-/* Overscale hides the soft edge the blur leaves at the frame border, and
-   the drift keeps a held shot from reading as a stalled page. It runs on
-   every frame, not just the visible one — tying it to .on would snap the
-   outgoing frame back to its start mid-fade. */
-.mast-frame img { width: 100%; height: 100%; object-fit: cover;
-  object-position: 50% 42%; transform: scale(1.03);
-  filter: blur(var(--hero-soften)) saturate(.94) brightness(.78);
-  /* transition:none so .pf img's transform tween doesn't fight the drift */
-  transition: none;
-  animation: heroDrift 24s ease-in-out infinite alternate; }
-@keyframes heroDrift { to { transform: scale(1.08); } }
-.mast-scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(100deg,
-    color-mix(in srgb, var(--bg) 84%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 40%, transparent) 48%,
-    color-mix(in srgb, var(--bg) 70%, transparent) 100%); }
+
+/* Light moving behind the name. Three pools of the accent, each wandering
+   its own four-corner circuit and breathing in and out. The periods are
+   coprime-ish (19/23/29s) so the set never repeats a pose, which is what
+   keeps it reading as light rather than a loop.
+
+   Each path is a closed loop — the last keyframe is the first — so it
+   runs infinite rather than alternate: alternate replays the same route
+   backwards, which is exactly the tell that gives away a loop. Linear
+   timing for the same reason; ease-in-out would pause the pool at every
+   waypoint and turn a wander into four separate slides.
+   (No backticks anywhere in here — this stylesheet is a template
+   literal, and one closes it.)
+
+   The softness is in the gradient itself, not a blur() filter: a
+   full-bleed blur repaints the whole hero every frame, a radial-gradient
+   is free. Only transform and opacity animate, so this stays on the
+   compositor. */
+.mast-light { position: absolute; inset: 0; z-index: 0;
+  overflow: hidden; pointer-events: none; }
+.mast-light i { position: absolute; display: block;
+  width: 78vmax; height: 78vmax; border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%,
+    color-mix(in srgb, var(--accent) 10%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 4.5%, transparent) 32%,
+    color-mix(in srgb, var(--accent) 1.5%, transparent) 56%,
+    transparent 72%);
+  /* --near (0…1) is how close the cursor's pool is — Home.jsx writes it
+     every frame. Base × 1.38 at the closest approach, and the bases are
+     set so that lands just under 1: opacity clamps there, and a pool that
+     hits the ceiling early spends the rest of the cursor's approach doing
+     nothing visible, which is the one thing this effect can't afford. */
+  opacity: calc(var(--o) * (1 + var(--near, 0) * .38));
+  will-change: transform, opacity; }
+.mast-light i:nth-child(1) { --o: .72; top: -34%; left: -18%;
+  animation: lightWanderA 19s linear infinite; }
+.mast-light i:nth-child(2) { --o: .6; top: -6%; right: -26%;
+  animation: lightWanderB 23s linear infinite; }
+.mast-light i:nth-child(3) { --o: .5; bottom: -46%; left: 22%;
+  animation: lightWanderC 29s linear infinite; }
+@keyframes lightWanderA {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  25%  { transform: translate3d(20vw, 13vh, 0) scale(1.16); }
+  50%  { transform: translate3d(31vw, -7vh, 0) scale(.92); }
+  75%  { transform: translate3d(11vw, 17vh, 0) scale(1.2); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes lightWanderB {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  25%  { transform: translate3d(-17vw, 19vh, 0) scale(.86); }
+  50%  { transform: translate3d(-27vw, 4vh, 0) scale(1.14); }
+  75%  { transform: translate3d(-9vw, 22vh, 0) scale(.94); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes lightWanderC {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  25%  { transform: translate3d(15vw, -16vh, 0) scale(1.12); }
+  50%  { transform: translate3d(-6vw, -24vh, 0) scale(.9); }
+  75%  { transform: translate3d(-19vw, -9vh, 0) scale(1.18); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+/* the cursor's pool — smaller and dimmer than the drifting three, so it
+   reads as a hand held near the surface, not a torch. Home.jsx writes the
+   transform; the trailing lag is in there, this only says what it looks
+   like. Placed from its own centre (the negative margins) so the
+   transform is a plain cursor position with no offset maths. */
+/* z-index over the vignette above, which otherwise ate the spotlight in
+   the outer third of the frame — the corner settle is there to hold the
+   three drifting pools in, not to fight the cursor.
+
+   Kept under the threshold of noticing: this pool alone is barely a
+   lift off the black. Most of what a visitor actually sees when they
+   move the mouse is the ambient pool it passes brightening — the --near
+   handoff above — which is why this one can afford to be this faint. */
+.mast-spot { position: absolute; top: 0; left: 0; z-index: 1;
+  width: 44vmax; height: 44vmax; margin: -22vmax 0 0 -22vmax; border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%,
+    color-mix(in srgb, var(--accent) 4%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 1.8%, transparent) 34%,
+    transparent 66%);
+  opacity: 0; transition: opacity .55s ease; will-change: transform; }
+.mast-light[data-spot="on"] .mast-spot { opacity: 1; }
+/* the pools are brightest in the middle of the frame, where the copy is —
+   this settles the corners so the hero still ends in the page's black */
+.mast-light::after { content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 82% 72% at 50% 46%,
+    transparent 0%, color-mix(in srgb, var(--bg) 72%, transparent) 78%, var(--bg) 100%); }
 
 .display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
   font-size: clamp(44px, 10.5vw, 140px); text-wrap: balance;
@@ -735,8 +759,35 @@ export const CSS = `
   animation: heroUp .6s cubic-bezier(.16,1,.3,1) var(--rd, 0s) forwards; }
 @keyframes heroUp { to { opacity: 1; transform: none; } }
 
+/* --- the hero's foot dissolves into the page ---
+   .mast clips its light at the section edge, and a clipped glow reads as
+   a seam: lit above the line, flat black below it. Two halves to the fix,
+   and both are needed — the hero's last stretch fades to the page colour,
+   and the section under it opens with the faintest continuation of the
+   same light, so the glow crosses the boundary instead of stopping at it.
+   Between .mast-light (z 0) and .mast .wrap (z 3), so it dissolves the
+   light without touching the copy. */
+.mast::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 26vh; z-index: 2; pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--bg) 92%); }
+
 /* --- the two practices, moved out of the hero and given their own room --- */
-.intro-sec { padding: 12vh 0 2vh; }
+.intro-sec { position: relative; padding: 12vh 0 2vh; }
+/* The carry-over: a whisper of the hero's light, gone by the time the eye
+   reaches the standfirst. Deliberately fainter than anything in the hero
+   — it is the tail of the glow, not another source.
+
+   It starts at transparent and swells a fifth of the way down, never at
+   its own top edge. A band that opens at full strength puts a lit line
+   directly against the faded-black foot of the hero, which is the seam
+   this was meant to remove, one section lower. */
+.intro-sec::before { content: ""; position: absolute; left: 0; right: 0; top: 0;
+  height: 56vh; pointer-events: none;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 3.5%, transparent) 22%,
+    transparent 80%); }
+.intro-sec > .wrap { position: relative; z-index: 1; }
 .intro-sec .drawline { height: 1px; background: var(--accent); transform: scaleX(0);
   transform-origin: left; margin-top: 40px;
   animation: draw 1.1s cubic-bezier(.76,0,.24,1) forwards; }
@@ -1933,8 +1984,8 @@ export const CSS = `
   .mast-roles { font-size: clamp(18px, 2.6vw, 30px); }
   .shot img, .detail-fig img, .about-portrait img { transform: none !important; }
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
-  /* the hero holds its first frame — see HeroFrames, which skips the
-     reel entirely rather than cutting between shots */
+  /* the hero light holds still — the pools stay where they start, so the
+     glow is there but nothing moves */
   .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }
   .iris-lens { display: none; }
 }

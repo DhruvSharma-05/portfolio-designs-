@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T14:44:39.331Z",
+  "generatedAt": "2026-08-06T17:10:31.629Z",
   "work": [],
   "gallery": [],
   "portrait": {
@@ -10,13 +10,6 @@
     "h": 2667
   },
   "projectPhotos": [
-    {
-      "seed": "modern-example",
-      "sm": "/photos/projects/modern/modern-example-sm.webp",
-      "lg": "/photos/projects/modern/modern-example-lg.webp",
-      "w": 736,
-      "h": 939
-    },
     {
       "seed": "modern-venus",
       "sm": "/photos/projects/modern/modern-venus-sm.webp",
@@ -266,7 +259,6 @@
       "intro": "Selected modern photography. The full set, shot and graded as one.",
       "note": "",
       "photos": [
-        "modern-example",
         "modern-venus",
         "modern-green-machine",
         "modern-after-hours",
