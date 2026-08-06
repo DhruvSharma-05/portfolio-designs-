@@ -90,6 +90,11 @@ export const INTRO = {
   ],
 };
 
+/* ROLES — the hero line that types itself out (Typewriter in ui.jsx).
+   Order matters: it types the first, erases it, types the next, and
+   cycles. Keep them short — the line holds one row in the masthead. */
+export const ROLES = ["Mobile app designer", "Web designer", "Photographer"];
+
 /* --- real photos (from the Contentful sync) -------------------------
    scripts/sync-contentful.mjs writes photos.manifest.json at build time.
    Every synced photo is keyed by seed → { sm, lg } local WebP URLs.
@@ -747,10 +752,58 @@ export const CSS = `
    140px headline inside it, so 22ch squeezed the h1 into ~180px — and
    .display's overflow-wrap then broke words mid-syllable (Cra/fte/d).
    The headline wraps on the 1180px .wrap instead, which sets its rhythm. */
-.mast-copy { max-width: 100%; }
-.mast-sub { margin-top: 22px; max-width: 34ch; font-weight: 300;
-  letter-spacing: -0.015em; line-height: 1.45; font-size: clamp(15px, 1.7vw, 20px);
-  color: color-mix(in srgb, var(--ink) 78%, transparent); }
+/* The hero is centred: the studio name opens the page from the middle of
+   the frame, and the role line it leaves behind takes the same axis. */
+.mast-copy { max-width: 100%; text-align: center; }
+/* the row the name and the roles share — the swell is centred on this,
+   not on the whole copy block, so the roles appear where the name was */
+.mast-line { position: relative; }
+.mast-sub { margin-top: clamp(28px, 6vh, 64px); margin-inline: auto;
+  max-width: 46ch; font-weight: 300;
+  letter-spacing: -0.015em; line-height: 1.5; font-size: clamp(14px, 1.45vw, 17px);
+  color: color-mix(in srgb, var(--ink) 62%, transparent); }
+
+/* the opening: the studio name fades up, swells past the edge of the
+   frame and clears out, leaving the role line in its place. Absolute, so
+   the roles below never move for it; overflow:hidden on .mast does the
+   cropping. Under reduced motion Home.jsx drops .mast-swell and the name
+   simply sits above the roles instead. */
+.mast-swell { position: absolute; left: 0; right: 0; top: 50%;
+  translate: 0 -50%; pointer-events: none; opacity: 0;
+  animation: swell 2.3s cubic-bezier(.3, 0, .2, 1) forwards; }
+@keyframes swell {
+  0%   { opacity: 0; scale: .86; filter: blur(8px); }
+  20%  { opacity: 1; scale: 1;   filter: blur(0); }
+  58%  { opacity: 1; scale: 1.05; filter: blur(0); }
+  100% { opacity: 0; scale: 2.1;  filter: blur(12px); }
+}
+
+/* the role line — the headline's size sits between .display and the sub,
+   so the longest role ("Mobile app designer") holds one row down to
+   phone widths */
+.mast-roles { font-weight: 300; letter-spacing: -0.035em; line-height: 1.05;
+  font-size: clamp(30px, 6.4vw, 86px); min-height: 1.05em; }
+.tw-sr { position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; }
+.tw-caret { display: inline-block; width: 2px; height: .84em; margin-left: .07em;
+  vertical-align: -0.05em; background: var(--accent);
+  animation: caret 1.05s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+
+/* scroll cue — the one instruction the hero gives, and a real link to
+   the section it points at */
+.mast-scroll { position: absolute; z-index: 4; left: 50%; translate: -50% 0;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  display: grid; justify-items: center; gap: 12px;
+  transition: color .3s ease; }
+.mast-scroll:hover { color: var(--ink); }
+.mast-scroll i { display: block; width: 1px; height: 34px;
+  background: linear-gradient(var(--ink), transparent);
+  transform-origin: 50% 0; animation: cue 2.4s ease-in-out infinite; }
+@keyframes cue {
+  0%, 100% { transform: scaleY(.35); opacity: .45; }
+  45%      { transform: scaleY(1);   opacity: 1; }
+}
 /* the bar wraps to two rows below 720px, so it eats more of the screen:
    44px CTA row + 10px row gap + 14px nav row + 24px padding + 1px rule */
 @media (max-width: 720px) { .mast { min-height: calc(100svh - 93px); } }
@@ -1951,6 +2004,9 @@ export const CSS = `
   .logo-mark path { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; }
   .logo-word b { opacity: 1 !important; transform: none !important; }
   .intro-sec .drawline, .metrics::after { transform: scaleX(1) !important; }
+  /* no typing, so the roles are listed at once — at headline size three
+     of them on one line would fill the hero, so the line steps down */
+  .mast-roles { font-size: clamp(18px, 2.6vw, 30px); }
   .shot img, .detail-fig img, .about-portrait img { transform: none !important; }
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
   /* the hero holds its first frame — see HeroFrames, which skips the

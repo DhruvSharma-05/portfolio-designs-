@@ -357,6 +357,65 @@ export function Reveal({ children, className = "", delay = 0, y = 18, as: Tag = 
   return <Tag ref={ref} className={`rv ${className}`} {...rest}>{children}</Tag>;
 }
 
+/* ---------------- typewriter ----------------
+   The hero's role line writes itself, backspaces, and writes the next
+   role. One timeout at a time (not an interval) so each phase can set
+   its own pace: typing is slower than erasing, and the finished word is
+   held long enough to be read before it goes.
+
+   The animated text is aria-hidden and the roles are read once from an
+   off-screen copy — a screen reader announcing every keystroke would be
+   unusable, and aria-label on a plain span isn't reliably exposed. */
+const TYPE_MS = 65;   // per character while writing
+const ERASE_MS = 30;  // per character while backspacing — always faster
+const HOLD_MS = 2000; // the finished word, on screen
+const GAP_MS = 380;   // empty line before the next word starts
+
+export function Typewriter({ words, className = "", delay = 0 }) {
+  const [reduced] = useState(prefersReduced);
+  const [i, setI] = useState(0);          // which word
+  const [n, setN] = useState(0);          // characters currently shown
+  const [erasing, setErasing] = useState(false);
+  /* the hero line fades in on a delay, so hold the first keystroke until
+     it is actually on screen — otherwise it types behind opacity: 0 */
+  const [started, setStarted] = useState(!delay);
+
+  useEffect(() => {
+    if (reduced || started) return;
+    const t = setTimeout(() => setStarted(true), delay * 1000);
+    return () => clearTimeout(t);
+  }, [delay, started, reduced]);
+
+  useEffect(() => {
+    if (reduced || !started) return;
+    const word = words[i];
+    const done = n === word.length;
+    const ms = erasing ? (n ? ERASE_MS : GAP_MS) : done ? HOLD_MS : TYPE_MS;
+    const t = setTimeout(() => {
+      if (!erasing) return done ? setErasing(true) : setN(n + 1);
+      if (n) return setN(n - 1);
+      setErasing(false);
+      setI((prev) => (prev + 1) % words.length);
+    }, ms);
+    return () => clearTimeout(t);
+  }, [words, i, n, erasing, reduced, started]);
+
+  // no motion: state the roles plainly rather than freezing mid-word
+  if (reduced) {
+    return <span className={className}>{words.join(" · ")}</span>;
+  }
+
+  return (
+    <span className={className}>
+      <span className="tw-sr">{words.join(", ")}</span>
+      <span aria-hidden="true">
+        {words[i].slice(0, n)}
+        <i className="tw-caret" />
+      </span>
+    </span>
+  );
+}
+
 /* ---------------- figures block ----------------
    Counting is only worth doing if it happens in front of the reader.
 

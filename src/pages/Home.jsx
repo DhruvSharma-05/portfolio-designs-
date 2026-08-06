@@ -5,9 +5,9 @@ import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
   P, img, srcSet, ratio, isLandscape, INTRO, HERO_FRAMES, METRICS, TESTIMONIALS, TAGLINE,
-  PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced,
+  PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, ROLES,
 } from "../data.js";
-import { Reveal, TLink, FigmaFrame, Metrics } from "../ui.jsx";
+import { Reveal, TLink, FigmaFrame, Metrics, Typewriter } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 import HeroFrames from "../HeroFrames.jsx";
@@ -17,11 +17,18 @@ const page = {
   animate: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-/* Hero entrance timing: the headline fades/rises in first (HEADLINE_DELAY,
-   duration matches .hero-reveal's .6s in the CSS), then the supporting
-   copy, CTAs and drawline cascade in after it settles at HEADLINE_DONE. */
-const HEADLINE_DELAY = 0.1;
-const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
+/* Hero entrance timing, in seconds — one sequence, so the numbers live
+   together rather than being scattered through the JSX.
+
+   The studio name swells out of the frame (2.3s, the .mast-swell
+   animation in the CSS); the role line crosses in while it is still
+   growing, starts typing once it has cleared, and the sub and scroll cue
+   follow it. */
+const SWELL = 2.3;
+const ROLES_IN = SWELL - 0.45;   // fades in under the name, before it goes
+const ROLES_TYPE = SWELL + 0.05; // first keystroke — the frame is its own
+const SUB_IN = SWELL + 0.35;
+const CUE_IN = SWELL + 0.8;
 
 /* ==================================================================
    WORK — the front page. Deliberately slim: hero, the categorised
@@ -55,25 +62,38 @@ export default function Home() {
 
   return (
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
-      {/* masthead — a frame the visitor pulls focus on, carrying only the
-          studio name and one line. Everything that used to crowd it in
-          here now has its own room in .intro-sec below. */}
+      {/* masthead — the studio name opens the page and gets out of the
+          way; what stays is the one thing a visitor needs, which craft
+          this is. Everything that used to crowd it in here now has its
+          own room in .intro-sec below. */}
       <header className="mast" id="main">
         <HeroFrames frames={HERO_FRAMES} reduced={reduced}>
           <div className="wrap">
             <div className="mast-copy">
-              <div className="mono" style={{ marginBottom: 22 }}>
-                {P.photographer}
+              {/* the name swells out of this row and the roles take it over,
+                  so the two share one line — see .mast-swell */}
+              <div className="mast-line">
+                <h1 className={`display${reduced ? "" : " mast-swell"}`}>{P.name}</h1>
+                {/* the three crafts, written out one after the other */}
+                <div className="mast-roles hero-reveal" style={{ "--rd": `${ROLES_IN}s` }}>
+                  <Typewriter words={ROLES} delay={reduced ? 0 : ROLES_TYPE} />
+                </div>
               </div>
-              <h1 className="display hero-reveal" style={{ "--rd": `${HEADLINE_DELAY}s` }}>
-                {P.name}
-              </h1>
-              <p className="mast-sub hero-reveal" style={{ "--rd": `${HEADLINE_DONE}s` }}>
-                Photographs, and the sites they live on. Made by the same pair of hands.
+
+              <p className="mast-sub hero-reveal" style={{ "--rd": `${SUB_IN}s` }}>
+                Vancouver based designer who loves beautiful things and blends
+                creativity and technology into every screen.
               </p>
             </div>
           </div>
         </HeroFrames>
+
+        {/* TLink, not a bare #hash: App's go() routes a same-page hash
+            through Lenis, so the cue eases down instead of jumping */}
+        <TLink to="/#intro" className="mono mast-scroll hero-reveal"
+          style={{ "--rd": `${CUE_IN}s` }}>
+          Scroll<i />
+        </TLink>
       </header>
 
       {/* the two practices — stated immediately under the hero, so a cold
