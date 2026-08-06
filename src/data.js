@@ -343,6 +343,45 @@ export const PHOTO_POOL = (() => {
   return out;
 })();
 
+/* COLLAGE — the one screen of frames between the design run and the
+   photography index (.collage in the CSS, laid out in Home.jsx).
+
+   Every tile has a shape, and each frame is picked to fit the tile it
+   lands in: a portrait dropped into the wide strip shows about a third
+   of itself, which is the same trap the hero banner has. Collections are
+   walked round-robin so no two neighbouring tiles come from the same
+   set. A collection with nothing of the right shape is skipped rather
+   than cropped — and if no collection has one (a fresh clone running on
+   placeholder seeds, where nothing reports a size), any unused frame is
+   taken, because a filled tile beats an empty one. */
+const COLLAGE_SHAPE = ["wide", "tall", "wide", "wide", "wide"];
+
+export const COLLAGE = (() => {
+  const pools = PHOTO_PROJECTS.map((p) => ({ t: p.t, slug: p.slug, photos: p.photos || [] }));
+  if (!pools.length) return [];
+  const taken = new Set();
+  let at = 0;                                   // where the last pick left off
+
+  const take = (fits) => {
+    for (let i = 0; i < pools.length; i++) {
+      const pool = pools[(at + i) % pools.length];
+      const seed = pool.photos.find((s) => !taken.has(s) && fits(s));
+      if (!seed) continue;
+      taken.add(seed);
+      at = (at + i + 1) % pools.length;
+      return { seed, t: pool.t, slug: pool.slug };
+    }
+    return null;
+  };
+
+  return COLLAGE_SHAPE
+    .map((shape) => {
+      const wants = shape === "tall" ? (s) => !isLandscape(s) : isLandscape;
+      return take(wants) || take(() => true);
+    })
+    .filter(Boolean);
+})();
+
 /* ==================================================================
    WEB DESIGN — /design and /design/:slug
 
@@ -497,6 +536,12 @@ export const TAGLINE = "Designed with intention. Captured with emotion.";
 export const CSS = `
 .pf, .pf *, .pf *::before, .pf *::after { box-sizing: border-box; margin: 0; }
 .pf { background: var(--bg); color: var(--ink);
+  /* Measured height of the sticky bar, in one place: every full-screen
+     block subtracts it so it lands inside the visible page rather than
+     under the bar. 68px = 38px CTA pill + 14px padding top and bottom +
+     its 1px rule; the bar wraps to a second row on a phone, and to a
+     third when the nav wraps (see the .nav rules), hence the steps. */
+  --bar-h: 68px;
   font-family: 'Inter', system-ui, sans-serif; font-weight: 400;
   -webkit-font-smoothing: antialiased; letter-spacing: -0.01em;
   transition: color .5s ease; position: relative; min-height: 100vh;
@@ -611,7 +656,7 @@ export const CSS = `
 /* 68px is the measured bar: 38px CTA pill (the tallest thing in it, taller
    than the 34px logo) + 14px padding top and bottom + its 1px rule. */
 .mast { position: relative; overflow: hidden; display: flex;
-  min-height: calc(100svh - 68px); }
+  min-height: calc(100svh - var(--bar-h)); }
 .mast .wrap { position: relative; z-index: 3; width: 100%; }
 .mast-stage { position: relative; flex: 1; min-width: 0;
   display: flex; align-items: center; }
@@ -751,7 +796,7 @@ export const CSS = `
 
 /* the bar wraps to two rows below 720px, so it eats more of the screen:
    44px CTA row + 10px row gap + 14px nav row + 24px padding + 1px rule */
-@media (max-width: 720px) { .mast { min-height: calc(100svh - 93px); } }
+@media (max-width: 720px) { .pf { --bar-h: 93px; } }
 
 /* standfirst / disciplines / role: fade+rise in after the headline
    resolves (--rd, set inline per element), so the primary hero text
@@ -771,6 +816,46 @@ export const CSS = `
 .mast::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
   height: 26vh; z-index: 2; pointer-events: none;
   background: linear-gradient(to bottom, transparent, var(--bg) 92%); }
+
+/* --- the canvas: one screen of frames that becomes the brand ---------
+   It opens as the collage — five photographs, exactly the visible page
+   minus the bar, so the whole thing is taken in at once — and as the
+   section is scrolled through, everything outside the letterforms goes
+   black and the word shrinks out of the picture to a headline.
+
+   One canvas, masked. The earlier build painted the picture twice, once
+   full-bleed and once clipped to the type, and two layers kept in
+   registration by hand read as two images however carefully the maths
+   agrees. Here the mask decides what survives: inside the letters and
+   outside them are the same pixels, so there is nothing to align.
+
+   The type is SVG, which is not a detail. CSS text-align does not shift
+   inline content wider than its box — the overflow goes right — so an
+   HTML word at 3000px showed its *start*, hard against the left edge,
+   and appeared to zoom out of the corner. text-anchor="middle" anchors
+   the run on its own centre at every size, which is what makes it zoom
+   out of the middle of the word.
+
+   Home.jsx owns the numbers: --fs (type size), --open (the mask's rect,
+   which is the opening beat) and the two opacities that hand the word
+   over from photograph to flat ink. The fallbacks here are the settled
+   end state, for when the driver never runs. */
+.lov { position: relative; }
+/* sticks under the bar, not at the top of the screen, so the opening
+   frame is the whole visible page and nothing hides beneath the bar */
+.lov-stage { position: sticky; top: var(--bar-h);
+  height: calc(100svh - var(--bar-h)); overflow: hidden;
+  /* shows through the 1px inset on each tile — the same hairline the
+     collage grid drew with its gap, without five borders */
+  background: var(--rule);
+  border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.lov-svg { display: block; width: 100%; height: 100%; }
+.lov-tile { /* geometry is written by Home.jsx — see lovTiles */ }
+.lov-open { opacity: var(--open, 0); }
+.lov-canvas { opacity: var(--shot-o, 0); }
+.lov-cut { font-size: var(--fs, clamp(56px, 9vw, 130px)); font-weight: 300;
+  letter-spacing: -0.045em; text-transform: lowercase; }
+.lov-ink { fill: var(--ink); opacity: var(--ink-o, 1); }
 
 /* --- the two practices, moved out of the hero and given their own room --- */
 .intro-sec { position: relative; padding: 12vh 0 2vh; }
@@ -1122,7 +1207,7 @@ export const CSS = `
 @media (max-width: 370px) {
   .nav { flex-wrap: wrap; justify-content: flex-start; gap: 9px 14px; }
   .nav a, .nav button { white-space: nowrap; }
-  .mast { min-height: calc(100svh - 118px); }
+  .pf { --bar-h: 118px; }
 }
 
 /* --- about page --- */
@@ -2088,6 +2173,14 @@ export const CSS = `
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
   /* the design run's flat layout is handled with the narrow/short screens
      up in the .hsx block — one media query covers all three */
+  /* the canvas keeps its pictures and loses its run: nothing pins, the
+     mask stays open so all five frames show, and the word — which only
+     ever arrives by zooming — is dropped rather than parked on top of
+     them. It is still in the standfirst above and on /photography. */
+  .lov-stage { position: static; }
+  .lov-open { opacity: 1; }
+  .lov-canvas { opacity: 1; }
+  .lov-ink { opacity: 0; }
   /* the hero light holds still — the pools stay where they start, so the
      glow is there but nothing moves */
   .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }

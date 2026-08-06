@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, isLandscape, INTRO, TESTIMONIALS, TAGLINE,
+  P, img, srcSet, ratio, isLandscape, INTRO, TESTIMONIALS, TAGLINE, COLLAGE,
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, ROLES,
 } from "../data.js";
 import { Reveal, TLink, FigmaFrame, Typewriter } from "../ui.jsx";
@@ -40,6 +40,25 @@ export default function Home() {
   const stage = useRef(null);
   const hsxSec = useRef(null);
   const hsxTrack = useRef(null);
+  const lovSec = useRef(null);
+  const lovStage = useRef(null);
+
+  /* The five frames are SVG <image>, which has no loading="lazy" — so
+     without this they would all be fetched at first paint, well above the
+     fold's worth of bytes. Same gate FigmaFrame uses for its embeds: mount
+     them once the section is within a screen or so of view. */
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (shown) return;
+    const el = lovSec.current;
+    if (!el || typeof IntersectionObserver === "undefined") { setShown(true); return; }
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setShown(true); io.disconnect(); } },
+      { rootMargin: "600px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [shown]);
 
   /* The one pool of light that isn't on a timer: it follows the cursor,
      trailing rather than sticking to it, so it reads as a lamp being
@@ -194,22 +213,118 @@ export default function Home() {
       sec.style.height = `${window.innerHeight + dist}px`;
       onScroll();
     };
-    measure();
+    /* The brand reveal. Same shape as the run above — extra height on the
+       section, a sticky child, progress read from how far the section has
+       been scrolled — but what it drives is type size rather than travel.
+
+       The zoom is geometric (start × ratio^p), not linear: a linear
+       interpolation from 3000px to 130px spends its first half between
+       3000 and 1500, which are the same picture, and then crosses the
+       readable sizes in a blink. Multiplying by a constant factor each
+       frame is what makes the rate of zoom look even.
+
+       This runs on phones too. It is a tall section with a sticky child,
+       so it scrolls natively and stays under the visitor's thumb — the
+       thing worth refusing on a phone is a hijacked scroll direction,
+       which this isn't. Reduced motion has returned above, leaving the
+       CSS default (--p: 1), which is the settled end state. */
+    const lov = lovSec.current;
+    const stage = lovStage.current;
+    let lovDist = 0, lovTop = 0;
+
+    const paint = (p) => {
+      const vw = window.innerWidth;
+      // one glyph fills the screen at the start; a headline at the end
+      const from = vw * 2.2;
+      const to = Math.max(56, Math.min(130, vw * 0.09));
+      stage.style.setProperty("--fs", `${from * (to / from) ** p}px`);
+      /* the handover, in the last fifth: the picture inside the letters
+         goes out as flat ink comes in, so the section ends on type */
+      const ink = Math.min(Math.max((p - 0.78) / 0.16, 0), 1);
+      stage.style.setProperty("--ink-o", ink.toFixed(3));
+      stage.style.setProperty("--shot-o", (1 - ink).toFixed(3));
+      /* The opening. The mask's rect starts white — the whole canvas shows,
+         which is the collage — and fading it out is what blackens
+         everything except the letterforms. Nothing moves; the picture is
+         the same picture throughout. This is also the only way to get that
+         first beat out of a 300-weight face: its strokes are far narrower
+         than the screen, so zooming "inside" a letter the way a heavy face
+         allows would show black, not photograph. */
+      const open = 1 - Math.min(Math.max((p - 0.06) / 0.3, 0), 1);
+      stage.style.setProperty("--open", open.toFixed(3));
+    };
+    const lovScroll = () => {
+      if (!lov || !stage || lovDist <= 0) return;
+      /* the stage sticks under the bar, not at the top of the screen, so
+         the run starts when the section reaches the bar — not a viewport
+         edge the section never touches */
+      const top = lov.getBoundingClientRect().top;
+      paint(Math.min(Math.max((lovTop - top) / lovDist, 0), 1));
+    };
+    const lovMeasure = () => {
+      if (!lov || !stage) return;
+      // two screens of scroll to cross the zoom — one is over before the
+      // word is legible, three is a visitor wondering if the page is stuck
+      const stageH = stage.getBoundingClientRect().height;
+      lovTop = parseFloat(getComputedStyle(root.current).getPropertyValue("--bar-h")) || 0;
+      lovDist = Math.round(window.innerHeight * 2);
+      lov.style.height = `${Math.round(stageH) + lovDist}px`;
+      lovTiles(stage.getBoundingClientRect());
+      lovScroll();
+    };
+    /* The mosaic. Written as px attributes rather than percentages because
+       each tile is inset by a pixel, so the stage's rule colour shows
+       through as the same hairline the collage grid draws — and because
+       CSS geometry properties (x/y/width/height on SVG) aren't safe across
+       browsers, which rules out doing the breakpoint in a media query. */
+    const TILES_WIDE = [
+      [0, 0, 2 / 3, 2 / 3], [2 / 3, 0, 1 / 3, 2 / 3], [0, 2 / 3, 1 / 3, 1 / 3],
+      [1 / 3, 2 / 3, 1 / 3, 1 / 3], [2 / 3, 2 / 3, 1 / 3, 1 / 3],
+    ];
+    // a phone gets two columns and one frame fewer — five on a 390px screen
+    // are stamps, and the point of the canvas is seeing the work
+    const TILES_NARROW = [
+      [0, 0, 1, 1 / 3], [0, 1 / 3, 1 / 2, 1 / 3], [1 / 2, 1 / 3, 1 / 2, 1 / 3],
+      [0, 2 / 3, 1, 1 / 3], null,
+    ];
+    const lovTiles = ({ width: w, height: h }) => {
+      const rect = stage.querySelector(".lov-open");
+      if (rect) { rect.setAttribute("width", w); rect.setAttribute("height", h); }
+      const plan = window.matchMedia("(max-width: 720px)").matches ? TILES_NARROW : TILES_WIDE;
+      stage.querySelectorAll(".lov-tile").forEach((el, i) => {
+        const t = plan[i];
+        if (!t) { el.style.display = "none"; return; }
+        el.style.display = "";
+        el.setAttribute("x", t[0] * w + 1);
+        el.setAttribute("y", t[1] * h + 1);
+        el.setAttribute("width", Math.max(0, t[2] * w - 2));
+        el.setAttribute("height", Math.max(0, t[3] * h - 2));
+      });
+    };
+
+    const measureAll = () => { measure(); lovMeasure(); };
+    const onScrollAll = () => { onScroll(); lovScroll(); };
+
+    measureAll();
     // the Figma embeds and the webfont land after first paint and change
     // the track's width, so the run is measured again once they have
-    const settle = window.setTimeout(measure, 400);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", measure);
+    const settle = window.setTimeout(measureAll, 400);
+    window.addEventListener("scroll", onScrollAll, { passive: true });
+    window.addEventListener("resize", measureAll);
 
     ScrollTrigger.refresh();
     return () => {
       window.clearTimeout(settle);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", onScrollAll);
+      window.removeEventListener("resize", measureAll);
       if (sec) sec.style.height = "";
       if (track) track.style.transform = "";
+      if (lov) lov.style.height = "";
     };
-  }, { scope: root, dependencies: [reduced] });
+    /* `shown` is in here because the mosaic's tiles mount when the
+       observer above fires, and a tile with no geometry attributes is a
+       tile with no size — the driver has to run again to lay them out. */
+  }, { scope: root, dependencies: [reduced, shown] });
 
   return (
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
@@ -363,6 +478,50 @@ export default function Home() {
                 </TLink>
               </Reveal>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* One screen of frames that becomes the brand. It opens as the
+          collage — five photographs, exactly the visible page — and as the
+          section is scrolled through, everything outside the letterforms
+          goes black and the word shrinks out of the picture to a headline.
+
+          One canvas, masked. Not a picture plus a second copy of itself
+          clipped to the type: that is two layers to keep in registration,
+          and it reads as two images however carefully they are aligned.
+          The mask means what is inside the letters and what is outside are
+          the same pixels. Driven from the useGSAP block above. */}
+      {COLLAGE.length > 0 && (
+        <section className="lov" ref={lovSec} aria-label="Frames">
+          <div className="lov-stage" ref={lovStage}>
+            <svg className="lov-svg" role="img" focusable="false"
+              aria-label={`${P.photoBrand} — selected frames`}>
+              <defs>
+                {/* the id is document-wide: this section is rendered once, on
+                    the home page. Two of them would collide. */}
+                <mask id="lov-mask" maskUnits="userSpaceOnUse">
+                  {/* the opening — white means "show everything". Fading it
+                      out is what blackens the surround and leaves the
+                      letters behind, without ever moving the picture. */}
+                  <rect className="lov-open" fill="#fff" />
+                  <text className="lov-cut" x="50%" y="50%" fill="#fff"
+                    textAnchor="middle" dominantBaseline="central">{P.photoBrand}</text>
+                </mask>
+              </defs>
+              {/* slice is SVG's object-fit: cover, so each frame crops to its
+                  tile exactly as the collage grid crops it */}
+              <g className="lov-canvas" mask="url(#lov-mask)">
+                {shown && COLLAGE.map((f, i) => (
+                  <image key={f.seed} className={`lov-tile lov-t${i + 1}`}
+                    href={img(f.seed, 2000, 1250)} preserveAspectRatio="xMidYMid slice" />
+                ))}
+              </g>
+              {/* the same word, same size, same place — flat ink, faded in as
+                  the run settles. aria-hidden: the svg's label already says it */}
+              <text className="lov-cut lov-ink" x="50%" y="50%" aria-hidden="true"
+                textAnchor="middle" dominantBaseline="central">{P.photoBrand}</text>
+            </svg>
           </div>
         </section>
       )}
