@@ -91,9 +91,10 @@ export const ROLES = ["Mobile App Designer", "Web Designer", "Photographer"];
 
 /* --- real photos (from the Contentful sync) -------------------------
    scripts/sync-contentful.mjs writes photos.manifest.json at build time.
-   Every synced photo is keyed by seed → { sm, lg } local WebP URLs.
-   When the manifest is empty (no credentials / fresh clone) we fall
-   back to seeded picsum placeholders so the site still renders. */
+   Every synced photo is keyed by seed → { sm, lg } local WebP URLs. No
+   stock/placeholder fallback: an unsynced seed resolves to nothing, and
+   every list built from PHOTOS (FRAMES, PHOTO_PROJECTS, …) is empty
+   rather than padded out with stand-in photos. */
 const PHOTOS = new Map();
 for (const p of manifest.work || []) PHOTOS.set(p.seed, p);
 for (const p of manifest.gallery || []) PHOTOS.set(p.seed, p);
@@ -107,30 +108,32 @@ if (manifest.portrait) PHOTOS.set(manifest.portrait.seed, manifest.portrait);
    cards fall back to the live Figma embed while it is. */
 for (const p of webCovers) PHOTOS.set(p.seed, p);
 
-/* img(seed, w, h): resolves a seed to a local optimized image. Picks the
-   small variant for thumbnail widths, the large one otherwise. Unknown
-   seeds fall through to a picsum placeholder of the requested size. */
-export const img = (s, w = 1200, h = 800) => {
+/* img(seed, w): resolves a seed to a local optimized image. Picks the
+   small variant for thumbnail widths, the large one otherwise. An
+   unsynced seed resolves to undefined — no `src` rather than a stock
+   placeholder — so callers should already be guarding on hasPhoto()/the
+   list being non-empty before reaching for an <img>. Call sites still
+   pass a height as a third argument in places; it's ignored. */
+export const img = (s, w = 1200) => {
   const p = PHOTOS.get(s);
-  if (p) return w <= 640 ? p.sm : p.lg;
-  return `https://picsum.photos/seed/${s}/${w}/${h}`;
+  if (!p) return undefined;
+  return w <= 640 ? p.sm : p.lg;
 };
 
 /* srcSet(seed): the sm+lg pair as a srcset descriptor, so <img> can ship
    the resolution that actually matches the viewport instead of always
-   whatever fixed width img() was called with. Falls back to two picsum
-   widths for not-yet-synced placeholder seeds so the attribute stays
-   valid (only ever hit before real content is published). */
+   whatever fixed width img() was called with. undefined for an unsynced
+   seed, same as img(). */
 export const srcSet = (s) => {
   const p = PHOTOS.get(s);
-  if (p) return `${p.sm} 640w, ${p.lg} 2000w`;
-  return `https://picsum.photos/seed/${s}/640/640 640w, https://picsum.photos/seed/${s}/2000/2000 2000w`;
+  return p ? `${p.sm} 640w, ${p.lg} 2000w` : undefined;
 };
 
 /* ratio(seed, fw, fh): CSS aspect-ratio for a seed — the synced photo's
-   real dimensions when the manifest has them, the placeholder's requested
-   size otherwise. Lets free-flowing grids reserve space before the image
-   loads, so lazy loading doesn't shift the layout. */
+   real dimensions when the manifest has them, the caller's requested box
+   shape otherwise (a layout fallback, not a stand-in photo). Lets
+   free-flowing grids reserve space before the image loads, so lazy
+   loading doesn't shift the layout. */
 export const ratio = (s, fw = 3, fh = 2) => {
   const p = PHOTOS.get(s);
   return p?.w && p?.h ? `${p.w} / ${p.h}` : `${fw} / ${fh}`;
@@ -151,28 +154,11 @@ const BASE = {
    the CSS keeps working, it just never changes. */
 export const THEME = { ...BASE, accent: "#E4E4E7" };
 
-const FRAMES_FALLBACK = [
-  { seed: "pf-01", t: "Selected Work 01", loc: "Location, XX", exif: "35mm · f/8 · 1/500", kind: "Photography",
-    note: "Short description of the project. Replace with your own: what it was, why it mattered, what shipped.",
-    year: "2025", role: "Photography · Grade" },
-  { seed: "pf-02", t: "Selected Work 02", loc: "Location, XX", exif: "50mm · f/1.4 · 1/60", kind: "Photography",
-    note: "One line about the shoot and the outcome. Keep it plain; let the picture carry the weight.",
-    year: "2025", role: "Portrait · Available light" },
-  { seed: "pf-03", t: "Selected Work 03", loc: "Web · Framer", exif: "12 col · 1440px · 68ms LCP", kind: "Web Design",
-    note: "A build note. Designed and shipped end to end, so nothing got cropped to fit a template.",
-    year: "2024", role: "Design · Build" },
-  { seed: "pf-04", t: "Selected Work 04", loc: "Location, XX", exif: "85mm · f/2 · 1/250", kind: "Photography",
-    note: "A portrait series or campaign. Say who it was for and what the brief asked for.",
-    year: "2024", role: "Campaign · Art direction" },
-  { seed: "pf-05", t: "Selected Work 05", loc: "Web · React", exif: "Editorial CMS · 340 issues", kind: "Web Design",
-    note: "An editorial build where the photograph sets the grid, not the other way round.",
-    year: "2023", role: "Editorial · React" },
-];
-
-/* Prefer real synced photos; fall back to placeholders when the manifest
-   is empty. FRAMES drives the work cards + /work/:seed pages. (SHEET,
-   which fed the marquee strip, went with it when the strip was removed.) */
-export const FRAMES = manifest.work?.length ? manifest.work : FRAMES_FALLBACK;
+/* Real synced photos only — no stock/placeholder fallback. FRAMES drives
+   the work cards + /work/:seed pages; an empty manifest means an empty
+   list, and every page reading it already guards for that. (SHEET, which
+   fed the marquee strip, went with it when the strip was removed.) */
+export const FRAMES = manifest.work || [];
 
 /* The old captioned "Gallery" grid (category tabs) was replaced by the
    per-collection photography cards — see PHOTO_PROJECTS below and
@@ -191,84 +177,14 @@ export const HAS_REAL_WEB = true;
    stack below it and every project page. Each project owns its own set
    of frames, so a project page can show a grid and a lightbox.
 
-   PLACEHOLDER CONTENT — swap titles, notes and seeds for the real
-   shoots. Seeds resolve through img(): a synced photo if the Drive
-   manifest has one, a seeded placeholder otherwise.
+   Real synced Contentful collections only — no stock/placeholder
+   fallback. An empty manifest means an empty list, which every
+   downstream consumer (FEATURED, PHOTO_POOL, COLLAGE, and every page
+   that maps over PHOTO_PROJECTS) already collapses to "render nothing"
+   rather than crash or show fake content.
    ================================================================== */
 
-const photoSeeds = (slug, n) => Array.from({ length: n }, (_, i) => `${slug}-${i + 1}`);
-
-const PHOTO_PROJECTS_FALLBACK = [
-  {
-    slug: "after-hours",
-    t: "After Hours",
-    kind: "Editorial",
-    loc: "Location, XX",
-    year: "2025",
-    exif: "35mm · f/1.8 · 1/125",
-    role: "Photography · Grade",
-    note: "A night series shot entirely on available light. Replace this with the real brief: who it was for and what the pictures had to carry.",
-    intro: "Two nights, one lens, no flash. The city did the lighting.",
-    photos: photoSeeds("after-hours", 9),
-  },
-  {
-    slug: "salt-and-light",
-    t: "Salt & Light",
-    kind: "Landscape",
-    loc: "Location, XX",
-    year: "2025",
-    exif: "24mm · f/11 · 1/250",
-    role: "Photography · Art direction",
-    note: "A coastal set made across one week of weather. Say what the trip was for and what came out of it.",
-    intro: "Early light, long lenses, and a lot of waiting for the sky to commit.",
-    photos: photoSeeds("salt-and-light", 8),
-  },
-  {
-    slug: "faces",
-    t: "Faces",
-    kind: "Portraits",
-    loc: "Studio, XX",
-    year: "2024",
-    exif: "85mm · f/2 · 1/200",
-    role: "Portrait · One light",
-    note: "A portrait series shot over a single afternoon. One light, one backdrop, twelve people.",
-    intro: "One light, moved twice. Everything else is the person.",
-    photos: photoSeeds("faces", 10),
-  },
-  {
-    slug: "the-long-table",
-    t: "The Long Table",
-    kind: "Events",
-    loc: "Location, XX",
-    year: "2024",
-    exif: "50mm · f/1.4 · 1/60",
-    role: "Event · Documentary",
-    note: "A full-day event covered documentary-style. Describe the day and what the client used the set for.",
-    intro: "Documentary coverage. Nobody looked at the camera on purpose.",
-    photos: photoSeeds("the-long-table", 8),
-  },
-];
-
-/* When the Drive sync has real photos, deal them out across the
-   projects in order so the pages fill with actual work; otherwise the
-   placeholder seeds stand in. */
-function withSyncedPhotos(projects) {
-  const pool = [...(manifest.work || []), ...(manifest.gallery || [])].map((p) => p.seed);
-  if (!pool.length) return projects;
-  const per = Math.max(4, Math.floor(pool.length / projects.length));
-  return projects.map((p, i) => {
-    const slice = pool.slice(i * per, (i + 1) * per);
-    return slice.length ? { ...p, photos: slice } : p;
-  });
-}
-
-/* Any projects already in the manifest win outright; otherwise we deal
-   the synced Contentful photos across the placeholder projects, and
-   failing that the placeholders stand alone — so a fresh clone with no
-   photos still renders a complete site. */
-export const PHOTO_PROJECTS = manifest.photoProjects?.length
-  ? manifest.photoProjects
-  : withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
+export const PHOTO_PROJECTS = manifest.photoProjects || [];
 
 /* The home hero is a wide, full-bleed frame, so a portrait photo would be
    cropped down to a vertical sliver of itself — landscape only. Also used by
@@ -345,9 +261,9 @@ export const PHOTO_POOL = (() => {
    of itself, which is the same trap the hero banner has. Collections are
    walked round-robin so no two neighbouring tiles come from the same
    set. A collection with nothing of the right shape is skipped rather
-   than cropped — and if no collection has one (a fresh clone running on
-   placeholder seeds, where nothing reports a size), any unused frame is
-   taken, because a filled tile beats an empty one. */
+   than cropped — and if none has one, any unused frame is taken, because
+   a filled tile beats an empty one. Returns [] outright with no synced
+   photos, which Home.jsx already gates the whole section on. */
 const COLLAGE_SHAPE = ["wide", "tall", "wide", "wide", "wide"];
 
 export const COLLAGE = (() => {
@@ -492,7 +408,7 @@ export const METRICS = [
 
 /* Viraj's real bio — condensed from his own words. */
 export const ABOUT = {
-  portrait: manifest.portrait?.seed ?? "pf-about",
+  portrait: manifest.portrait?.seed,
   lead: "I create meaningful visual experiences: digital products designed with intent, and moments captured through a lens.",
   body: [
     "My creative journey started with photography. I picked up my first camera in 2014, and it changed the way I saw the world. A few years later, while studying Computer Science Engineering, I built a foundation in programming and software development. Although I enjoyed solving problems through code, I found myself drawn to the creative side of technology, which eventually led me into UI/UX design and creating digital experiences that are both functional and visually engaging.",
@@ -1204,6 +1120,10 @@ export const CSS = `
    left/right 28px to 0 and jam the whole page against the screen edge. */
 .about { padding-top: 12vh; padding-bottom: 8vh; }
 .about-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
+/* no portrait synced yet — one column, same dead-space fix as the phone
+   layout below, so the lead isn't stuck at its narrow two-up measure */
+.about-hero.no-portrait { grid-template-columns: 1fr; }
+.about-hero.no-portrait .about-lead { max-width: none; }
 @media (max-width: 820px) { .about-hero { grid-template-columns: 1fr; gap: 36px; }
   /* single column now, so the 22ch measure that sat beside the portrait
      just leaves dead space on the right — let the lead fill the column

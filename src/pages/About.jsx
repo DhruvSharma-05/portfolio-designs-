@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
-import { P, img, srcSet, ABOUT, prefersReduced, heavyVisualsAllowed } from "../data.js";
+import { P, img, srcSet, ABOUT, hasPhoto, prefersReduced, heavyVisualsAllowed } from "../data.js";
 import { Reveal, TLink, SectionHead } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
@@ -35,6 +35,7 @@ export default function About() {
   const [heavy] = useState(heavyVisualsAllowed);
   const root = useRef(null);
   const portrait = useRef(null);
+  const hasPortrait = hasPhoto(ABOUT.portrait);
 
   useGSAP(() => {
     if (reduced || !portrait.current) return;
@@ -49,7 +50,7 @@ export default function About() {
   return (
     <motion.main ref={root} id="main" className="about wrap"
       variants={page} initial="initial" animate="animate">
-      <div className="about-hero">
+      <div className={`about-hero${hasPortrait ? "" : " no-portrait"}`}>
         <div>
           <div className="mono about-kicker">About</div>
           <h1>{P.photographer}</h1>
@@ -59,10 +60,12 @@ export default function About() {
             )}
           </p>
         </div>
-        <figure className="about-portrait">
-          <img ref={portrait} src={img(ABOUT.portrait, 1000, 1250)} srcSet={srcSet(ABOUT.portrait)}
-            sizes="(max-width: 820px) 100vw, 45vw" alt={`${P.photographer}, portrait`} />
-        </figure>
+        {hasPortrait && (
+          <figure className="about-portrait">
+            <img ref={portrait} src={img(ABOUT.portrait, 1000)} srcSet={srcSet(ABOUT.portrait)}
+              sizes="(max-width: 820px) 100vw, 45vw" alt={`${P.photographer}, portrait`} />
+          </figure>
+        )}
       </div>
 
       {/* bio on the left, the globe you can push around on the right */}

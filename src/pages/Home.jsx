@@ -675,6 +675,8 @@ export default function Home() {
    collection page rather than being previewed here.
    ================================================================== */
 function PhotoProjects() {
+  // no collections synced yet — nothing to name or link to
+  if (!PHOTO_PROJECTS.length) return null;
   return (
     <section className="gwork" id="gallery" aria-label="Photography">
       <div className="wrap">

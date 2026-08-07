@@ -79,9 +79,13 @@ export default function Photography() {
   const f = FEATURED[i];
 
   return (
-    <motion.div ref={root} variants={page} initial="initial" animate="animate">
-      {/* ---------- hero slideshow ---------- */}
-      <header className="phero" id="main" {...heroSwipe}>
+    <motion.div ref={root} id="main" variants={page} initial="initial" animate="animate">
+      {/* ---------- hero slideshow ----------
+          only when there's a real featured frame to show — an empty
+          Contentful account has no FEATURED at all, and a placeholder
+          slideshow is worse than no hero */}
+      {f && (
+      <header className="phero" {...heroSwipe}>
         <div className="phero-stage" aria-hidden="true">
           <AnimatePresence initial={false}>
             <motion.figure className="phero-fr" key={f.seed}
@@ -142,6 +146,7 @@ export default function Photography() {
           </div>
         </div>
       </header>
+      )}
 
       {/* ---------- the practice, named ---------- */}
       <section className="wrap band">
@@ -165,13 +170,18 @@ export default function Photography() {
       </section>
 
       {/* ---------- frames carousel ---------- */}
+      {CAROUSEL.length > 0 && (
       <section className="wrap" aria-label="Selected frames">
         <PhotoCarousel photos={CAROUSEL} reduced={reduced} />
       </section>
+      )}
 
       {/* ---------- project stack ----------
            the heading sits outside .stack, which is a flex column — inside
-           it the label would pick up the 34px card gap */}
+           it the label would pick up the 34px card gap. Hidden entirely
+           when there are no collections yet — a "Projects" label over an
+           empty stack is worse than not showing the section at all. */}
+      {PHOTO_PROJECTS.length > 0 && (
       <section className="wrap" style={{ paddingTop: "11vh" }}>
         <SectionHead>Projects</SectionHead>
         <div className="stack">
@@ -217,6 +227,7 @@ export default function Photography() {
           })}
         </div>
       </section>
+      )}
 
       {/* ---------- process ---------- */}
       <section className="sec">

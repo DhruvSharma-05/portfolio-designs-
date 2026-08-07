@@ -100,8 +100,10 @@ Contentful "Photo" entries ──sync──▶ public/photos/*.webp  +  src/phot
 ```
 
 `src/data.js` reads the manifest: when it's populated the site shows the real
-photos; when empty (fresh clone, no credentials) it falls back to seeded
-`picsum.photos` placeholders, so the repo always builds and runs.
+photos; when empty (fresh clone, no credentials) there's no placeholder
+fallback — the repo still builds and runs, but photo-dependent sections
+(hero slideshow, frames carousel, project stack, home photography row,
+About portrait) render nothing until real photos are synced.
 
 **One-time setup (Contentful free tier — no card required)**
 
@@ -301,10 +303,10 @@ All content lives in `src/data.js`:
 | Where | What to replace |
 | ----- | --------------- |
 | `P` | name, role, email, city |
-| `FRAMES` | work-card copy — normally comes from Contentful (see **Photos from Contentful**); the array here is the placeholder fallback |
+| `FRAMES` | work-card copy — comes entirely from Contentful (see **Photos from Contentful**); empty until photos are synced, no fallback array |
 | `ABOUT` | About-page bio, approach, timeline (portrait image comes from Contentful) |
 | `METRICS`, `QUOTES`, `SHOTLIST` | numbers, testimonials, services |
-| Photos | pulled from Contentful at build time — see **Photos from Contentful**. Without credentials the site falls back to `picsum.photos` placeholders |
+| Photos | pulled from Contentful at build time — see **Photos from Contentful**. Without credentials or photos, the dependent sections render empty rather than falling back to placeholders |
 | `THEME` | the single fixed accent/base palette (no switcher — see above) |
 | `index.html` | `<title>`, description, and OG/Twitter tags (marked `TODO(client)`) |
 | `public/favicon.svg`, `public/og.svg` | the lens mark + social card (export `og.svg` to a 1200×630 PNG for Facebook/Twitter) |
