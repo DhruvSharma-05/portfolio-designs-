@@ -862,23 +862,13 @@ export const CSS = `
   letter-spacing: -0.045em; text-transform: lowercase; }
 .lov-ink { fill: var(--ink); opacity: var(--ink-o, 1); }
 
-/* --- the two practices, moved out of the hero and given their own room --- */
-.intro-sec { position: relative; padding: 12vh 0 2vh; }
-/* The carry-over: a whisper of the hero's light, gone by the time the eye
-   reaches the standfirst. Deliberately fainter than anything in the hero
-   — it is the tail of the glow, not another source.
-
-   It starts at transparent and swells a fifth of the way down, never at
-   its own top edge. A band that opens at full strength puts a lit line
-   directly against the faded-black foot of the hero, which is the seam
-   this was meant to remove, one section lower. */
-.intro-sec::before { content: ""; position: absolute; left: 0; right: 0; top: 0;
-  height: 56vh; pointer-events: none;
-  background: linear-gradient(to bottom,
-    transparent 0%,
-    color-mix(in srgb, var(--accent) 3.5%, transparent) 22%,
-    transparent 80%); }
-.intro-sec > .wrap { position: relative; z-index: 1; }
+/* --- the two practices, moved out of the hero and given their own room ---
+   No light in here. This section used to open with a carry-over of the
+   hero's glow, to stop the boundary between them reading as a seam; it
+   put a lit haze behind the standfirst, which is copy and wants a black
+   page behind it. The hero's own fade to the page colour closes that
+   boundary on its own. */
+.intro-sec { padding: 12vh 0 2vh; }
 .intro-sec .drawline { height: 1px; background: var(--accent); transform: scaleX(0);
   transform-origin: left; margin-top: 40px;
   animation: draw 1.1s cubic-bezier(.76,0,.24,1) forwards; }
