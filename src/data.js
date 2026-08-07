@@ -843,15 +843,20 @@ export const CSS = `
 .lov { position: relative; }
 /* sticks under the bar, not at the top of the screen, so the opening
    frame is the whole visible page and nothing hides beneath the bar */
+/* the page's own black, so that what the mask takes away is black and the
+   letters read at full strength against it. The hairlines between frames
+   are drawn inside the canvas instead (.lov-bed) — as a background here
+   they tinted everything the mask removed. */
 .lov-stage { position: sticky; top: var(--bar-h);
   height: calc(100svh - var(--bar-h)); overflow: hidden;
-  /* shows through the 1px inset on each tile — the same hairline the
-     collage grid drew with its gap, without five borders */
-  background: var(--rule);
+  background: var(--bg);
   border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
 .lov-svg { display: block; width: 100%; height: 100%; }
 .lov-tile { /* geometry is written by Home.jsx — see lovTiles */ }
-.lov-open { opacity: var(--open, 0); }
+/* the surround: a white disc in the mask, closed in from the edges by the
+   driver (it writes the gradient's radius). No opacity of its own — a
+   half-transparent surround is a haze over the whole frame, and it makes
+   the letters read as translucent even at full strength. */
 .lov-canvas { opacity: var(--shot-o, 0); }
 .lov-cut { font-size: var(--fs, clamp(56px, 9vw, 130px)); font-weight: 300;
   letter-spacing: -0.045em; text-transform: lowercase; }
@@ -1724,25 +1729,26 @@ export const CSS = `
   .hsx-track { display: block; padding: 0 var(--hsx-pad); transform: none !important;
     will-change: auto; --hsx-pad: clamp(20px, 5vw, 40px); }
   .hsx-intro { width: auto; max-width: 34ch; margin-bottom: clamp(24px, 5vw, 40px); }
-  /* Bleeds to both edges while its first card still lines up with the
-     heading — the negative margin cancels the track's padding, the
-     matching padding puts the content back where it was. A row that
-     stops at a 20px margin looks like it has run out; one that runs off
-     the edge says there is more. */
-  .hsx-row { display: flex; align-items: flex-start; gap: clamp(18px, 5vw, 34px);
-    overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
-    margin-inline: calc(var(--hsx-pad) * -1); padding: 0 var(--hsx-pad) 10px;
-    /* snapping ignores padding — without this the first snap point sits at
-       the scrollport edge, so the row loads already scrolled past its own
-       padding and card one starts flush against the screen */
-    scroll-padding-inline: var(--hsx-pad);
-    overscroll-behavior-x: contain; }
-  .hsx-row::-webkit-scrollbar { display: none; }
-  .hsx-card, .hsx-more { scroll-snap-align: start; }
-  /* under 100% so the next card peeks in — that sliver is the only thing
-     telling a visitor the row scrolls at all */
-  .hsx-card { width: min(84vw, 460px); }
-  .hsx-more { align-self: center; padding-inline: clamp(10px, 4vw, 30px); }
+  /* One card per line, not a swipe row. A horizontal scroller nested
+     inside a vertically scrolling page is a poor target on touch — it
+     only answers a near-horizontal drag, and every other angle scrolls
+     the page past it instead, which reads as a row that doesn't work.
+     Stacked, each card is full width and arrives on the visitor's own
+     scroll. The sideways run is the desktop's entrance; this is the
+     phone's. */
+  .hsx-row { display: grid; gap: clamp(44px, 10vw, 72px);
+    overflow: visible; margin-inline: 0; padding: 0; }
+  .hsx-card { width: 100%; }
+  .hsx-more { justify-self: start; padding-inline: 0; }
+  /* Hidden only once JS has said it will animate them — data-anim is set
+     by the observer in Home.jsx. Default-visible matters: reduced motion
+     also lands in this block, and the global reduced-motion rule kills
+     transitions, so an opacity:0 that waited on one would never come
+     back. */
+  .hsx-row[data-anim] > * { opacity: 0; transform: translateY(20px);
+    transition: opacity .75s cubic-bezier(.16,1,.3,1),
+                transform .75s cubic-bezier(.16,1,.3,1); }
+  .hsx-row[data-anim] > .in { opacity: 1; transform: none; }
 }
 
 /* ==================================================================
@@ -2174,11 +2180,11 @@ export const CSS = `
   /* the design run's flat layout is handled with the narrow/short screens
      up in the .hsx block — one media query covers all three */
   /* the canvas keeps its pictures and loses its run: nothing pins, the
-     mask stays open so all five frames show, and the word — which only
+     mask stays open so all five frames show (the wipe's radius keeps its
+     markup default, which clears the frame), and the word — which only
      ever arrives by zooming — is dropped rather than parked on top of
      them. It is still in the standfirst above and on /photography. */
   .lov-stage { position: static; }
-  .lov-open { opacity: 1; }
   .lov-canvas { opacity: 1; }
   .lov-ink { opacity: 0; }
   /* the hero light holds still — the pools stay where they start, so the

@@ -43,6 +43,30 @@ export default function Home() {
   const lovSec = useRef(null);
   const lovStage = useRef(null);
 
+  /* The phone's entrance for the design cards. There they are a plain
+     stack (the sideways run needs width), so each one crosses a scroll
+     threshold of its own and can rise in as it arrives.
+
+     data-anim is set from here rather than sitting in the CSS, so the
+     cards are visible by default: the hidden state only exists once
+     something is guaranteed to un-hide them. The rule itself lives inside
+     the flat-layout media query, so this does nothing on a desktop. */
+  useEffect(() => {
+    if (reduced) return;
+    const row = root.current?.querySelector(".hsx-row");
+    if (!row || typeof IntersectionObserver === "undefined") return;
+    row.dataset.anim = "on";
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: "0px 0px -10% 0px" });
+    row.querySelectorAll(".hsx-card, .hsx-more").forEach((el) => io.observe(el));
+    return () => { io.disconnect(); delete row.dataset.anim; };
+  }, [reduced]);
+
   /* The five frames are SVG <image>, which has no loading="lazy" — so
      without this they would all be fetched at first paint, well above the
      fold's worth of bytes. Same gate FigmaFrame uses for its embeds: mount
@@ -230,7 +254,7 @@ export default function Home() {
        CSS default (--p: 1), which is the settled end state. */
     const lov = lovSec.current;
     const stage = lovStage.current;
-    let lovDist = 0, lovTop = 0;
+    let lovDist = 0, lovTop = 0, lovWipe = null;
 
     const paint = (p) => {
       const vw = window.innerWidth;
@@ -243,15 +267,15 @@ export default function Home() {
       const ink = Math.min(Math.max((p - 0.78) / 0.16, 0), 1);
       stage.style.setProperty("--ink-o", ink.toFixed(3));
       stage.style.setProperty("--shot-o", (1 - ink).toFixed(3));
-      /* The opening. The mask's rect starts white — the whole canvas shows,
-         which is the collage — and fading it out is what blackens
-         everything except the letterforms. Nothing moves; the picture is
-         the same picture throughout. This is also the only way to get that
-         first beat out of a 300-weight face: its strokes are far narrower
-         than the screen, so zooming "inside" a letter the way a heavy face
-         allows would show black, not photograph. */
-      const open = 1 - Math.min(Math.max((p - 0.06) / 0.3, 0), 1);
-      stage.style.setProperty("--open", open.toFixed(3));
+      /* The opening: the surround is eaten from the edges inward, so the
+         collage is whole, then closing, then only the letters. 1.2 is
+         where the gradient's solid core still clears the corners of the
+         frame (the box's corner sits 0.707 out, and the core is 0.62 of
+         the radius); 0 is gone. The last thing to go is the middle of the
+         screen, which is the one place a hole appearing out of nowhere
+         would be noticed. */
+      const wipe = 1 - Math.min(Math.max((p - 0.06) / 0.3, 0), 1);
+      if (lovWipe) lovWipe.setAttribute("r", (1.2 * wipe).toFixed(4));
     };
     const lovScroll = () => {
       if (!lov || !stage || lovDist <= 0) return;
@@ -265,11 +289,12 @@ export default function Home() {
       if (!lov || !stage) return;
       // two screens of scroll to cross the zoom — one is over before the
       // word is legible, three is a visitor wondering if the page is stuck
-      const stageH = stage.getBoundingClientRect().height;
+      const box = stage.getBoundingClientRect();
+      lovWipe = stage.querySelector("#lov-wipe");
       lovTop = parseFloat(getComputedStyle(root.current).getPropertyValue("--bar-h")) || 0;
       lovDist = Math.round(window.innerHeight * 2);
-      lov.style.height = `${Math.round(stageH) + lovDist}px`;
-      lovTiles(stage.getBoundingClientRect());
+      lov.style.height = `${Math.round(box.height) + lovDist}px`;
+      lovTiles(box);
       lovScroll();
     };
     /* The mosaic. Written as px attributes rather than percentages because
@@ -288,8 +313,10 @@ export default function Home() {
       [0, 2 / 3, 1, 1 / 3], null,
     ];
     const lovTiles = ({ width: w, height: h }) => {
-      const rect = stage.querySelector(".lov-open");
-      if (rect) { rect.setAttribute("width", w); rect.setAttribute("height", h); }
+      stage.querySelectorAll(".lov-open, .lov-bed").forEach((r) => {
+        r.setAttribute("width", w);
+        r.setAttribute("height", h);
+      });
       const plan = window.matchMedia("(max-width: 720px)").matches ? TILES_NARROW : TILES_WIDE;
       stage.querySelectorAll(".lov-tile").forEach((el, i) => {
         const t = plan[i];
@@ -498,13 +525,24 @@ export default function Home() {
             <svg className="lov-svg" role="img" focusable="false"
               aria-label={`${P.photoBrand} — selected frames`}>
               <defs>
+                {/* The opening is a wipe, not a fade. Fading the surround out
+                    dims the whole picture uniformly on the way, and a
+                    half-strength copy of the same photograph behind the
+                    letters makes them read as translucent even though they
+                    are at full strength throughout. Closing this circle in
+                    from the edges instead means every pixel is either the
+                    photograph at 100% or black — nothing is ever a haze. */}
+                <radialGradient id="lov-wipe" r="1.2">
+                  <stop offset="0" stopColor="#fff" />
+                  <stop offset="0.62" stopColor="#fff" />
+                  <stop offset="0.82" stopColor="#000" />
+                </radialGradient>
                 {/* the id is document-wide: this section is rendered once, on
                     the home page. Two of them would collide. */}
                 <mask id="lov-mask" maskUnits="userSpaceOnUse">
-                  {/* the opening — white means "show everything". Fading it
-                      out is what blackens the surround and leaves the
-                      letters behind, without ever moving the picture. */}
-                  <rect className="lov-open" fill="#fff" />
+                  {/* white means "show everything" — so this is the surround,
+                      shrinking, and the text below is what stays behind */}
+                  <rect className="lov-open" fill="url(#lov-wipe)" />
                   <text className="lov-cut" x="50%" y="50%" fill="#fff"
                     textAnchor="middle" dominantBaseline="central">{P.photoBrand}</text>
                 </mask>
@@ -512,6 +550,12 @@ export default function Home() {
               {/* slice is SVG's object-fit: cover, so each frame crops to its
                   tile exactly as the collage grid crops it */}
               <g className="lov-canvas" mask="url(#lov-mask)">
+                {/* the hairlines between frames, showing through the 1px
+                    inset on each tile. Inside the mask, not behind it: it
+                    belongs to the picture, and as the stage background it
+                    made everything the mask takes away a lifted grey
+                    instead of the page's black. */}
+                <rect className="lov-bed" fill="var(--rule)" />
                 {shown && COLLAGE.map((f, i) => (
                   <image key={f.seed} className={`lov-tile lov-t${i + 1}`}
                     href={img(f.seed, 2000, 1250)} preserveAspectRatio="xMidYMid slice" />
