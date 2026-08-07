@@ -52,6 +52,13 @@ export default function Photography() {
     return () => clearTimeout(t);
   }, [i, reduced]);
 
+  // touch swipe — same gesture as the frames carousel below
+  const stepHero = useCallback(
+    (d) => setI((n) => (n + d + FEATURED.length) % FEATURED.length),
+    [],
+  );
+  const heroSwipe = useSwipe(() => stepHero(1), () => stepHero(-1));
+
   /* parallax + hover zoom on the project cards, same as the home stack */
   useGSAP(() => {
     if (reduced) return;
@@ -74,7 +81,7 @@ export default function Photography() {
   return (
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
       {/* ---------- hero slideshow ---------- */}
-      <header className="phero" id="main">
+      <header className="phero" id="main" {...heroSwipe}>
         <div className="phero-stage" aria-hidden="true">
           <AnimatePresence initial={false}>
             <motion.figure className="phero-fr" key={f.seed}
@@ -82,7 +89,12 @@ export default function Photography() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: reduced ? 0 : 1.1, ease: "easeInOut" }}>
-              <motion.img src={img(f.seed, 2000, 1200)} srcSet={srcSet(f.seed)} sizes="100vw" alt=""
+              {/* phone-only backdrop: on a narrow, tall banner a landscape
+                  frame can't fill the box without losing most of its width,
+                  so below 640px the frame is shown whole (letterboxed) over
+                  a blurred copy of itself instead of being cropped to fill */}
+              <img className="phero-bg" src={img(f.seed, 300, 300)} alt="" aria-hidden="true" />
+              <motion.img className="phero-fg" src={img(f.seed, 2000, 1200)} srcSet={srcSet(f.seed)} sizes="100vw" alt=""
                 initial={{ scale: 1.12 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: reduced ? 0 : 8, ease: "linear" }} />

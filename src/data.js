@@ -1371,6 +1371,7 @@ export const CSS = `
 /* full-bleed cover — the frame fills the banner; object-position keeps the
    upper-middle (faces) in view when a tall photo is cropped to fit */
 .phero-fr img { will-change: transform; object-position: center 30%; }
+.phero-bg { display: none; }
 .phero-fr::after { content: ""; position: absolute; inset: 0;
   background: linear-gradient(180deg,
     color-mix(in srgb, var(--bg) 46%, transparent) 0%,
@@ -1406,7 +1407,18 @@ export const CSS = `
 .tick-btn:hover i { transform: scaleX(1); opacity: .4; animation: none; }
 .phero-count { font-variant-numeric: tabular-nums; }
 .phero-count b { font-weight: 400; color: var(--accent); }
-@media (max-width: 640px) { .phero { height: 78vh; } .tick-btn { width: 32px; } }
+@media (max-width: 640px) {
+  .phero { height: 78vh; }
+  .tick-btn { width: 32px; }
+  /* the banner is portrait-shaped here while every featured frame is
+     landscape (FEATURED only ever picks wide covers) — cover would crop
+     most of the photo's width away, so it's shown whole over a blurred
+     fill instead. See the .phero-bg comment in Photography.jsx. */
+  .phero-bg { display: block; position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center; filter: blur(40px) brightness(.55) saturate(1.15);
+    transform: scale(1.25); }
+  .phero-fr img.phero-fg { object-fit: contain; object-position: center; }
+}
 
 /* --- project intro band --- */
 /* the bottom padding is the gap down to the frames carousel — 2vh let the
