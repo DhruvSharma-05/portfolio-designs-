@@ -386,6 +386,14 @@ export default function Home() {
               </p>
             </div>
           </div>
+
+          {/* A small, always-visible cue makes the first scroll feel
+              intentional. It is an ordinary anchor, so it remains useful
+              with JavaScript or motion disabled. */}
+          <a className="mast-scroll mono" href="#intro">
+            <span>Scroll to explore</span>
+            <i aria-hidden="true" />
+          </a>
         </div>
       </header>
 

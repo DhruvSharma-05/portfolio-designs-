@@ -676,6 +676,26 @@ export const CSS = `
   max-width: 46ch; font-weight: 300;
   letter-spacing: -0.015em; line-height: 1.5; font-size: clamp(14px, 1.45vw, 17px);
   color: color-mix(in srgb, var(--ink) 62%, transparent); }
+/* The first-scroll cue is deliberately part of the hero, not a fixed UI
+   element: it disappears with the mast and never competes with the work
+   below. The travelling dash is a lightweight CSS animation, with no
+   scroll listener required. */
+.mast-scroll { position: absolute; z-index: 3; left: 50%; bottom: clamp(20px, 4vh, 42px);
+  translate: -50% 8px; opacity: 0; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  color: color-mix(in srgb, var(--ink) 54%, transparent); font-size: 9px; line-height: 1;
+  white-space: nowrap; transition: color .25s ease;
+  animation: mastScrollIn .5s cubic-bezier(.16,1,.3,1) 2.35s forwards; }
+.mast-scroll:hover { color: var(--ink); }
+.mast-scroll i { position: relative; display: block; width: 1px; height: 28px; overflow: hidden;
+  background: color-mix(in srgb, var(--ink) 18%, transparent); }
+.mast-scroll i::after { content: ""; position: absolute; top: -9px; left: 0; width: 1px; height: 10px;
+  background: var(--accent); animation: scrollCue 1.7s cubic-bezier(.65,0,.35,1) infinite; }
+@keyframes mastScrollIn { to { opacity: 1; translate: -50% 0; } }
+@keyframes scrollCue { to { transform: translateY(38px); } }
+@media (max-width: 560px) {
+  .mast-scroll { bottom: 18px; gap: 8px; font-size: 8px; }
+  .mast-scroll i { height: 22px; }
+}
 
 /* the opening: the studio name fades up, swells past the edge of the
    frame and clears out, leaving the role line in its place. Absolute, so
@@ -2065,6 +2085,7 @@ export const CSS = `
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1 !important; transform: none !important; }
   .hero-reveal { opacity: 1 !important; transform: none !important; }
+  .mast-scroll { opacity: 1 !important; translate: -50% 0 !important; }
   .logo-mark path { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; }
   .logo-word b { opacity: 1 !important; transform: none !important; }
   .intro-sec .drawline, .metrics::after { transform: scaleX(1) !important; }
