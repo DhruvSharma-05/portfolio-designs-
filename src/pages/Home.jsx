@@ -1,27 +1,31 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, srcSet, ratio, isLandscape, INTRO, HERO_FRAMES, METRICS, TESTIMONIALS, TAGLINE,
-  PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced,
+  P, img, srcSet, ratio, isLandscape, INTRO, TESTIMONIALS, TAGLINE, COLLAGE,
+  PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, ROLES,
 } from "../data.js";
-import { Reveal, TLink, FigmaFrame, Metrics } from "../ui.jsx";
+import { Reveal, TLink, FigmaFrame, Typewriter } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
-import HeroFrames from "../HeroFrames.jsx";
 
 const page = {
   initial: { opacity: 0 },
   animate: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-/* Hero entrance timing: the headline fades/rises in first (HEADLINE_DELAY,
-   duration matches .hero-reveal's .6s in the CSS), then the supporting
-   copy, CTAs and drawline cascade in after it settles at HEADLINE_DONE. */
-const HEADLINE_DELAY = 0.1;
-const HEADLINE_DONE = HEADLINE_DELAY + 0.6;
+/* Hero entrance timing, in seconds — one sequence, so the numbers live
+   together rather than being scattered through the JSX.
+
+   The studio name swells out of the frame (2.3s, the .mast-swell
+   animation in the CSS); the role line crosses in while it is still
+   growing, starts typing once it has cleared, and the sub follows it. */
+const SWELL = 2.3;
+const ROLES_IN = SWELL - 0.45;   // fades in under the name, before it goes
+const ROLES_TYPE = SWELL + 0.05; // first keystroke — the frame is its own
+const SUB_IN = SWELL + 0.35;
 
 /* ==================================================================
    WORK — the front page. Deliberately slim: hero, the categorised
@@ -33,6 +37,158 @@ export default function Home() {
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);
+  const stage = useRef(null);
+  const hsxSec = useRef(null);
+  const hsxTrack = useRef(null);
+  const lovSec = useRef(null);
+  const lovStage = useRef(null);
+
+  /* The phone's entrance for the design cards. There they are a plain
+     stack (the sideways run needs width), so each one crosses a scroll
+     threshold of its own and can rise in as it arrives.
+
+     data-anim is set from here rather than sitting in the CSS, so the
+     cards are visible by default: the hidden state only exists once
+     something is guaranteed to un-hide them. The rule itself lives inside
+     the flat-layout media query, so this does nothing on a desktop. */
+  useEffect(() => {
+    if (reduced) return;
+    const row = root.current?.querySelector(".hsx-row");
+    if (!row || typeof IntersectionObserver === "undefined") return;
+    row.dataset.anim = "on";
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: "0px 0px -10% 0px" });
+    row.querySelectorAll(".hsx-card, .hsx-more").forEach((el) => io.observe(el));
+    return () => { io.disconnect(); delete row.dataset.anim; };
+  }, [reduced]);
+
+  /* The five frames are SVG <image>, which has no loading="lazy" — so
+     without this they would all be fetched at first paint, well above the
+     fold's worth of bytes. Same gate FigmaFrame uses for its embeds: mount
+     them once the section is within a screen or so of view. */
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (shown) return;
+    const el = lovSec.current;
+    if (!el || typeof IntersectionObserver === "undefined") { setShown(true); return; }
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setShown(true); io.disconnect(); } },
+      { rootMargin: "600px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [shown]);
+
+  /* The one pool of light that isn't on a timer: it follows the cursor,
+     trailing rather than sticking to it, so it reads as a lamp being
+     carried past the name rather than a dot glued to the pointer.
+
+     It also lights what it passes. The pool itself is deliberately almost
+     invisible; the thing a visitor actually notices is the ambient pool
+     it comes near brightening, which is the `--near` each drifter reads.
+     That means measuring the drifters, which is the one bit of this that
+     costs anything — see MEASURE_EVERY.
+
+     Written straight to the nodes' style out of a rAF — routing a
+     pointermove through React state would re-render the whole page on
+     every mouse pixel. */
+  useEffect(() => {
+    /* the listeners go on the stage, not the light — the light layer is
+       pointer-events:none and would never see a move */
+    const el = stage.current;
+    if (reduced || !el) return;
+    const layer = el.querySelector(".mast-light");
+    const spot = el.querySelector(".mast-spot");
+    const pools = [...layer.querySelectorAll("i")].map((n) => ({ n, cx: 0, cy: 0, near: 0 }));
+    let tx = 0, ty = 0, x = 0, y = 0, raf = 0, away = true, tick = 0, reach = 600, off = false;
+
+    /* The drifters are moved by a CSS animation, so their position is only
+       knowable by asking layout — and a getBoundingClientRect is a layout
+       flush. Four of them 60 times a second would be the most expensive
+       thing on the page, and pointless: these pools cross the screen over
+       20 seconds, so ten reads a second is already far finer than the
+       motion. Between reads the falloff is computed against the last
+       known centres, which is imperceptibly stale. */
+    const MEASURE_EVERY = 6;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      /* scrolled past — the pointer can still be "inside" the hero as far
+         as boundary events go, and there is no sense lighting a frame
+         nobody is looking at */
+      off = r.bottom <= 0 || r.top >= window.innerHeight;
+      // how far the cursor's influence carries, in the frame's own terms
+      reach = Math.max(r.width, r.height) * 0.5;
+      pools.forEach((p) => {
+        const b = p.n.getBoundingClientRect();
+        p.cx = b.left + b.width / 2 - r.left;
+        p.cy = b.top + b.height / 2 - r.top;
+      });
+    };
+
+    const frame = () => {
+      x += (tx - x) * 0.06;
+      y += (ty - y) * 0.06;
+      spot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+
+      if (tick++ % MEASURE_EVERY === 0) measure();
+      /* Each drifter eases toward its own target brightness rather than
+         snapping to it, so a fast mouse leaves a swell behind it instead
+         of a flicker. `dark` is the resting state — pointer gone, or the
+         hero scrolled away — and the ease carries the pools back down to
+         it, which is why the loop keeps running for a moment after the
+         cursor leaves rather than cutting. */
+      const dark = away || off;
+      let easing = false;
+      pools.forEach((p) => {
+        const d = Math.hypot(x - p.cx, y - p.cy);
+        const want = dark ? 0 : Math.max(0, 1 - d / reach);
+        p.near += (want - p.near) * 0.07;
+        p.n.style.setProperty("--near", p.near.toFixed(3));
+        if (Math.abs(want - p.near) > 0.004) easing = true;
+      });
+
+      const settled = Math.abs(tx - x) < 0.4 && Math.abs(ty - y) < 0.4;
+      raf = (dark && settled && !easing) ? 0 : requestAnimationFrame(frame);
+    };
+    const move = (e) => {
+      /* Asked of the event, not of a media query: a touch-screen laptop
+         answers `pointer: coarse` to matchMedia even while a mouse is
+         driving it, which switched the spotlight off on exactly the
+         machines that have a cursor to follow. A finger still can't
+         drag the light around — it just isn't pointerType "mouse". */
+      if (e.pointerType && e.pointerType !== "mouse" && e.pointerType !== "pen") return;
+      const r = el.getBoundingClientRect();
+      tx = e.clientX - r.left;
+      ty = e.clientY - r.top;
+      /* Arriving — first load, or back from the tab next door. The light
+         is placed under the cursor before it is lit, so it fades up where
+         the pointer actually is instead of sweeping in from wherever it
+         was left. This has to run on every arrival, not just the first
+         one: gating it on a seen-once flag left the light dark for the
+         rest of the visit once the pointer had wandered off. */
+      if (away) {
+        away = false;
+        x = tx; y = ty;
+        spot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+        layer.dataset.spot = "on";
+      }
+      if (!raf) raf = requestAnimationFrame(frame);
+    };
+    const leave = () => { away = true; layer.dataset.spot = ""; };
+
+    el.addEventListener("pointermove", move);
+    el.addEventListener("pointerleave", leave);
+    return () => {
+      el.removeEventListener("pointermove", move);
+      el.removeEventListener("pointerleave", leave);
+      cancelAnimationFrame(raf);
+    };
+  }, [reduced]);
 
   /* image parallax + hover zoom, owned by GSAP and scoped to this page
      so the ScrollTriggers are torn down when we navigate away. */
@@ -50,30 +206,195 @@ export default function Home() {
       shot.addEventListener("pointerleave", () => zoom(1.14));
     });
 
+    /* The design run. The section is given extra height equal to the
+       track's overflow, its child sticks to the top of the screen, and
+       the track is translated by however far the section has scrolled —
+       so downward scrolling reads as sideways travel and the page's own
+       scrollbar stays honest about how long the section is.
+
+       A plain transform on scroll rather than a GSAP pin: a pin rewrites
+       the surrounding layout, and this section sits between two others
+       that already own ScrollTriggers. Reduced motion has already
+       returned above, which leaves the flat layout in place. */
+    const track = hsxTrack.current;
+    const sec = hsxSec.current;
+    let dist = 0;
+    /* Must match the flat layout's media query exactly, or the two
+       disagree and the section is left half-wired: the height is set for
+       a run the CSS isn't laying out. The height condition is what keeps
+       landscape phones — wide, but 390px tall — on the swipe row. */
+    const wide = () => window.matchMedia("(min-width: 820px) and (min-height: 620px)").matches;
+
+    const onScroll = () => {
+      if (!track || !sec || dist <= 0 || !wide()) return;
+      const top = sec.getBoundingClientRect().top;   // 0 once the section is pinned
+      track.style.transform = `translate3d(${-Math.min(Math.max(-top, 0), dist)}px,0,0)`;
+    };
+    const measure = () => {
+      if (!track || !sec) return;
+      if (!wide()) { sec.style.height = ""; track.style.transform = ""; dist = 0; return; }
+      dist = Math.max(0, track.scrollWidth - window.innerWidth);
+      sec.style.height = `${window.innerHeight + dist}px`;
+      onScroll();
+    };
+    /* The brand reveal. Same shape as the run above — extra height on the
+       section, a sticky child, progress read from how far the section has
+       been scrolled — but what it drives is type size rather than travel.
+
+       The zoom is geometric (start × ratio^p), not linear: a linear
+       interpolation from 3000px to 130px spends its first half between
+       3000 and 1500, which are the same picture, and then crosses the
+       readable sizes in a blink. Multiplying by a constant factor each
+       frame is what makes the rate of zoom look even.
+
+       This runs on phones too. It is a tall section with a sticky child,
+       so it scrolls natively and stays under the visitor's thumb — the
+       thing worth refusing on a phone is a hijacked scroll direction,
+       which this isn't. Reduced motion has returned above, leaving the
+       CSS default (--p: 1), which is the settled end state. */
+    const lov = lovSec.current;
+    const stage = lovStage.current;
+    let lovDist = 0, lovTop = 0, lovWipe = null;
+
+    const paint = (p) => {
+      const vw = window.innerWidth;
+      // one glyph fills the screen at the start; a headline at the end
+      const from = vw * 2.2;
+      const to = Math.max(56, Math.min(130, vw * 0.09));
+      stage.style.setProperty("--fs", `${from * (to / from) ** p}px`);
+      /* the handover, in the last fifth: the picture inside the letters
+         goes out as flat ink comes in, so the section ends on type */
+      const ink = Math.min(Math.max((p - 0.78) / 0.16, 0), 1);
+      stage.style.setProperty("--ink-o", ink.toFixed(3));
+      stage.style.setProperty("--shot-o", (1 - ink).toFixed(3));
+      /* The opening: the surround is eaten from the edges inward, so the
+         collage is whole, then closing, then only the letters. 1.2 is
+         where the gradient's solid core still clears the corners of the
+         frame (the box's corner sits 0.707 out, and the core is 0.62 of
+         the radius); 0 is gone. The last thing to go is the middle of the
+         screen, which is the one place a hole appearing out of nowhere
+         would be noticed. */
+      const wipe = 1 - Math.min(Math.max((p - 0.06) / 0.3, 0), 1);
+      if (lovWipe) lovWipe.setAttribute("r", (1.2 * wipe).toFixed(4));
+    };
+    const lovScroll = () => {
+      if (!lov || !stage || lovDist <= 0) return;
+      /* the stage sticks under the bar, not at the top of the screen, so
+         the run starts when the section reaches the bar — not a viewport
+         edge the section never touches */
+      const top = lov.getBoundingClientRect().top;
+      paint(Math.min(Math.max((lovTop - top) / lovDist, 0), 1));
+    };
+    const lovMeasure = () => {
+      if (!lov || !stage) return;
+      // two screens of scroll to cross the zoom — one is over before the
+      // word is legible, three is a visitor wondering if the page is stuck
+      const box = stage.getBoundingClientRect();
+      lovWipe = stage.querySelector("#lov-wipe");
+      lovTop = parseFloat(getComputedStyle(root.current).getPropertyValue("--bar-h")) || 0;
+      lovDist = Math.round(window.innerHeight * 2);
+      lov.style.height = `${Math.round(box.height) + lovDist}px`;
+      lovTiles(box);
+      lovScroll();
+    };
+    /* The mosaic. Written as px attributes rather than percentages because
+       each tile is inset by a pixel, so the stage's rule colour shows
+       through as the same hairline the collage grid draws — and because
+       CSS geometry properties (x/y/width/height on SVG) aren't safe across
+       browsers, which rules out doing the breakpoint in a media query. */
+    const TILES_WIDE = [
+      [0, 0, 2 / 3, 2 / 3], [2 / 3, 0, 1 / 3, 2 / 3], [0, 2 / 3, 1 / 3, 1 / 3],
+      [1 / 3, 2 / 3, 1 / 3, 1 / 3], [2 / 3, 2 / 3, 1 / 3, 1 / 3],
+    ];
+    // a phone gets two columns and one frame fewer — five on a 390px screen
+    // are stamps, and the point of the canvas is seeing the work
+    const TILES_NARROW = [
+      [0, 0, 1, 1 / 3], [0, 1 / 3, 1 / 2, 1 / 3], [1 / 2, 1 / 3, 1 / 2, 1 / 3],
+      [0, 2 / 3, 1, 1 / 3], null,
+    ];
+    const lovTiles = ({ width: w, height: h }) => {
+      stage.querySelectorAll(".lov-open, .lov-bed").forEach((r) => {
+        r.setAttribute("width", w);
+        r.setAttribute("height", h);
+      });
+      const plan = window.matchMedia("(max-width: 720px)").matches ? TILES_NARROW : TILES_WIDE;
+      stage.querySelectorAll(".lov-tile").forEach((el, i) => {
+        const t = plan[i];
+        if (!t) { el.style.display = "none"; return; }
+        el.style.display = "";
+        el.setAttribute("x", t[0] * w + 1);
+        el.setAttribute("y", t[1] * h + 1);
+        el.setAttribute("width", Math.max(0, t[2] * w - 2));
+        el.setAttribute("height", Math.max(0, t[3] * h - 2));
+      });
+    };
+
+    const measureAll = () => { measure(); lovMeasure(); };
+    const onScrollAll = () => { onScroll(); lovScroll(); };
+
+    measureAll();
+    // the Figma embeds and the webfont land after first paint and change
+    // the track's width, so the run is measured again once they have
+    const settle = window.setTimeout(measureAll, 400);
+    window.addEventListener("scroll", onScrollAll, { passive: true });
+    window.addEventListener("resize", measureAll);
+
     ScrollTrigger.refresh();
-  }, { scope: root, dependencies: [reduced] });
+    return () => {
+      window.clearTimeout(settle);
+      window.removeEventListener("scroll", onScrollAll);
+      window.removeEventListener("resize", measureAll);
+      if (sec) sec.style.height = "";
+      if (track) track.style.transform = "";
+      if (lov) lov.style.height = "";
+    };
+    /* `shown` is in here because the mosaic's tiles mount when the
+       observer above fires, and a tile with no geometry attributes is a
+       tile with no size — the driver has to run again to lay them out. */
+  }, { scope: root, dependencies: [reduced, shown] });
 
   return (
     <motion.div ref={root} variants={page} initial="initial" animate="animate">
-      {/* masthead — a frame the visitor pulls focus on, carrying only the
-          studio name and one line. Everything that used to crowd it in
-          here now has its own room in .intro-sec below. */}
+      {/* masthead — the studio name opens the page and gets out of the
+          way; what stays is the one thing a visitor needs, which craft
+          this is. Everything that used to crowd it in here now has its
+          own room in .intro-sec below. */}
       <header className="mast" id="main">
-        <HeroFrames frames={HERO_FRAMES} reduced={reduced}>
+        <div className="mast-stage" ref={stage}>
+          {/* light behind the copy — three pools drifting on their own slow
+              cycles, and one that follows the cursor. See .mast-light. */}
+          <div className="mast-light" aria-hidden="true">
+            <i /><i /><i />
+            <span className="mast-spot" />
+          </div>
+
           <div className="wrap">
             <div className="mast-copy">
-              <div className="mono" style={{ marginBottom: 22 }}>
-                {P.photographer}
+              {/* the name swells out of this row and the roles take it over,
+                  so the two share one line — see .mast-swell */}
+              <div className="mast-line">
+                <h1 className={`display${reduced ? "" : " mast-swell"}`}>{P.name}</h1>
+                {/* the three crafts, written out one after the other */}
+                <div className="mast-roles hero-reveal" style={{ "--rd": `${ROLES_IN}s` }}>
+                  <Typewriter words={ROLES} delay={reduced ? 0 : ROLES_TYPE} />
+                </div>
               </div>
-              <h1 className="display hero-reveal" style={{ "--rd": `${HEADLINE_DELAY}s` }}>
-                {P.name}
-              </h1>
-              <p className="mast-sub hero-reveal" style={{ "--rd": `${HEADLINE_DONE}s` }}>
-                Photographs, and the sites they live on. Made by the same pair of hands.
+
+              <p className="mast-sub hero-reveal" style={{ "--rd": `${SUB_IN}s` }}>
+                Simplicity is the ultimate sophistication.
+                <span className="mast-sub-by mono">— Leonardo da Vinci</span>
               </p>
             </div>
           </div>
-        </HeroFrames>
+
+          {/* A small, always-visible cue makes the first scroll feel
+              intentional. It is an ordinary anchor, so it remains useful
+              with JavaScript or motion disabled. */}
+          <a className="mast-scroll mono" href="#intro">
+            <span>Scroll to explore</span>
+            <i aria-hidden="true" />
+          </a>
+        </div>
       </header>
 
       {/* the two practices — stated immediately under the hero, so a cold
@@ -103,63 +424,82 @@ export default function Home() {
         </div>
       </section>
 
-      {/* photography — one card per collection, opening the gallery view */}
-      <PhotoProjects />
+      {/* design — the projects run sideways: the section holds the screen
+          while the track slides, so each one is read at full size instead
+          of shrunk into a two-up grid. Driver is in the useGSAP above. */}
+      {HAS_REAL_WEB ? (
+        <section className="hsx" id="design" ref={hsxSec}>
+          <div className="hsx-sticky">
+            {/* No Reveal on these cards: they sit inside a sticky frame and
+                never cross a scroll threshold of their own, so a scroll
+                reveal would leave them at opacity 0 for the whole run. The
+                sideways travel is their entrance. */}
+            <div className="hsx-track" ref={hsxTrack}>
+              {/* the section's name and the one line worth reading, standing
+                  where the run starts. The name is the heading here — an h2,
+                  not a kicker over one — so it takes the size and the ink,
+                  and the line under it steps back (see HEADINGS LEAD). */}
+              <div className="hsx-intro">
+                <h2 className="mono hsx-label">Design</h2>
+                <p className="hsx-title">Prototyped, not mocked up.</p>
+              </div>
 
-      {/* design — real projects once they're published; until then the
-          space is visibly held for them */}
-      <section className="sec" id="design">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">Design</div>
-          <div>
-            {HAS_REAL_WEB ? (
-              <>
-                <div className="wgrid">
-                  {WEB_PROJECTS.slice(0, 2).map((w, i) => (
-                    <Reveal key={w.slug} delay={i * 0.06}>
-                      <TLink to={`/design/${w.slug}`} className="wcard"
-                        aria-label={`Open ${w.t}`}>
-                        <div className="browser">
-                          <div className="browser-bar">
-                            <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
-                            <span className="browser-url mono">
-                              {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
-                            </span>
-                            <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
-                          </div>
-                          {hasPhoto(w.cover) ? (
-                            <div className="browser-view">
-                              <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
-                                sizes="(max-width: 760px) 100vw, 50vw"
-                                alt={`${w.t} full page`} loading="lazy" />
-                            </div>
-                          ) : w.embed && w.href ? (
-                            <FigmaFrame w={w} />
-                          ) : (
-                            <div className="browser-ph">
-                              <span className="browser-ph-name">{w.t}</span>
-                              <span className="mono">{w.tag}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="wcard-cap">
-                          <div>
-                            <h3>{w.t}</h3>
-                            <p>{w.intro}</p>
-                          </div>
-                          <span className="tool-badge mono">{w.tool}</span>
-                        </div>
-                      </TLink>
-                    </Reveal>
-                  ))}
-                </div>
-                <div style={{ marginTop: 34 }}>
+              {/* The cards are wrapped so a phone can scroll them on their
+                  own, with the panel above stacked out of the way. On the
+                  desktop run this wrapper is display:contents — the cards
+                  go straight back into the track's flex row and the panel
+                  travels with them, exactly as if it weren't here. */}
+              <div className="hsx-row">
+              {WEB_PROJECTS.slice(0, 3).map((w) => (
+                <TLink key={w.slug} to={`/design/${w.slug}`} className="wcard hsx-card"
+                  aria-label={`Open ${w.t}`}>
+                  <div className="browser">
+                    <div className="browser-bar">
+                      <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
+                      <span className="browser-url mono">
+                        {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
+                      </span>
+                      <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
+                    </div>
+                    {hasPhoto(w.cover) ? (
+                      <div className="browser-view">
+                        <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
+                          sizes="(max-width: 819px) 84vw, 720px"
+                          alt={`${w.t} full page`} loading="lazy" />
+                      </div>
+                    ) : w.embed && w.href ? (
+                      <FigmaFrame w={w} />
+                    ) : (
+                      <div className="browser-ph">
+                        <span className="browser-ph-name">{w.t}</span>
+                        <span className="mono">{w.tag}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="wcard-cap">
+                    <div>
+                      <h3>{w.t}</h3>
+                      <p>{w.intro}</p>
+                    </div>
+                    <span className="tool-badge mono">{w.tool}</span>
+                  </div>
+                </TLink>
+              ))}
+
+                <div className="hsx-more">
                   <TLink to="/design" className="extlink">
                     All design work <span className="arrow">→</span>
                   </TLink>
                 </div>
-              </>
-            ) : (
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="sec" id="design">
+          <div className="wrap sec-grid">
+            <div className="sec-label mono">Design</div>
+            <div>
               <Reveal className="reserved">
                 <span className="mono">Reserved</span>
                 <h3>The design work is on its way.</h3>
@@ -172,10 +512,74 @@ export default function Home() {
                   Design work <span className="arrow">→</span>
                 </TLink>
               </Reveal>
-            )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* One screen of frames that becomes the brand. It opens as the
+          collage — five photographs, exactly the visible page — and as the
+          section is scrolled through, everything outside the letterforms
+          goes black and the word shrinks out of the picture to a headline.
+
+          One canvas, masked. Not a picture plus a second copy of itself
+          clipped to the type: that is two layers to keep in registration,
+          and it reads as two images however carefully they are aligned.
+          The mask means what is inside the letters and what is outside are
+          the same pixels. Driven from the useGSAP block above. */}
+      {COLLAGE.length > 0 && (
+        <section className="lov" ref={lovSec} aria-label="Frames">
+          <div className="lov-stage" ref={lovStage}>
+            <svg className="lov-svg" role="img" focusable="false"
+              aria-label={`${P.photoBrand} — selected frames`}>
+              <defs>
+                {/* The opening is a wipe, not a fade. Fading the surround out
+                    dims the whole picture uniformly on the way, and a
+                    half-strength copy of the same photograph behind the
+                    letters makes them read as translucent even though they
+                    are at full strength throughout. Closing this circle in
+                    from the edges instead means every pixel is either the
+                    photograph at 100% or black — nothing is ever a haze. */}
+                <radialGradient id="lov-wipe" r="1.2">
+                  <stop offset="0" stopColor="#fff" />
+                  <stop offset="0.62" stopColor="#fff" />
+                  <stop offset="0.82" stopColor="#000" />
+                </radialGradient>
+                {/* the id is document-wide: this section is rendered once, on
+                    the home page. Two of them would collide. */}
+                <mask id="lov-mask" maskUnits="userSpaceOnUse">
+                  {/* white means "show everything" — so this is the surround,
+                      shrinking, and the text below is what stays behind */}
+                  <rect className="lov-open" fill="url(#lov-wipe)" />
+                  <text className="lov-cut" x="50%" y="50%" fill="#fff"
+                    textAnchor="middle" dominantBaseline="central">{P.photoBrand}</text>
+                </mask>
+              </defs>
+              {/* slice is SVG's object-fit: cover, so each frame crops to its
+                  tile exactly as the collage grid crops it */}
+              <g className="lov-canvas" mask="url(#lov-mask)">
+                {/* the hairlines between frames, showing through the 1px
+                    inset on each tile. Inside the mask, not behind it: it
+                    belongs to the picture, and as the stage background it
+                    made everything the mask takes away a lifted grey
+                    instead of the page's black. */}
+                <rect className="lov-bed" fill="var(--rule)" />
+                {shown && COLLAGE.map((f, i) => (
+                  <image key={f.seed} className={`lov-tile lov-t${i + 1}`}
+                    href={img(f.seed, 2000, 1250)} preserveAspectRatio="xMidYMid slice" />
+                ))}
+              </g>
+              {/* the same word, same size, same place — flat ink, faded in as
+                  the run settles. aria-hidden: the svg's label already says it */}
+              <text className="lov-cut lov-ink" x="50%" y="50%" aria-hidden="true"
+                textAnchor="middle" dominantBaseline="central">{P.photoBrand}</text>
+            </svg>
+          </div>
+        </section>
+      )}
+
+      {/* photography — one card per collection, opening the gallery view */}
+      <PhotoProjects />
 
       {/* the studio line — a quiet full-width statement between the work
           and the offer */}
@@ -202,15 +606,6 @@ export default function Home() {
                 <p>{o.v}</p>
               </Reveal>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="sec">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">The numbers</div>
-          <div>
-            <Metrics items={METRICS} />
           </div>
         </div>
       </section>
@@ -288,6 +683,8 @@ export default function Home() {
    collection page rather than being previewed here.
    ================================================================== */
 function PhotoProjects() {
+  // no collections synced yet — nothing to name or link to
+  if (!PHOTO_PROJECTS.length) return null;
   return (
     <section className="gwork" id="gallery" aria-label="Photography">
       <div className="wrap">

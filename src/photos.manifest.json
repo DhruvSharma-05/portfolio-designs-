@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T04:25:47.228Z",
+  "generatedAt": "2026-08-07T11:09:13.831Z",
   "work": [],
   "gallery": [],
   "portrait": {
@@ -10,6 +10,62 @@
     "h": 2667
   },
   "projectPhotos": [
+    {
+      "seed": "modern-venus",
+      "sm": "/photos/projects/modern/modern-venus-sm.webp",
+      "lg": "/photos/projects/modern/modern-venus-lg.webp",
+      "w": 2000,
+      "h": 2858
+    },
+    {
+      "seed": "modern-green-machine",
+      "sm": "/photos/projects/modern/modern-green-machine-sm.webp",
+      "lg": "/photos/projects/modern/modern-green-machine-lg.webp",
+      "w": 2000,
+      "h": 3081
+    },
+    {
+      "seed": "modern-after-hours",
+      "sm": "/photos/projects/modern/modern-after-hours-sm.webp",
+      "lg": "/photos/projects/modern/modern-after-hours-lg.webp",
+      "w": 2000,
+      "h": 3555
+    },
+    {
+      "seed": "modern-pink-field",
+      "sm": "/photos/projects/modern/modern-pink-field-sm.webp",
+      "lg": "/photos/projects/modern/modern-pink-field-lg.webp",
+      "w": 2000,
+      "h": 3555
+    },
+    {
+      "seed": "modern-motion",
+      "sm": "/photos/projects/modern/modern-motion-sm.webp",
+      "lg": "/photos/projects/modern/modern-motion-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    {
+      "seed": "modern-two-men-car",
+      "sm": "/photos/projects/modern/modern-two-men-car-sm.webp",
+      "lg": "/photos/projects/modern/modern-two-men-car-lg.webp",
+      "w": 2000,
+      "h": 3563
+    },
+    {
+      "seed": "modern-green-car",
+      "sm": "/photos/projects/modern/modern-green-car-sm.webp",
+      "lg": "/photos/projects/modern/modern-green-car-lg.webp",
+      "w": 2000,
+      "h": 3062
+    },
+    {
+      "seed": "modern-friends",
+      "sm": "/photos/projects/modern/modern-friends-sm.webp",
+      "lg": "/photos/projects/modern/modern-friends-lg.webp",
+      "w": 2000,
+      "h": 1123
+    },
     {
       "seed": "traditional-cream-gold",
       "sm": "/photos/projects/traditional/traditional-cream-gold-sm.webp",
@@ -191,65 +247,28 @@
       "lg": "/photos/projects/wildlife/wildlife-stags-lg.webp",
       "w": 2000,
       "h": 1126
-    },
-    {
-      "seed": "modern-venus",
-      "sm": "/photos/projects/modern/modern-venus-sm.webp",
-      "lg": "/photos/projects/modern/modern-venus-lg.webp",
-      "w": 2000,
-      "h": 2858
-    },
-    {
-      "seed": "modern-green-machine",
-      "sm": "/photos/projects/modern/modern-green-machine-sm.webp",
-      "lg": "/photos/projects/modern/modern-green-machine-lg.webp",
-      "w": 2000,
-      "h": 3081
-    },
-    {
-      "seed": "modern-after-hours",
-      "sm": "/photos/projects/modern/modern-after-hours-sm.webp",
-      "lg": "/photos/projects/modern/modern-after-hours-lg.webp",
-      "w": 2000,
-      "h": 3555
-    },
-    {
-      "seed": "modern-pink-field",
-      "sm": "/photos/projects/modern/modern-pink-field-sm.webp",
-      "lg": "/photos/projects/modern/modern-pink-field-lg.webp",
-      "w": 2000,
-      "h": 3555
-    },
-    {
-      "seed": "modern-motion",
-      "sm": "/photos/projects/modern/modern-motion-sm.webp",
-      "lg": "/photos/projects/modern/modern-motion-lg.webp",
-      "w": 2000,
-      "h": 3563
-    },
-    {
-      "seed": "modern-two-men-car",
-      "sm": "/photos/projects/modern/modern-two-men-car-sm.webp",
-      "lg": "/photos/projects/modern/modern-two-men-car-lg.webp",
-      "w": 2000,
-      "h": 3563
-    },
-    {
-      "seed": "modern-green-car",
-      "sm": "/photos/projects/modern/modern-green-car-sm.webp",
-      "lg": "/photos/projects/modern/modern-green-car-lg.webp",
-      "w": 2000,
-      "h": 3062
-    },
-    {
-      "seed": "modern-friends",
-      "sm": "/photos/projects/modern/modern-friends-sm.webp",
-      "lg": "/photos/projects/modern/modern-friends-lg.webp",
-      "w": 2000,
-      "h": 1123
     }
   ],
   "photoProjects": [
+    {
+      "slug": "modern",
+      "t": "Modern",
+      "loc": "",
+      "year": "",
+      "exif": "50mm · f/2 · 1/60 · ISO 1000",
+      "intro": "Selected modern photography. The full set, shot and graded as one.",
+      "note": "",
+      "photos": [
+        "modern-venus",
+        "modern-green-machine",
+        "modern-after-hours",
+        "modern-pink-field",
+        "modern-motion",
+        "modern-two-men-car",
+        "modern-green-car",
+        "modern-friends"
+      ]
+    },
     {
       "slug": "traditional",
       "t": "Traditional",
@@ -296,25 +315,6 @@
         "wildlife-deer-pair",
         "wildlife-buck",
         "wildlife-stags"
-      ]
-    },
-    {
-      "slug": "modern",
-      "t": "Modern",
-      "loc": "",
-      "year": "",
-      "exif": "50mm · f/2 · 1/60 · ISO 1000",
-      "intro": "Selected modern photography. The full set, shot and graded as one.",
-      "note": "",
-      "photos": [
-        "modern-venus",
-        "modern-green-machine",
-        "modern-after-hours",
-        "modern-pink-field",
-        "modern-motion",
-        "modern-two-men-car",
-        "modern-green-car",
-        "modern-friends"
       ]
     }
   ],

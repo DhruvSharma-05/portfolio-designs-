@@ -48,18 +48,17 @@ Done:
 
 Not done / narrower than it looks:
 
-6. **`picsum.photos` is mostly gone from the hot path, but not entirely —
-   and this one is now permanent, not "until published".** Work, Gallery,
-   Photography, and the About portrait are all real synced photos. The
-   remaining live picsum paths are `/photography/:slug` and `/design`/
-   `/design/:slug` — their placeholder content (`PHOTO_PROJECTS_FALLBACK`/
-   `WEB_PROJECTS_FALLBACK` in `src/data.js`), because `/admin` no longer has
-   any project editor (it's client-delivery only now — see `CLAUDE.md`).
-   `content.json`'s `photoProjects`/`webProjects` are frozen at empty, so
-   nothing will ever populate these pages with real content unless a
-   project-editing feature is rebuilt. Not worth building throwaway local
-   placeholder assets for a permanent placeholder state; worth deciding
-   deliberately whether these detail pages should exist at all going forward.
+6. **`picsum.photos` is gone entirely — there is no photo fallback left.**
+   Work, Gallery, Photography, and the About portrait are all real synced
+   photos, and `PHOTO_PROJECTS_FALLBACK` (the sample "After Hours" / "Salt &
+   Light" / … projects) has been deleted from `src/data.js`. If Contentful
+   has zero photos in a collection, `PHOTO_PROJECTS`/`FEATURED`/`FRAMES` are
+   empty arrays and the dependent sections (hero slideshow, frames carousel,
+   project stack, home photography row, About portrait) render nothing
+   rather than stand-in content — see the "No stock/placeholder fallback"
+   note in `CLAUDE.md`. `WEB_PROJECTS_FALLBACK` is untouched: it's the real
+   four Figma prototypes (TrackHer/WingWise/MOMents/ArtAsta), not a
+   placeholder, and was never picsum-backed.
 7. **Vercel plan / bandwidth.** Hobby (free) caps ~100 GB/month; unoptimized
    images + high traffic will throttle or bill. High traffic ⇒ Pro plan, or
    put Cloudflare in front. `api/download.js`'s `maxDuration: 60` in

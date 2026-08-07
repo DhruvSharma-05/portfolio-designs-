@@ -11,10 +11,10 @@ const page = {
 };
 
 const PROCESS = [
-  { k: "Look first", v: "We start from the pictures and the words, never from a template." },
-  { k: "One accent", v: "A dark, quiet frame so the work is the only loud thing on the page." },
-  { k: "Prototype, don't describe", v: "Every screen clickable in Figma, so you can use the thing before anyone builds it." },
-  { k: "Hand over", v: "The editable Figma file and the prototype link, ready for your developer to build from." },
+  { k: "Understand first", v: "We start with the story, the audience, and the feeling the product should create, never with a template." },
+  { k: "Shape the direction", v: "A quiet visual system, strong typography, and deliberate spacing so the work stays in focus." },
+  { k: "Prototype the experience", v: "Every screen is built in Figma and connected into a clickable prototype, allowing the experience to be tested before development." },
+  { k: "Deliver for build", v: "You receive the organized Figma file, prototype link, and developer-ready assets for a smooth handoff." },
 ];
 
 /* The browser-chrome preview shared by the hero and the grid — a synced
@@ -172,7 +172,7 @@ export default function Design() {
           </div>
         </Reveal>
         <div style={{ marginTop: 44 }}>
-          <TLink to="/" className="mono back"><span className="arrow">←</span> Back to work</TLink>
+          <TLink to="/" className="mono back"><span className="arrow">←</span> Back to home</TLink>
         </div>
       </section>
     </motion.main>

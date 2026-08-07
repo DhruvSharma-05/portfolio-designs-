@@ -54,8 +54,18 @@ time** by [scripts/sync-contentful.mjs](scripts/sync-contentful.mjs) — runs
 automatically before `npm run build` (the `prebuild` script) and on demand
 via `npm run sync`. The script optimizes images to WebP under
 `public/photos/` and writes `src/photos.manifest.json`, which `src/data.js`
-reads (falling back to `picsum.photos` placeholders when the manifest is
-empty). The live site is 100% static; nothing hits Contentful at runtime.
+reads. The live site is 100% static; nothing hits Contentful at runtime.
+
+**No stock/placeholder fallback.** `FRAMES`, `PHOTO_PROJECTS`, `FEATURED`,
+`PHOTO_POOL`, `COLLAGE` and `ABOUT.portrait` are only ever the real synced
+manifest data — an empty or missing collection means an empty list, not a
+`picsum.photos` stand-in or hard-coded sample project. `img()`/`srcSet()`
+return `undefined` for an unsynced seed rather than a placeholder URL.
+Every page that reads these already gates on emptiness (hero slideshows,
+the frames carousel, the project stack, the home photography section, and
+the About portrait all render nothing rather than a gap or broken image
+when the corresponding photos are removed from Contentful) — keep that
+pattern for any new section that reads photo data.
 
 The `collection` field also drives **photography projects**: any value
 other than `work`/`gallery`/`portrait` (e.g. `wildlife`, `traditional`,

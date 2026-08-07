@@ -54,22 +54,11 @@ function PhotoLogo() {
 }
 
 export function Logo({ photo = false }) {
-  // Replaying the draw-in every so often (not just once on load) — remount
-  // the mark + wordmark via a changing key so the CSS animations (which use
-  // animation-fill-mode: forwards and only ever run once per element)
-  // restart clean. Skipped under reduced motion.
-  const [replay, setReplay] = useState(0);
-  useEffect(() => {
-    if (photo || prefersReduced()) return;
-    const id = setInterval(() => setReplay((n) => n + 1), 15000);
-    return () => clearInterval(id);
-  }, [photo]);
-
   // photography routes swap the C& monogram for the Lensofviraj mark
   if (photo) return <PhotoLogo />;
 
   return (
-    <span className="logo" key={replay}>
+    <span className="logo">
       <svg className="logo-mark" viewBox="4749 6624 13113 11894"
         role="img" aria-label={P.name} focusable="false">
         <path d={LOGO_PATH} pathLength="1" />
@@ -342,6 +331,26 @@ export function ContactModal({ email, onClose, reduced }) {
   );
 }
 
+/* ---------------- swipe ----------------
+   Minimal horizontal touch-swipe: a drag past `threshold` px fires onLeft
+   (swipe left → next) or onRight (swipe right → prev) once the finger
+   lifts. Short taps and vertical scrolls fall under the threshold and are
+   left alone, so they don't hijack normal scrolling or button clicks. */
+// eslint-disable-next-line react-refresh/only-export-components -- hook, shared by Lightbox (below) and PhotoCarousel
+export function useSwipe(onLeft, onRight, threshold = 40) {
+  const x = useRef(null);
+  return {
+    onTouchStart: (e) => { x.current = e.touches[0].clientX; },
+    onTouchEnd: (e) => {
+      if (x.current == null) return;
+      const dx = e.changedTouches[0].clientX - x.current;
+      x.current = null;
+      if (dx <= -threshold) onLeft?.();
+      else if (dx >= threshold) onRight?.();
+    },
+  };
+}
+
 /* ---------------- shared animated primitives ----------------
    Reveal and Counter run inside useGSAP (a scoped layout effect); under
    reduced motion they skip the animation and render final state. */
@@ -355,6 +364,65 @@ export function Reveal({ children, className = "", delay = 0, y = 18, as: Tag = 
     });
   }, { scope: ref });
   return <Tag ref={ref} className={`rv ${className}`} {...rest}>{children}</Tag>;
+}
+
+/* ---------------- typewriter ----------------
+   The hero's role line writes itself, backspaces, and writes the next
+   role. One timeout at a time (not an interval) so each phase can set
+   its own pace: typing is slower than erasing, and the finished word is
+   held long enough to be read before it goes.
+
+   The animated text is aria-hidden and the roles are read once from an
+   off-screen copy — a screen reader announcing every keystroke would be
+   unusable, and aria-label on a plain span isn't reliably exposed. */
+const TYPE_MS = 65;   // per character while writing
+const ERASE_MS = 30;  // per character while backspacing — always faster
+const HOLD_MS = 2000; // the finished word, on screen
+const GAP_MS = 380;   // empty line before the next word starts
+
+export function Typewriter({ words, className = "", delay = 0 }) {
+  const [reduced] = useState(prefersReduced);
+  const [i, setI] = useState(0);          // which word
+  const [n, setN] = useState(0);          // characters currently shown
+  const [erasing, setErasing] = useState(false);
+  /* the hero line fades in on a delay, so hold the first keystroke until
+     it is actually on screen — otherwise it types behind opacity: 0 */
+  const [started, setStarted] = useState(!delay);
+
+  useEffect(() => {
+    if (reduced || started) return;
+    const t = setTimeout(() => setStarted(true), delay * 1000);
+    return () => clearTimeout(t);
+  }, [delay, started, reduced]);
+
+  useEffect(() => {
+    if (reduced || !started) return;
+    const word = words[i];
+    const done = n === word.length;
+    const ms = erasing ? (n ? ERASE_MS : GAP_MS) : done ? HOLD_MS : TYPE_MS;
+    const t = setTimeout(() => {
+      if (!erasing) return done ? setErasing(true) : setN(n + 1);
+      if (n) return setN(n - 1);
+      setErasing(false);
+      setI((prev) => (prev + 1) % words.length);
+    }, ms);
+    return () => clearTimeout(t);
+  }, [words, i, n, erasing, reduced, started]);
+
+  // no motion: state the roles plainly rather than freezing mid-word
+  if (reduced) {
+    return <span className={className}>{words.join(" · ")}</span>;
+  }
+
+  return (
+    <span className={className}>
+      <span className="tw-sr">{words.join(", ")}</span>
+      <span aria-hidden="true">
+        {words[i].slice(0, n)}
+        <i className="tw-caret" />
+      </span>
+    </span>
+  );
 }
 
 /* ---------------- figures block ----------------
@@ -455,6 +523,7 @@ export function Lightbox({ photos, title, index, setIndex, reduced, single = fal
     [setIndex, photos.length],
   );
   const boxRef = useRef(null);
+  const swipe = useSwipe(() => shift(1), () => shift(-1));
 
   useEffect(() => {
     const opener = document.activeElement;
@@ -495,7 +564,7 @@ export function Lightbox({ photos, title, index, setIndex, reduced, single = fal
         <button className="lb-x" onClick={close} aria-label="Close viewer">Close ✕</button>
       </div>
 
-      <div className="lb-stage">
+      <div className="lb-stage" {...(!single ? swipe : {})}>
         {!single && (
           <button className="lb-arrow prev" onClick={() => shift(-1)} aria-label="Previous frame">←</button>
         )}

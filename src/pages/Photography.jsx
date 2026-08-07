@@ -6,10 +6,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  P, img, srcSet, ratio, FEATURED, PHOTO_PROJECTS, PHOTO_POOL, projectCover,
+  P, img, srcSet, ratio, isLandscape, FEATURED, PHOTO_PROJECTS, PHOTO_POOL, projectCover,
   prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
-import { Reveal, TLink, SectionHead } from "../ui.jsx";
+import { Reveal, TLink, SectionHead, useSwipe } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -21,6 +21,13 @@ const page = {
 };
 
 const HOLD = 5400; // ms per hero slide — matches the tick-fill keyframe
+
+const PROCESS = [
+  { k: "Understand", v: "The best photographs begin with a conversation, not a camera." },
+  { k: "Compose", v: "Light, location, and details are planned so every frame feels timeless." },
+  { k: "Capture", v: "Guided when needed, candid whenever possible." },
+  { k: "Refine", v: "Every image is individually edited to preserve the moment, not overpower it." },
+];
 
 /* ==================================================================
    PHOTOGRAPHY — the photo half of the portfolio.
@@ -45,6 +52,13 @@ export default function Photography() {
     return () => clearTimeout(t);
   }, [i, reduced]);
 
+  // touch swipe — same gesture as the frames carousel below
+  const stepHero = useCallback(
+    (d) => setI((n) => (n + d + FEATURED.length) % FEATURED.length),
+    [],
+  );
+  const heroSwipe = useSwipe(() => stepHero(1), () => stepHero(-1));
+
   /* parallax + hover zoom on the project cards, same as the home stack */
   useGSAP(() => {
     if (reduced) return;
@@ -65,9 +79,13 @@ export default function Photography() {
   const f = FEATURED[i];
 
   return (
-    <motion.div ref={root} variants={page} initial="initial" animate="animate">
-      {/* ---------- hero slideshow ---------- */}
-      <header className="phero" id="main">
+    <motion.div ref={root} id="main" variants={page} initial="initial" animate="animate">
+      {/* ---------- hero slideshow ----------
+          only when there's a real featured frame to show — an empty
+          Contentful account has no FEATURED at all, and a placeholder
+          slideshow is worse than no hero */}
+      {f && (
+      <header className="phero" {...heroSwipe}>
         <div className="phero-stage" aria-hidden="true">
           <AnimatePresence initial={false}>
             <motion.figure className="phero-fr" key={f.seed}
@@ -75,7 +93,12 @@ export default function Photography() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: reduced ? 0 : 1.1, ease: "easeInOut" }}>
-              <motion.img src={img(f.seed, 2000, 1200)} srcSet={srcSet(f.seed)} sizes="100vw" alt=""
+              {/* phone-only backdrop: on a narrow, tall banner a landscape
+                  frame can't fill the box without losing most of its width,
+                  so below 640px the frame is shown whole (letterboxed) over
+                  a blurred copy of itself instead of being cropped to fill */}
+              <img className="phero-bg" src={img(f.seed, 300, 300)} alt="" aria-hidden="true" />
+              <motion.img className="phero-fg" src={img(f.seed, 2000, 1200)} srcSet={srcSet(f.seed)} sizes="100vw" alt=""
                 initial={{ scale: 1.12 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: reduced ? 0 : 8, ease: "linear" }} />
@@ -123,6 +146,7 @@ export default function Photography() {
           </div>
         </div>
       </header>
+      )}
 
       {/* ---------- the practice, named ---------- */}
       <section className="wrap band">
@@ -130,14 +154,10 @@ export default function Photography() {
           <div className="mono" style={{ marginBottom: 20 }}>
             Photography by {P.photographer}
           </div>
-          {/* the practice's name, set as a wordmark: the joint drops to the
-              mono face so "Lens · of · viraj" reads as three parts without
-              a space being put into the name itself */}
-          <h2 className="pbrand">
-            <span>{P.photoBrandParts[0]}</span>
-            <span className="pbrand-of">{P.photoBrandParts[1]}</span>
-            <span className="pbrand-tail">{P.photoBrandParts[2]}</span>
-          </h2>
+          {/* the practice's name, plain — one word in one face. It used to
+              be a lockup with the joint dropped into the mono face, which
+              made "of" a separate mark to read rather than part of a name */}
+          <h2 className="pbrand">{P.photoBrand}</h2>
           <p className="band-lead">
             Every photograph begins long before I press the shutter. Understanding
             people, light, and emotion is just as important as the camera itself.
@@ -150,13 +170,18 @@ export default function Photography() {
       </section>
 
       {/* ---------- frames carousel ---------- */}
+      {CAROUSEL.length > 0 && (
       <section className="wrap" aria-label="Selected frames">
         <PhotoCarousel photos={CAROUSEL} reduced={reduced} />
       </section>
+      )}
 
       {/* ---------- project stack ----------
            the heading sits outside .stack, which is a flex column — inside
-           it the label would pick up the 34px card gap */}
+           it the label would pick up the 34px card gap. Hidden entirely
+           when there are no collections yet — a "Projects" label over an
+           empty stack is worse than not showing the section at all. */}
+      {PHOTO_PROJECTS.length > 0 && (
       <section className="wrap" style={{ paddingTop: "11vh" }}>
         <SectionHead>Projects</SectionHead>
         <div className="stack">
@@ -202,6 +227,25 @@ export default function Photography() {
           })}
         </div>
       </section>
+      )}
+
+      {/* ---------- process ---------- */}
+      <section className="sec">
+        <div className="wrap sec-grid">
+          <div className="sec-label mono">How a project goes</div>
+          {/* no reveal on these — the rows just sit there, and the only
+              motion is the hover lift */}
+          <div>
+            {PROCESS.map((s, i) => (
+              <div className="sl-row" key={s.k}>
+                <span className="mono">{String(i + 1).padStart(2, "0")}</span>
+                <h3>{s.k}</h3>
+                <p>{s.v}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ---------- end ---------- */}
       <section className="end">
@@ -210,12 +254,12 @@ export default function Photography() {
             <h2 className="display">Shooting<br />this year?</h2>
             <div style={{ marginTop: 30 }}>
               <button type="button" className="extlink" onClick={openContact}>
-                Contact me <span className="arrow">→</span>
+                Book a session <span className="arrow">→</span>
               </button>
             </div>
           </Reveal>
           <div style={{ marginTop: 44 }}>
-            <TLink to="/" className="mono back"><span className="arrow">←</span> Back to work</TLink>
+            <TLink to="/" className="mono back"><span className="arrow">←</span> Back to home</TLink>
           </div>
         </div>
       </section>
@@ -231,8 +275,8 @@ export default function Photography() {
    over them. Clicking a neighbour brings it to the middle.
 
    Every slide is the same HEIGHT and takes its width from the
-   photograph's own aspect ratio, so a portrait is a tall narrow card
-   and a landscape a wide one — both whole, neither cropped or zoomed.
+   photograph's own aspect ratio — portrait only, so every card is a
+   tall narrow frame, whole, neither cropped or zoomed.
    Because the slides differ in width, the track can't be centred by
    arithmetic; it's positioned from the measured offset of the active
    slide. Scaling is done with transform only, which keeps layout width
@@ -246,9 +290,10 @@ const CAR_HOLD = 4200; // ms per carousel frame
 
 /* A short reel, not the whole library — enough to show the range without
    turning the page into a contact sheet. PHOTO_POOL is already
-   round-robin across the collections, so a slice off the front is an
-   even mix of them rather than one set followed by the next. */
-const CAROUSEL = PHOTO_POOL.slice(0, 12);
+   round-robin across the collections, so filtering to portraits and
+   slicing off the front is still an even mix of them rather than one
+   set followed by the next. */
+const CAROUSEL = PHOTO_POOL.filter((s) => !isLandscape(s)).slice(0, 12);
 
 const SLIDE_MS = 800; // must match the .pcar-track transition
 
@@ -270,6 +315,7 @@ function PhotoCarousel({ photos, reduced }) {
   const trackRef = useRef(null);
 
   const step = useCallback((d) => setIdx((n) => n + d), []);
+  const swipe = useSwipe(() => step(1), () => step(-1));
 
   /* centre the active slide: measured, because slide widths vary with
      each photograph's aspect ratio */
@@ -324,7 +370,7 @@ function PhotoCarousel({ photos, reduced }) {
 
   return (
     <div className="pcar" ref={rootRef}>
-      <div className="pcar-stage" ref={stageRef}>
+      <div className="pcar-stage" ref={stageRef} {...swipe}>
         <div className="pcar-track" ref={trackRef}
           style={{ transform: `translateX(${shift}px)`, transition: snap ? "none" : undefined }}>
           {loop.map((s, n) => {

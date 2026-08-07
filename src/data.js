@@ -37,12 +37,6 @@ export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
   photographer: "Viraj Mehta",  // the person the home page is about
   photoBrand: "Lensofviraj",    // the photography practice — /photography
-  /* The same name split for the /photography wordmark, where it is set as
-     a lockup rather than a word: the two halves in the display face, the
-     joint in the mono one. Kept next to the string it is cut from so the
-     two can't drift apart. Nothing is inserted between the parts, so the
-     accessible name stays "Lensofviraj" exactly as above. */
-  photoBrandParts: ["Lens", "of", "viraj"],
   email: "craftedandcaptured@gmail.com",  // the only contact address — no personal ones
   phone: "+1 (672) 968-9680",
   city: "Vancouver",
@@ -77,8 +71,8 @@ export const INTRO = {
      carries the craft's name and nothing else; the pages themselves do
      the explaining. */
   does: [
-    { t: "Photography", to: "/photography" },
     { t: "Mobile App & Web Design", to: "/design" },
+    { t: "Photography", to: "/photography" },
   ],
   /* what a client actually walks away with — framed on the two crafts he
      does himself: photography and design (not development/build). */
@@ -90,11 +84,17 @@ export const INTRO = {
   ],
 };
 
+/* ROLES — the hero line that types itself out (Typewriter in ui.jsx).
+   Order matters: it types the first, erases it, types the next, and
+   cycles. Keep them short — the line holds one row in the masthead. */
+export const ROLES = ["Mobile App Designer", "Web Designer", "Photographer"];
+
 /* --- real photos (from the Contentful sync) -------------------------
    scripts/sync-contentful.mjs writes photos.manifest.json at build time.
-   Every synced photo is keyed by seed → { sm, lg } local WebP URLs.
-   When the manifest is empty (no credentials / fresh clone) we fall
-   back to seeded picsum placeholders so the site still renders. */
+   Every synced photo is keyed by seed → { sm, lg } local WebP URLs. No
+   stock/placeholder fallback: an unsynced seed resolves to nothing, and
+   every list built from PHOTOS (FRAMES, PHOTO_PROJECTS, …) is empty
+   rather than padded out with stand-in photos. */
 const PHOTOS = new Map();
 for (const p of manifest.work || []) PHOTOS.set(p.seed, p);
 for (const p of manifest.gallery || []) PHOTOS.set(p.seed, p);
@@ -108,30 +108,32 @@ if (manifest.portrait) PHOTOS.set(manifest.portrait.seed, manifest.portrait);
    cards fall back to the live Figma embed while it is. */
 for (const p of webCovers) PHOTOS.set(p.seed, p);
 
-/* img(seed, w, h): resolves a seed to a local optimized image. Picks the
-   small variant for thumbnail widths, the large one otherwise. Unknown
-   seeds fall through to a picsum placeholder of the requested size. */
-export const img = (s, w = 1200, h = 800) => {
+/* img(seed, w): resolves a seed to a local optimized image. Picks the
+   small variant for thumbnail widths, the large one otherwise. An
+   unsynced seed resolves to undefined — no `src` rather than a stock
+   placeholder — so callers should already be guarding on hasPhoto()/the
+   list being non-empty before reaching for an <img>. Call sites still
+   pass a height as a third argument in places; it's ignored. */
+export const img = (s, w = 1200) => {
   const p = PHOTOS.get(s);
-  if (p) return w <= 640 ? p.sm : p.lg;
-  return `https://picsum.photos/seed/${s}/${w}/${h}`;
+  if (!p) return undefined;
+  return w <= 640 ? p.sm : p.lg;
 };
 
 /* srcSet(seed): the sm+lg pair as a srcset descriptor, so <img> can ship
    the resolution that actually matches the viewport instead of always
-   whatever fixed width img() was called with. Falls back to two picsum
-   widths for not-yet-synced placeholder seeds so the attribute stays
-   valid (only ever hit before real content is published). */
+   whatever fixed width img() was called with. undefined for an unsynced
+   seed, same as img(). */
 export const srcSet = (s) => {
   const p = PHOTOS.get(s);
-  if (p) return `${p.sm} 640w, ${p.lg} 2000w`;
-  return `https://picsum.photos/seed/${s}/640/640 640w, https://picsum.photos/seed/${s}/2000/2000 2000w`;
+  return p ? `${p.sm} 640w, ${p.lg} 2000w` : undefined;
 };
 
 /* ratio(seed, fw, fh): CSS aspect-ratio for a seed — the synced photo's
-   real dimensions when the manifest has them, the placeholder's requested
-   size otherwise. Lets free-flowing grids reserve space before the image
-   loads, so lazy loading doesn't shift the layout. */
+   real dimensions when the manifest has them, the caller's requested box
+   shape otherwise (a layout fallback, not a stand-in photo). Lets
+   free-flowing grids reserve space before the image loads, so lazy
+   loading doesn't shift the layout. */
 export const ratio = (s, fw = 3, fh = 2) => {
   const p = PHOTOS.get(s);
   return p?.w && p?.h ? `${p.w} / ${p.h}` : `${fw} / ${fh}`;
@@ -152,28 +154,11 @@ const BASE = {
    the CSS keeps working, it just never changes. */
 export const THEME = { ...BASE, accent: "#E4E4E7" };
 
-const FRAMES_FALLBACK = [
-  { seed: "pf-01", t: "Selected Work 01", loc: "Location, XX", exif: "35mm · f/8 · 1/500", kind: "Photography",
-    note: "Short description of the project. Replace with your own: what it was, why it mattered, what shipped.",
-    year: "2025", role: "Photography · Grade" },
-  { seed: "pf-02", t: "Selected Work 02", loc: "Location, XX", exif: "50mm · f/1.4 · 1/60", kind: "Photography",
-    note: "One line about the shoot and the outcome. Keep it plain; let the picture carry the weight.",
-    year: "2025", role: "Portrait · Available light" },
-  { seed: "pf-03", t: "Selected Work 03", loc: "Web · Framer", exif: "12 col · 1440px · 68ms LCP", kind: "Web Design",
-    note: "A build note. Designed and shipped end to end, so nothing got cropped to fit a template.",
-    year: "2024", role: "Design · Build" },
-  { seed: "pf-04", t: "Selected Work 04", loc: "Location, XX", exif: "85mm · f/2 · 1/250", kind: "Photography",
-    note: "A portrait series or campaign. Say who it was for and what the brief asked for.",
-    year: "2024", role: "Campaign · Art direction" },
-  { seed: "pf-05", t: "Selected Work 05", loc: "Web · React", exif: "Editorial CMS · 340 issues", kind: "Web Design",
-    note: "An editorial build where the photograph sets the grid, not the other way round.",
-    year: "2023", role: "Editorial · React" },
-];
-
-/* Prefer real synced photos; fall back to placeholders when the manifest
-   is empty. FRAMES drives the work cards + /work/:seed pages. (SHEET,
-   which fed the marquee strip, went with it when the strip was removed.) */
-export const FRAMES = manifest.work?.length ? manifest.work : FRAMES_FALLBACK;
+/* Real synced photos only — no stock/placeholder fallback. FRAMES drives
+   the work cards + /work/:seed pages; an empty manifest means an empty
+   list, and every page reading it already guards for that. (SHEET, which
+   fed the marquee strip, went with it when the strip was removed.) */
+export const FRAMES = manifest.work || [];
 
 /* The old captioned "Gallery" grid (category tabs) was replaced by the
    per-collection photography cards — see PHOTO_PROJECTS below and
@@ -192,84 +177,14 @@ export const HAS_REAL_WEB = true;
    stack below it and every project page. Each project owns its own set
    of frames, so a project page can show a grid and a lightbox.
 
-   PLACEHOLDER CONTENT — swap titles, notes and seeds for the real
-   shoots. Seeds resolve through img(): a synced photo if the Drive
-   manifest has one, a seeded placeholder otherwise.
+   Real synced Contentful collections only — no stock/placeholder
+   fallback. An empty manifest means an empty list, which every
+   downstream consumer (FEATURED, PHOTO_POOL, COLLAGE, and every page
+   that maps over PHOTO_PROJECTS) already collapses to "render nothing"
+   rather than crash or show fake content.
    ================================================================== */
 
-const photoSeeds = (slug, n) => Array.from({ length: n }, (_, i) => `${slug}-${i + 1}`);
-
-const PHOTO_PROJECTS_FALLBACK = [
-  {
-    slug: "after-hours",
-    t: "After Hours",
-    kind: "Editorial",
-    loc: "Location, XX",
-    year: "2025",
-    exif: "35mm · f/1.8 · 1/125",
-    role: "Photography · Grade",
-    note: "A night series shot entirely on available light. Replace this with the real brief: who it was for and what the pictures had to carry.",
-    intro: "Two nights, one lens, no flash. The city did the lighting.",
-    photos: photoSeeds("after-hours", 9),
-  },
-  {
-    slug: "salt-and-light",
-    t: "Salt & Light",
-    kind: "Landscape",
-    loc: "Location, XX",
-    year: "2025",
-    exif: "24mm · f/11 · 1/250",
-    role: "Photography · Art direction",
-    note: "A coastal set made across one week of weather. Say what the trip was for and what came out of it.",
-    intro: "Early light, long lenses, and a lot of waiting for the sky to commit.",
-    photos: photoSeeds("salt-and-light", 8),
-  },
-  {
-    slug: "faces",
-    t: "Faces",
-    kind: "Portraits",
-    loc: "Studio, XX",
-    year: "2024",
-    exif: "85mm · f/2 · 1/200",
-    role: "Portrait · One light",
-    note: "A portrait series shot over a single afternoon. One light, one backdrop, twelve people.",
-    intro: "One light, moved twice. Everything else is the person.",
-    photos: photoSeeds("faces", 10),
-  },
-  {
-    slug: "the-long-table",
-    t: "The Long Table",
-    kind: "Events",
-    loc: "Location, XX",
-    year: "2024",
-    exif: "50mm · f/1.4 · 1/60",
-    role: "Event · Documentary",
-    note: "A full-day event covered documentary-style. Describe the day and what the client used the set for.",
-    intro: "Documentary coverage. Nobody looked at the camera on purpose.",
-    photos: photoSeeds("the-long-table", 8),
-  },
-];
-
-/* When the Drive sync has real photos, deal them out across the
-   projects in order so the pages fill with actual work; otherwise the
-   placeholder seeds stand in. */
-function withSyncedPhotos(projects) {
-  const pool = [...(manifest.work || []), ...(manifest.gallery || [])].map((p) => p.seed);
-  if (!pool.length) return projects;
-  const per = Math.max(4, Math.floor(pool.length / projects.length));
-  return projects.map((p, i) => {
-    const slice = pool.slice(i * per, (i + 1) * per);
-    return slice.length ? { ...p, photos: slice } : p;
-  });
-}
-
-/* Any projects already in the manifest win outright; otherwise we deal
-   the synced Contentful photos across the placeholder projects, and
-   failing that the placeholders stand alone — so a fresh clone with no
-   photos still renders a complete site. */
-export const PHOTO_PROJECTS = manifest.photoProjects?.length
-  ? manifest.photoProjects
-  : withSyncedPhotos(PHOTO_PROJECTS_FALLBACK);
+export const PHOTO_PROJECTS = manifest.photoProjects || [];
 
 /* The home hero is a wide, full-bleed frame, so a portrait photo would be
    cropped down to a vertical sliver of itself — landscape only. Also used by
@@ -291,45 +206,6 @@ export const isLandscape = (seed) => {
    everywhere it's shown whole (the detail hero, the grid). */
 export const projectCover = (p) =>
   (p.photos || []).find(isLandscape) || p.photos?.[0];
-
-/* A hand-picked run rather than one frame per collection: two wildlife,
-   one modern, one traditional, interleaved so no two neighbours come
-   from the same set. `seed` names a specific picture where the choice
-   matters; without one, the next unused landscape frame in that
-   collection is taken, so repeats never show the same photo twice. */
-const HERO_RECIPE = [
-  { slug: "wildlife", seed: "wildlife-bighorn" },
-  { slug: "modern" },
-  { slug: "wildlife", seed: "wildlife-cheetah" },
-  { slug: "traditional" },
-];
-
-const heroByRecipe = (() => {
-  const taken = new Set();
-  return HERO_RECIPE.map(({ slug, seed }) => {
-    const proj = PHOTO_PROJECTS.find((p) => p.slug === slug);
-    if (!proj) return null;
-    const pool = (proj.photos || []).filter((s) => isLandscape(s) && !taken.has(s));
-    // a named seed that has gone from the collection falls back to the pool
-    const pick = (seed && pool.includes(seed) && seed) || pool[0];
-    if (!pick) return null;
-    taken.add(pick);
-    return { seed: pick, t: proj.t, slug: proj.slug };
-  }).filter(Boolean);
-})();
-
-/* A fresh clone with no synced photos runs on the placeholder projects,
-   whose slugs the recipe knows nothing about — fall back to one opening
-   frame per collection there so the hero still has something to show. */
-export const HERO_FRAMES = heroByRecipe.length
-  ? heroByRecipe
-  : PHOTO_PROJECTS
-    .map((p) => ({
-      seed: (p.photos || []).find(isLandscape) || p.photos?.[0],
-      t: p.t,
-      slug: p.slug,
-    }))
-    .filter((f) => f.seed);
 
 /* Hero slideshow — landscape frames only, found rather than listed.
 
@@ -375,6 +251,45 @@ export const PHOTO_POOL = (() => {
     for (const l of lists) if (l[i]) out.push(l[i]);
   }
   return out;
+})();
+
+/* COLLAGE — the one screen of frames between the design run and the
+   photography index (.collage in the CSS, laid out in Home.jsx).
+
+   Every tile has a shape, and each frame is picked to fit the tile it
+   lands in: a portrait dropped into the wide strip shows about a third
+   of itself, which is the same trap the hero banner has. Collections are
+   walked round-robin so no two neighbouring tiles come from the same
+   set. A collection with nothing of the right shape is skipped rather
+   than cropped — and if none has one, any unused frame is taken, because
+   a filled tile beats an empty one. Returns [] outright with no synced
+   photos, which Home.jsx already gates the whole section on. */
+const COLLAGE_SHAPE = ["wide", "tall", "wide", "wide", "wide"];
+
+export const COLLAGE = (() => {
+  const pools = PHOTO_PROJECTS.map((p) => ({ t: p.t, slug: p.slug, photos: p.photos || [] }));
+  if (!pools.length) return [];
+  const taken = new Set();
+  let at = 0;                                   // where the last pick left off
+
+  const take = (fits) => {
+    for (let i = 0; i < pools.length; i++) {
+      const pool = pools[(at + i) % pools.length];
+      const seed = pool.photos.find((s) => !taken.has(s) && fits(s));
+      if (!seed) continue;
+      taken.add(seed);
+      at = (at + i + 1) % pools.length;
+      return { seed, t: pool.t, slug: pool.slug };
+    }
+    return null;
+  };
+
+  return COLLAGE_SHAPE
+    .map((shape) => {
+      const wants = shape === "tall" ? (s) => !isLandscape(s) : isLandscape;
+      return take(wants) || take(() => true);
+    })
+    .filter(Boolean);
 })();
 
 /* ==================================================================
@@ -493,7 +408,7 @@ export const METRICS = [
 
 /* Viraj's real bio — condensed from his own words. */
 export const ABOUT = {
-  portrait: manifest.portrait?.seed ?? "pf-about",
+  portrait: manifest.portrait?.seed,
   lead: "I create meaningful visual experiences: digital products designed with intent, and moments captured through a lens.",
   body: [
     "My creative journey started with photography. I picked up my first camera in 2014, and it changed the way I saw the world. A few years later, while studying Computer Science Engineering, I built a foundation in programming and software development. Although I enjoyed solving problems through code, I found myself drawn to the creative side of technology, which eventually led me into UI/UX design and creating digital experiences that are both functional and visually engaging.",
@@ -531,6 +446,12 @@ export const TAGLINE = "Designed with intention. Captured with emotion.";
 export const CSS = `
 .pf, .pf *, .pf *::before, .pf *::after { box-sizing: border-box; margin: 0; }
 .pf { background: var(--bg); color: var(--ink);
+  /* Measured height of the sticky bar, in one place: every full-screen
+     block subtracts it so it lands inside the visible page rather than
+     under the bar. 68px = 38px CTA pill + 14px padding top and bottom +
+     its 1px rule; the bar wraps to a second row on a phone, and to a
+     third when the nav wraps (see the .nav rules), hence the steps. */
+  --bar-h: 68px;
   font-family: 'Inter', system-ui, sans-serif; font-weight: 400;
   -webkit-font-smoothing: antialiased; letter-spacing: -0.01em;
   transition: color .5s ease; position: relative; min-height: 100vh;
@@ -540,7 +461,8 @@ export const CSS = `
      horizontal overflow without creating a scrollport. */
   overflow-x: clip; }
 .pf a { color: inherit; text-decoration: none; }
-.pf button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+.pf button { font: inherit; color: inherit; text-transform: inherit; background: none; border: none;
+  cursor: pointer; padding: 0; margin: 0; }
 /* The font:inherit above out-specifies .mono (0,1,1 vs 0,1,0), so a button
    carrying .mono silently fell back to Inter at body size — which is why
    the bar's "Contact me" CTA didn't match the nav links beside it. Give
@@ -579,6 +501,7 @@ export const CSS = `
    put the label ahead of the cards. */
 .gwork-head > .mono:first-child,
 .sec-label,
+.hsx-label,
 .shead-label { color: var(--ink); }
 
 /* …and the cards under a section label sit one step back from it, so the
@@ -615,73 +538,6 @@ export const CSS = `
 .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 14px 28px; max-width: 1180px; margin: 0 auto; }
 .brand { color: var(--ink); }
-/* --- the masthead CTA ---
-   The one way into the enquiry form from anywhere on the site. It used
-   to be styled to read *exactly* like a nav link — same 11px mono, same
-   --dim grey, same underline-on-hover — and three things were wrong with
-   that:
-
-   · it made the page's primary action indistinguishable from navigation,
-     and worse, the active nav link is --accent while this sat at --dim,
-     so the button was the quietest thing in the bar;
-   · with no padding it measured 84x14px, a third of the 44px minimum
-     tap target;
-   · its only affordance was the underline, which is a hover state, so on
-     a phone there was no affordance at all.
-
-   It now takes the site's own CTA shape — the outlined pill from
-   .extlink, which is already what "Contact me" looks like at the foot of
-   every page. Same action, same button. Outlined and not filled on
-   purpose: this bar sits over the photographs on every route, and a
-   solid near-white pill would ride on top of every picture on the site.
-
-   Hierarchy here comes from shape, not brightness: the CTA is the only
-   thing in the bar with an edge round it, which reads at a glance and
-   doesn't depend on a 12-value difference between --ink and --accent
-   that nobody can see. */
-.pf .barcta { flex: 0 0 auto; display: inline-flex; align-items: center;
-  justify-content: center; overflow: hidden;
-  min-height: 38px; padding: 0 18px; border-radius: 100px;
-  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--rule));
-  background: none; color: var(--ink); white-space: nowrap;
-  touch-action: manipulation;
-  transition: background-color .3s ease, color .3s ease, border-color .3s ease,
-    padding .5s cubic-bezier(.2,.8,.2,1); }
-/* font-size needs button in the selector: .pf button.mono up above is
-   (0,2,1) and would otherwise win over a plain .pf .barcta at (0,2,0) */
-.pf button.barcta { font-size: 10.5px; letter-spacing: .16em; }
-.pf .barcta:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-.barcta-mark { flex: 0 0 auto; width: 16px; height: 16px; fill: none;
-  stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
-
-/* --- the CTA tuck ---
-   Scrolling down past the masthead collapses the pill to its envelope;
-   scrolling back up — or hovering, or tabbing to it — springs it open
-   again. The bar itself never moves, so the nav is where it always was
-   and only the one loud element gets out of the way while you read.
-   .tuck is put on .bar by the shell's ScrollTrigger (App.jsx), which
-   also skips the whole behaviour under reduced motion.
-
-   The button is shrink-to-fit, so nothing here animates its width: the
-   label's own max-width closes and the button follows. That leaves
-   padding as the only box property being transitioned, on a toggle that
-   fires once per change of scroll direction rather than per frame.
-
-   10px + the 16px mark + 10px + the two 1px borders = a 38px circle,
-   exactly the pill's height, so it collapses to a round button and not a
-   squashed oval. The borders count because the button is shrink-to-fit:
-   border-box sizing only applies to a width you set, and this width is
-   its content's. Keep the numbers in step if the height ever changes. */
-.barcta-label { display: block; max-width: 12ch; margin-right: 10px; opacity: 1;
-  transition: max-width .5s cubic-bezier(.2,.8,.2,1),
-    margin-right .5s cubic-bezier(.2,.8,.2,1), opacity .26s ease; }
-.bar.tuck .barcta { padding: 0 10px; }
-.bar.tuck .barcta-label { max-width: 0; margin-right: 0; opacity: 0; }
-/* pointing at it (or reaching it with the keyboard) opens it back up, so
-   the mark is never a button whose purpose you have to guess */
-.bar.tuck .barcta:hover, .bar.tuck .barcta:focus-visible { padding: 0 18px; }
-.bar.tuck .barcta:hover .barcta-label,
-.bar.tuck .barcta:focus-visible .barcta-label { max-width: 12ch; margin-right: 10px; opacity: 1; }
 .prog { position: absolute; left: 0; bottom: -1px; height: 1px; background: var(--accent);
   transition: width .1s linear; }
 
@@ -703,41 +559,104 @@ export const CSS = `
 .pf .totop:hover .arrow { transform: translateY(-3px); }
 @media (max-width: 640px) { .pf .totop { width: 44px; height: 44px; right: 16px; bottom: 16px; } }
 
-/* --- masthead: the frame hero (HeroFrames.jsx) ---
+/* --- masthead: the light hero ---
    One full screen: the sticky bar sits above it in flow, so subtract its
    height rather than using a bare 100svh that would push the hero's foot
    below the fold. svh, not vh, so mobile browser chrome doesn't overshoot. */
 /* 68px is the measured bar: 38px CTA pill (the tallest thing in it, taller
    than the 34px logo) + 14px padding top and bottom + its 1px rule. */
 .mast { position: relative; overflow: hidden; display: flex;
-  min-height: calc(100svh - 68px);
-  /* how soft the picture sits behind the copy — one dial, tune here */
-  --hero-soften: 3px; }
+  min-height: calc(100svh - var(--bar-h)); }
 .mast .wrap { position: relative; z-index: 3; width: 100%; }
 .mast-stage { position: relative; flex: 1; min-width: 0;
   display: flex; align-items: center; }
-.mast-frames { position: absolute; inset: 0; z-index: 0; }
-/* the long cross-fade is the whole transition — two frames overlap for
-   well over a second, so nothing ever cuts */
-.mast-frame { position: absolute; inset: 0; opacity: 0;
-  transition: opacity 1.1s cubic-bezier(.4, 0, .2, 1); }
-.mast-frame.on { opacity: 1; }
-/* Overscale hides the soft edge the blur leaves at the frame border, and
-   the drift keeps a held shot from reading as a stalled page. It runs on
-   every frame, not just the visible one — tying it to .on would snap the
-   outgoing frame back to its start mid-fade. */
-.mast-frame img { width: 100%; height: 100%; object-fit: cover;
-  object-position: 50% 42%; transform: scale(1.03);
-  filter: blur(var(--hero-soften)) saturate(.94) brightness(.78);
-  /* transition:none so .pf img's transform tween doesn't fight the drift */
-  transition: none;
-  animation: heroDrift 24s ease-in-out infinite alternate; }
-@keyframes heroDrift { to { transform: scale(1.08); } }
-.mast-scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(100deg,
-    color-mix(in srgb, var(--bg) 84%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 40%, transparent) 48%,
-    color-mix(in srgb, var(--bg) 70%, transparent) 100%); }
+
+/* Light moving behind the name. Three pools of the accent, each wandering
+   its own four-corner circuit and breathing in and out. The periods are
+   coprime-ish (19/23/29s) so the set never repeats a pose, which is what
+   keeps it reading as light rather than a loop.
+
+   Each path is a closed loop — the last keyframe is the first — so it
+   runs infinite rather than alternate: alternate replays the same route
+   backwards, which is exactly the tell that gives away a loop. Linear
+   timing for the same reason; ease-in-out would pause the pool at every
+   waypoint and turn a wander into four separate slides.
+   (No backticks anywhere in here — this stylesheet is a template
+   literal, and one closes it.)
+
+   The softness is in the gradient itself, not a blur() filter: a
+   full-bleed blur repaints the whole hero every frame, a radial-gradient
+   is free. Only transform and opacity animate, so this stays on the
+   compositor. */
+.mast-light { position: absolute; inset: 0; z-index: 0;
+  overflow: hidden; pointer-events: none; }
+.mast-light i { position: absolute; display: block;
+  width: 78vmax; height: 78vmax; border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%,
+    color-mix(in srgb, var(--accent) 10%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 4.5%, transparent) 32%,
+    color-mix(in srgb, var(--accent) 1.5%, transparent) 56%,
+    transparent 72%);
+  /* --near (0…1) is how close the cursor's pool is — Home.jsx writes it
+     every frame. Base × 1.38 at the closest approach, and the bases are
+     set so that lands just under 1: opacity clamps there, and a pool that
+     hits the ceiling early spends the rest of the cursor's approach doing
+     nothing visible, which is the one thing this effect can't afford. */
+  opacity: calc(var(--o) * (1 + var(--near, 0) * .38));
+  will-change: transform, opacity; }
+.mast-light i:nth-child(1) { --o: .72; top: -34%; left: -18%;
+  animation: lightWanderA 19s linear infinite; }
+.mast-light i:nth-child(2) { --o: .6; top: -6%; right: -26%;
+  animation: lightWanderB 23s linear infinite; }
+.mast-light i:nth-child(3) { --o: .5; bottom: -46%; left: 22%;
+  animation: lightWanderC 29s linear infinite; }
+@keyframes lightWanderA {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  25%  { transform: translate3d(20vw, 13vh, 0) scale(1.16); }
+  50%  { transform: translate3d(31vw, -7vh, 0) scale(.92); }
+  75%  { transform: translate3d(11vw, 17vh, 0) scale(1.2); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes lightWanderB {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  25%  { transform: translate3d(-17vw, 19vh, 0) scale(.86); }
+  50%  { transform: translate3d(-27vw, 4vh, 0) scale(1.14); }
+  75%  { transform: translate3d(-9vw, 22vh, 0) scale(.94); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes lightWanderC {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  25%  { transform: translate3d(15vw, -16vh, 0) scale(1.12); }
+  50%  { transform: translate3d(-6vw, -24vh, 0) scale(.9); }
+  75%  { transform: translate3d(-19vw, -9vh, 0) scale(1.18); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+/* the cursor's pool — smaller and dimmer than the drifting three, so it
+   reads as a hand held near the surface, not a torch. Home.jsx writes the
+   transform; the trailing lag is in there, this only says what it looks
+   like. Placed from its own centre (the negative margins) so the
+   transform is a plain cursor position with no offset maths. */
+/* z-index over the vignette above, which otherwise ate the spotlight in
+   the outer third of the frame — the corner settle is there to hold the
+   three drifting pools in, not to fight the cursor.
+
+   Kept under the threshold of noticing: this pool alone is barely a
+   lift off the black. Most of what a visitor actually sees when they
+   move the mouse is the ambient pool it passes brightening — the --near
+   handoff above — which is why this one can afford to be this faint. */
+.mast-spot { position: absolute; top: 0; left: 0; z-index: 1;
+  width: 44vmax; height: 44vmax; margin: -22vmax 0 0 -22vmax; border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%,
+    color-mix(in srgb, var(--accent) 4%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 1.8%, transparent) 34%,
+    transparent 66%);
+  opacity: 0; transition: opacity .55s ease; will-change: transform; }
+.mast-light[data-spot="on"] .mast-spot { opacity: 1; }
+/* the pools are brightest in the middle of the frame, where the copy is —
+   this settles the corners so the hero still ends in the page's black */
+.mast-light::after { content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 82% 72% at 50% 46%,
+    transparent 0%, color-mix(in srgb, var(--bg) 72%, transparent) 78%, var(--bg) 100%); }
 
 .display { font-weight: 300; letter-spacing: -0.04em; line-height: .95;
   font-size: clamp(44px, 10.5vw, 140px); text-wrap: balance;
@@ -747,13 +666,71 @@ export const CSS = `
    140px headline inside it, so 22ch squeezed the h1 into ~180px — and
    .display's overflow-wrap then broke words mid-syllable (Cra/fte/d).
    The headline wraps on the 1180px .wrap instead, which sets its rhythm. */
-.mast-copy { max-width: 100%; }
-.mast-sub { margin-top: 22px; max-width: 34ch; font-weight: 300;
-  letter-spacing: -0.015em; line-height: 1.45; font-size: clamp(15px, 1.7vw, 20px);
-  color: color-mix(in srgb, var(--ink) 78%, transparent); }
+/* The hero is centred: the studio name opens the page from the middle of
+   the frame, and the role line it leaves behind takes the same axis. */
+.mast-copy { max-width: 100%; text-align: center; }
+/* the row the name and the roles share — the swell is centred on this,
+   not on the whole copy block, so the roles appear where the name was */
+.mast-line { position: relative; }
+.mast-sub { margin-top: clamp(28px, 6vh, 64px); margin-inline: auto;
+  max-width: 46ch; font-weight: 300;
+  letter-spacing: -0.015em; line-height: 1.5; font-size: clamp(14px, 1.45vw, 17px);
+  color: color-mix(in srgb, var(--ink) 62%, transparent); }
+.mast-sub::before { content: "\\201C"; color: var(--accent); }
+.mast-sub::after { content: "\\201D"; color: var(--accent); }
+.mast-sub-by { display: block; margin-top: 10px; font-size: 10px;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+/* The first-scroll cue is deliberately part of the hero, not a fixed UI
+   element: it disappears with the mast and never competes with the work
+   below. The travelling dash is a lightweight CSS animation, with no
+   scroll listener required. */
+.mast-scroll { position: absolute; z-index: 3; left: 50%; bottom: clamp(20px, 4vh, 42px);
+  translate: -50% 8px; opacity: 0; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  color: color-mix(in srgb, var(--ink) 54%, transparent); font-size: 9px; line-height: 1;
+  white-space: nowrap; transition: color .25s ease;
+  animation: mastScrollIn .5s cubic-bezier(.16,1,.3,1) 2.35s forwards; }
+.mast-scroll:hover { color: var(--ink); }
+.mast-scroll i { position: relative; display: block; width: 1px; height: 28px; overflow: hidden;
+  background: color-mix(in srgb, var(--ink) 18%, transparent); }
+.mast-scroll i::after { content: ""; position: absolute; top: -9px; left: 0; width: 1px; height: 10px;
+  background: var(--accent); animation: scrollCue 1.7s cubic-bezier(.65,0,.35,1) infinite; }
+@keyframes mastScrollIn { to { opacity: 1; translate: -50% 0; } }
+@keyframes scrollCue { to { transform: translateY(38px); } }
+@media (max-width: 560px) {
+  .mast-scroll { bottom: 18px; gap: 8px; font-size: 8px; }
+  .mast-scroll i { height: 22px; }
+}
+
+/* the opening: the studio name fades up, swells past the edge of the
+   frame and clears out, leaving the role line in its place. Absolute, so
+   the roles below never move for it; overflow:hidden on .mast does the
+   cropping. Under reduced motion Home.jsx drops .mast-swell and the name
+   simply sits above the roles instead. */
+.mast-swell { position: absolute; left: 0; right: 0; top: 50%;
+  translate: 0 -50%; pointer-events: none; opacity: 0;
+  animation: swell 2.3s cubic-bezier(.3, 0, .2, 1) forwards; }
+@keyframes swell {
+  0%   { opacity: 0; scale: .86; filter: blur(8px); }
+  20%  { opacity: 1; scale: 1;   filter: blur(0); }
+  58%  { opacity: 1; scale: 1.05; filter: blur(0); }
+  100% { opacity: 0; scale: 2.1;  filter: blur(12px); }
+}
+
+/* the role line — the headline's size sits between .display and the sub,
+   so the longest role ("Mobile app designer") holds one row down to
+   phone widths */
+.mast-roles { font-weight: 300; letter-spacing: -0.035em; line-height: 1.05;
+  font-size: clamp(30px, 6.4vw, 86px); min-height: 1.05em; }
+.tw-sr { position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; }
+.tw-caret { display: inline-block; width: 2px; height: .84em; margin-left: .07em;
+  vertical-align: -0.05em; background: var(--accent);
+  animation: caret 1.05s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+
 /* the bar wraps to two rows below 720px, so it eats more of the screen:
    44px CTA row + 10px row gap + 14px nav row + 24px padding + 1px rule */
-@media (max-width: 720px) { .mast { min-height: calc(100svh - 93px); } }
+@media (max-width: 720px) { .pf { --bar-h: 93px; } }
 
 /* standfirst / disciplines / role: fade+rise in after the headline
    resolves (--rd, set inline per element), so the primary hero text
@@ -762,7 +739,69 @@ export const CSS = `
   animation: heroUp .6s cubic-bezier(.16,1,.3,1) var(--rd, 0s) forwards; }
 @keyframes heroUp { to { opacity: 1; transform: none; } }
 
-/* --- the two practices, moved out of the hero and given their own room --- */
+/* --- the hero's foot dissolves into the page ---
+   .mast clips its light at the section edge, and a clipped glow reads as
+   a seam: lit above the line, flat black below it. Two halves to the fix,
+   and both are needed — the hero's last stretch fades to the page colour,
+   and the section under it opens with the faintest continuation of the
+   same light, so the glow crosses the boundary instead of stopping at it.
+   Between .mast-light (z 0) and .mast .wrap (z 3), so it dissolves the
+   light without touching the copy. */
+.mast::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 26vh; z-index: 2; pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--bg) 92%); }
+
+/* --- the canvas: one screen of frames that becomes the brand ---------
+   It opens as the collage — five photographs, exactly the visible page
+   minus the bar, so the whole thing is taken in at once — and as the
+   section is scrolled through, everything outside the letterforms goes
+   black and the word shrinks out of the picture to a headline.
+
+   One canvas, masked. The earlier build painted the picture twice, once
+   full-bleed and once clipped to the type, and two layers kept in
+   registration by hand read as two images however carefully the maths
+   agrees. Here the mask decides what survives: inside the letters and
+   outside them are the same pixels, so there is nothing to align.
+
+   The type is SVG, which is not a detail. CSS text-align does not shift
+   inline content wider than its box — the overflow goes right — so an
+   HTML word at 3000px showed its *start*, hard against the left edge,
+   and appeared to zoom out of the corner. text-anchor="middle" anchors
+   the run on its own centre at every size, which is what makes it zoom
+   out of the middle of the word.
+
+   Home.jsx owns the numbers: --fs (type size), --open (the mask's rect,
+   which is the opening beat) and the two opacities that hand the word
+   over from photograph to flat ink. The fallbacks here are the settled
+   end state, for when the driver never runs. */
+.lov { position: relative; }
+/* sticks under the bar, not at the top of the screen, so the opening
+   frame is the whole visible page and nothing hides beneath the bar */
+/* the page's own black, so that what the mask takes away is black and the
+   letters read at full strength against it. The hairlines between frames
+   are drawn inside the canvas instead (.lov-bed) — as a background here
+   they tinted everything the mask removed. */
+.lov-stage { position: sticky; top: var(--bar-h);
+  height: calc(100svh - var(--bar-h)); overflow: hidden;
+  background: var(--bg);
+  border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.lov-svg { display: block; width: 100%; height: 100%; }
+.lov-tile { /* geometry is written by Home.jsx — see lovTiles */ }
+/* the surround: a white disc in the mask, closed in from the edges by the
+   driver (it writes the gradient's radius). No opacity of its own — a
+   half-transparent surround is a haze over the whole frame, and it makes
+   the letters read as translucent even at full strength. */
+.lov-canvas { opacity: var(--shot-o, 0); }
+.lov-cut { font-size: var(--fs, clamp(56px, 9vw, 130px)); font-weight: 300;
+  letter-spacing: -0.045em; text-transform: lowercase; }
+.lov-ink { fill: var(--ink); opacity: var(--ink-o, 1); }
+
+/* --- the two practices, moved out of the hero and given their own room ---
+   No light in here. This section used to open with a carry-over of the
+   hero's glow, to stop the boundary between them reading as a seam; it
+   put a lit haze behind the standfirst, which is copy and wants a black
+   page behind it. The hero's own fade to the page colour closes that
+   boundary on its own. */
 .intro-sec { padding: 12vh 0 2vh; }
 .intro-sec .drawline { height: 1px; background: var(--accent); transform: scaleX(0);
   transform-origin: left; margin-top: 40px;
@@ -975,9 +1014,11 @@ export const CSS = `
 .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 @media (max-width: 620px) { .cf-row { grid-template-columns: 1fr; } }
 .cf-field { display: flex; flex-direction: column; gap: 8px; }
+.cf-field > span.mono { font-size: 13px; }
 .cf-field input, .cf-field textarea, .cf-field select { background: var(--panel); border: 1px solid var(--rule);
   border-radius: 4px; color: var(--ink); font: inherit; font-size: 15px; padding: 13px 15px;
   width: 100%; transition: border-color .25s ease; }
+.cf-field input::placeholder, .cf-field textarea::placeholder { color: var(--dim); opacity: .45; }
 .cf-field input:focus, .cf-field textarea:focus, .cf-field select:focus { border-color: var(--accent); outline: none; }
 .cf-field textarea { resize: vertical; line-height: 1.6; }
 /* select: strip the native chrome, draw our own chevron, and dim the label
@@ -1062,28 +1103,40 @@ export const CSS = `
 .pager a:hover strong { color: var(--accent); }
 
 /* --- nav links in the bar --- */
-/* Generous, viewport-tracking gaps so the four sections read as four
+/* Generous, viewport-tracking gaps so the five sections read as five
    separate destinations rather than one run of text; clamped so they
-   neither crowd at 900px nor drift apart on a wide desktop. */
+   neither crowd at 900px nor drift apart on a wide desktop. Contact me
+   is a button (opens the enquiry modal, not a route) but shares every
+   selector below so it reads exactly like the other four. */
 .nav { display: flex; gap: clamp(24px, 3.4vw, 44px); align-items: center; }
-.nav a { position: relative; }
+.nav a, .nav button { position: relative; }
 .nav a[aria-current="page"] { color: var(--accent); }
-.nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
+.nav a::after, .nav button::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
   background: var(--accent); transform: scaleX(0); transform-origin: right;
   transition: transform .35s cubic-bezier(.76,0,.24,1); }
-.nav a:hover::after, .nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
-/* Four sections don't fit a phone in one row, so the bar wraps and the
+.nav a:hover::after, .nav button:hover::after,
+.nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
+/* Five sections don't fit a phone in one row, so the bar wraps and the
    nav sits on its own line rather than disappearing. */
 @media (max-width: 720px) {
   .bar-in { flex-wrap: wrap; gap: 10px 14px; padding: 12px 20px; }
   .nav { order: 3; width: 100%; gap: 16px; justify-content: space-between; }
-  .nav a { font-size: 10.5px; letter-spacing: .1em; }
-  /* the full 44px tap target here, where it is actually being tapped */
-  .pf button.barcta { font-size: 10.5px; letter-spacing: .12em;
-    min-height: 44px; padding: 0 20px; }
-  /* 13 + 16 + 13 + 2 borders = the 44px circle, same sum as the 38px one */
-  .bar.tuck .barcta { padding: 0 13px; }
-  .bar.tuck .barcta:hover, .bar.tuck .barcta:focus-visible { padding: 0 20px; }
+  .nav a, .nav button { font-size: 10.5px; letter-spacing: .1em; }
+}
+/* One row of five stops fitting at about 370px. What happened past that
+   point was two different failures: at 360px "Contact me" broke across
+   two lines inside its own link, and by 320px the whole link had been
+   pushed off the right edge with no way to reach it — the one link that
+   matters. So below 370 the nav wraps to a second row and packs left in
+   reading order (space-between would fling the leftovers to opposite
+   edges of that row), with the labels themselves held on one line.
+   Kept off at 375px and up, where the row genuinely fits: a blanket
+   flex-wrap broke a 375px iPhone to two rows for a few subpixels. The
+   second row makes the bar taller, so the hero's offset matches. */
+@media (max-width: 370px) {
+  .nav { flex-wrap: wrap; justify-content: flex-start; gap: 9px 14px; }
+  .nav a, .nav button { white-space: nowrap; }
+  .pf { --bar-h: 118px; }
 }
 
 /* --- about page --- */
@@ -1091,6 +1144,10 @@ export const CSS = `
    left/right 28px to 0 and jam the whole page against the screen edge. */
 .about { padding-top: 12vh; padding-bottom: 8vh; }
 .about-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
+/* no portrait synced yet — one column, same dead-space fix as the phone
+   layout below, so the lead isn't stuck at its narrow two-up measure */
+.about-hero.no-portrait { grid-template-columns: 1fr; }
+.about-hero.no-portrait .about-lead { max-width: none; }
 @media (max-width: 820px) { .about-hero { grid-template-columns: 1fr; gap: 36px; }
   /* single column now, so the 22ch measure that sat beside the portrait
      just leaves dead space on the right — let the lead fill the column
@@ -1258,6 +1315,7 @@ export const CSS = `
 /* full-bleed cover — the frame fills the banner; object-position keeps the
    upper-middle (faces) in view when a tall photo is cropped to fit */
 .phero-fr img { will-change: transform; object-position: center 30%; }
+.phero-bg { display: none; }
 .phero-fr::after { content: ""; position: absolute; inset: 0;
   background: linear-gradient(180deg,
     color-mix(in srgb, var(--bg) 46%, transparent) 0%,
@@ -1293,7 +1351,18 @@ export const CSS = `
 .tick-btn:hover i { transform: scaleX(1); opacity: .4; animation: none; }
 .phero-count { font-variant-numeric: tabular-nums; }
 .phero-count b { font-weight: 400; color: var(--accent); }
-@media (max-width: 640px) { .phero { height: 78vh; } .tick-btn { width: 32px; } }
+@media (max-width: 640px) {
+  .phero { height: 78vh; }
+  .tick-btn { width: 32px; }
+  /* the banner is portrait-shaped here while every featured frame is
+     landscape (FEATURED only ever picks wide covers) — cover would crop
+     most of the photo's width away, so it's shown whole over a blurred
+     fill instead. See the .phero-bg comment in Photography.jsx. */
+  .phero-bg { display: block; position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center; filter: blur(40px) brightness(.55) saturate(1.15);
+    transform: scale(1.25); }
+  .phero-fr img.phero-fg { object-fit: contain; object-position: center; }
+}
 
 /* --- project intro band --- */
 /* the bottom padding is the gap down to the frames carousel — 2vh let the
@@ -1301,33 +1370,13 @@ export const CSS = `
 .band { padding: 12vh 0 7vh; }
 .band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
   font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
-/* --- the Lensofviraj wordmark ---
-   The practice's name is the one place on this page that is a name rather
-   than a sentence, so it is set as a lockup instead of a heading: the two
-   halves in the display face at a size above the band's own h2, the joint
-   dropped into the mono face at a third the size and pushed off the
-   baseline. Both faces are already loaded — this invents no new type.
-
-   The joint is --dim, not --accent: the accent in this palette is #E4E4E7
-   against #ECECEC ink, a difference of twelve values that nobody can see.
-   Contrast has to come from the grey.
-
-   Baseline alignment (not centre) is what holds it together — the mono
-   cap sits on the same line the display letters stand on, then rides up
-   from there, so the three parts read as one word set three ways. */
-.pbrand { display: flex; align-items: baseline; flex-wrap: wrap;
-  font-weight: 300; letter-spacing: -0.045em; line-height: .95;
+/* --- the Lensofviraj name ---
+   Set plainly, at a size above the band's own h2. It used to be a lockup
+   — the two halves in the display face with the joint dropped into the
+   mono face, shrunk and lifted off the baseline — which made "of" a mark
+   to be read on its own rather than three letters inside a name. */
+.pbrand { font-weight: 300; letter-spacing: -0.045em; line-height: .95;
   font-size: clamp(38px, 7vw, 86px); }
-.pbrand-of { font-family: 'IBM Plex Mono', monospace; font-weight: 400;
-  font-size: .3em; letter-spacing: .2em; text-transform: uppercase;
-  color: var(--dim);
-  /* the .2em of tracking above hangs off the F as trailing space, so the
-     right margin has to be .2em short of the left one for the two gaps
-     to measure the same on screen */
-  margin: 0 .14em 0 .34em; transform: translateY(-0.62em); }
-/* the tail carries the name; a hair more weight than the opening half so
-   the eye lands on "viraj" rather than on "Lens" */
-.pbrand-tail { font-weight: 400; letter-spacing: -0.05em; }
 .band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
 /* the photography philosophy line — brighter and larger than the note below it.
    Written as .band p.band-lead, not .band-lead: a bare class (0,1,0) loses
@@ -1338,46 +1387,51 @@ export const CSS = `
   font-size: clamp(19px, 2.4vw, 27px); line-height: 1.45; max-width: 30ch; margin-top: 26px; }
 
 /* --- photo project detail --- */
-/* Fixed, capped hero so a portrait source can't blow the box up to
-   full-width-portrait height; the image covers a 16:9 frame instead. */
 /* Shows the opening frame whole. This was aspect-ratio: 16/9 with the
    site-wide object-fit: cover, which guillotined every portrait — heads
    cropped off the top. Then it was a full-width fixed-height stage with
    the picture contained inside it, which read as a black slab with a
    sliver of photograph in the middle: a portrait at this height only
    fills about a quarter of the 1180px column, and .pj-hero's panel
-   background filled the rest.
+   background filled the rest. That fixed height was then put on the
+   *figure*, with the img at a flat 100%/100% inside it — which fixed
+   portraits but broke landscapes on a narrow phone: a 16:9 frame at the
+   height cap wants far more width than a ~330px column has, so
+   max-width:100% clamped the figure's width while its height stayed
+   fixed, leaving the actual photograph shrunk to a strip in the middle
+   of a tall black box.
 
-   Now the frame takes the photograph's own aspect ratio (set inline from
-   the manifest) and shrinks to fit it, centred. Height stays capped, so a
-   portrait is a tall narrow frame and a landscape a wide one — the whole
-   picture either way, and no letterbox around it.
-
-   Height is set so the whole stage clears the fold: the masthead, the
-   page's top padding, the back link and the title take ~310px above it,
-   and at 76vh the foot of the frame sat 170px below the bottom of a
-   900px window. The tightened spacing below buys most of that back. */
+   The fix is to stop dictating a box and let the img size itself: the
+   aspect-ratio lives on the img (not the figure), with width/height auto
+   and a max-width/max-height pair — the browser finds the largest size
+   that satisfies the ratio within both caps, exactly like .lb-stage img
+   in the lightbox. The figure has no height of its own; it shrink-wraps
+   to whatever the img resolves to, so a portrait is a tall narrow frame
+   and a landscape a wide (or, on a narrow phone, short) one — the whole
+   picture either way, on every viewport, and no letterbox around it. */
 .pj-hero { position: relative; overflow: hidden; border-radius: 4px;
   border: 1px solid var(--rule); background: var(--panel);
-  /* the third term is the one that matters on a short window: what's
-     above the stage is ~310px of largely fixed chrome, so cap the frame
-     at the space actually left rather than at a share of the height */
-  height: min(60vh, 640px, calc(100svh - 330px));
   /* fit-content, not auto: a block-level box with width:auto stretches to
-     the column and ignores aspect-ratio, which is what left the black
-     margins. max-width keeps a very wide frame inside the column.
-     margin-inline: auto centres it: a portrait fills only about a third
-     of the 1180px column, and hard-left left a dead void down its right
-     side. Centred it holds the page on every project, portrait or
-     landscape, without changing the shape of the frame itself. */
+     the column, which is what left the black margins. max-width keeps a
+     very wide frame inside the column. margin-inline: auto centres it: a
+     portrait fills only about a third of the 1180px column, and hard-left
+     left a dead void down its right side. Centred it holds the page on
+     every project, portrait or landscape, without changing the shape of
+     the frame itself. */
   width: fit-content; max-width: 100%; margin-inline: auto; }
 /* scoped to this page — /work/:seed and /design/:slug share .detail and
    want their original, roomier lead-in */
 .detail-pj { padding-top: 7vh; }
 .detail-pj .back { margin-bottom: 26px; }
 .detail-pj .detail-head { margin-bottom: 28px; }
-.pj-hero img { width: 100%; height: 100%; object-fit: contain;
-  transform: none; transition: none; }
+/* width/height auto (not 100%) is what lets the img size itself rather
+   than fill a box dictated from outside; max-height is the one that
+   matters on a short window — what's above the stage is ~310px of
+   largely fixed chrome, so cap the frame at the space actually left
+   rather than at a share of the height. */
+.pj-hero img { display: block; width: auto; height: auto; max-width: 100%;
+  max-height: min(60vh, 640px, calc(100svh - 330px));
+  object-fit: contain; transform: none; transition: none; }
 .pj-intro { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.8vw, 34px);
   line-height: 1.32; max-width: 26ch; }
 
@@ -1529,6 +1583,93 @@ export const CSS = `
 .wcard-cap p { color: var(--dim); font-size: 14.5px; line-height: 1.6; margin-top: 10px; max-width: 40ch; }
 .tool-badge { flex: 0 0 auto; border: 1px solid var(--rule); border-radius: 100px;
   padding: 5px 12px; }
+
+/* --- home design run: the projects travel sideways --------------------
+   The section holds the screen while its track slides left, so a project
+   is read one at a time at full width instead of three-up and thumbnail
+   sized. .hsx gets its height from Home.jsx (viewport + however far the
+   track overruns it) — that extra height is what the sticky child scrubs
+   through, and it is why the page's scrollbar still tells the truth
+   about the section's length.
+
+   The pinned run is for screens that can hold a full card. Everything
+   else — narrow, short, or motion-averse — gets the flat layout at the
+   bottom of this block: the panel stacked above a swipe row. A phone
+   already has a horizontal gesture; hijacking its vertical scroll to
+   fake one is worse than the thing it replaces. */
+.hsx { position: relative; border-top: 1px solid var(--rule);
+  /* the bar is sticky, so an anchor jump would land under it */
+  scroll-margin-top: 80px; }
+.hsx-sticky { position: sticky; top: 0; height: 100svh; overflow: hidden;
+  display: flex; align-items: center; background: var(--bg); }
+.hsx-track { display: flex; align-items: flex-start;
+  gap: clamp(28px, 3.4vw, 64px); padding: 0 clamp(24px, 6vw, 90px);
+  will-change: transform; }
+/* the cards' wrapper dissolves here: its children become the track's own
+   flex items, so the desktop row is laid out as though it weren't in the
+   markup at all. It only becomes a box on phones (see the flat layout). */
+.hsx-row { display: contents; }
+/* the opening panel: the section's name and the line that earns the run.
+   Centred against the cards rather than top-aligned with them, so the two
+   read as one row. */
+.hsx-intro { flex: 0 0 auto; width: min(84vw, 420px); align-self: center; }
+/* The name carries the panel, so the mono face is taken up to headline
+   size. Tracking comes down as the size goes up — .mono's .16em is set for
+   an 11px label and turns a 44px word into scattered letters. Size and ink
+   only: no weight bump, which is what thickens this face into shouting. */
+/* font-weight is not decoration here: this is an h2, and the UA's bold
+   default is exactly the weight bump the rule above forbids — at 44px the
+   mono face turns into a slab and out-shouts the whole section. */
+.hsx-label { font-size: clamp(26px, 3.2vw, 44px); letter-spacing: .04em;
+  font-weight: 400; line-height: 1; margin: 0; }
+/* the line under it sits one step back, so the eye reads name then line */
+.hsx-title { font-weight: 300; letter-spacing: -0.02em; line-height: 1.35;
+  font-size: clamp(16px, 1.5vw, 20px); margin-top: 18px; max-width: 24ch;
+  color: color-mix(in srgb, var(--ink) 72%, transparent); }
+/* Three caps, not one: the viewport width holds the card on a laptop, the
+   720px keeps it from becoming a billboard on a wide monitor, and the
+   svh cap is what stops a short screen cropping the caption — the card is
+   a 16/11 frame plus a title and a line of copy under it. */
+.hsx-card { flex: 0 0 auto; width: min(84vw, 720px, 92svh); display: block; }
+.hsx-more { flex: 0 0 auto; align-self: center;
+  padding-inline: clamp(20px, 4vw, 60px); }
+/* --- the flat layout: heading stacked above a swipe row ---------------
+   Three conditions, one block, because the answer to all three is the
+   same. Narrow: no room for a 720px card. Short: a landscape phone is
+   over 820px wide and would take the pinned run at 390px tall, where a
+   card shrinks to a third of the screen and the section becomes 1500px
+   of scrolling for it. Reduced motion: Home.jsx returns before wiring
+   the driver, so the track never moves and the cards past the fold would
+   be unreachable without this. */
+@media (max-width: 819px), (max-height: 619px), (prefers-reduced-motion: reduce) {
+  .hsx { height: auto !important; padding: clamp(70px, 12vw, 120px) 0; }
+  .hsx-sticky { position: static; height: auto; overflow: visible; display: block; }
+  /* the track stops being the row and becomes a plain column: panel on
+     top, cards in their own scroller under it */
+  .hsx-track { display: block; padding: 0 var(--hsx-pad); transform: none !important;
+    will-change: auto; --hsx-pad: clamp(20px, 5vw, 40px); }
+  .hsx-intro { width: auto; max-width: 34ch; margin-bottom: clamp(24px, 5vw, 40px); }
+  /* One card per line, not a swipe row. A horizontal scroller nested
+     inside a vertically scrolling page is a poor target on touch — it
+     only answers a near-horizontal drag, and every other angle scrolls
+     the page past it instead, which reads as a row that doesn't work.
+     Stacked, each card is full width and arrives on the visitor's own
+     scroll. The sideways run is the desktop's entrance; this is the
+     phone's. */
+  .hsx-row { display: grid; gap: clamp(44px, 10vw, 72px);
+    overflow: visible; margin-inline: 0; padding: 0; }
+  .hsx-card { width: 100%; }
+  .hsx-more { justify-self: start; padding-inline: 0; }
+  /* Hidden only once JS has said it will animate them — data-anim is set
+     by the observer in Home.jsx. Default-visible matters: reduced motion
+     also lands in this block, and the global reduced-motion rule kills
+     transitions, so an opacity:0 that waited on one would never come
+     back. */
+  .hsx-row[data-anim] > * { opacity: 0; transform: translateY(20px);
+    transition: opacity .75s cubic-bezier(.16,1,.3,1),
+                transform .75s cubic-bezier(.16,1,.3,1); }
+  .hsx-row[data-anim] > .in { opacity: 1; transform: none; }
+}
 
 /* ==================================================================
    DESIGN INDEX — /design (magazine-style redesign)
@@ -1948,13 +2089,27 @@ export const CSS = `
   .pf *, .pf *::before, .pf *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1 !important; transform: none !important; }
   .hero-reveal { opacity: 1 !important; transform: none !important; }
+  .mast-scroll { opacity: 1 !important; translate: -50% 0 !important; }
   .logo-mark path { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; }
   .logo-word b { opacity: 1 !important; transform: none !important; }
   .intro-sec .drawline, .metrics::after { transform: scaleX(1) !important; }
+  /* no typing, so the roles are listed at once — at headline size three
+     of them on one line would fill the hero, so the line steps down */
+  .mast-roles { font-size: clamp(18px, 2.6vw, 30px); }
   .shot img, .detail-fig img, .about-portrait img { transform: none !important; }
   .phero-fr img, .pj-hero img, .pgrid img, .browser-view img { transform: none !important; }
-  /* the hero holds its first frame — see HeroFrames, which skips the
-     reel entirely rather than cutting between shots */
+  /* the design run's flat layout is handled with the narrow/short screens
+     up in the .hsx block — one media query covers all three */
+  /* the canvas keeps its pictures and loses its run: nothing pins, the
+     mask stays open so all five frames show (the wipe's radius keeps its
+     markup default, which clears the frame), and the word — which only
+     ever arrives by zooming — is dropped rather than parked on top of
+     them. It is still in the standfirst above and on /photography. */
+  .lov-stage { position: static; }
+  .lov-canvas { opacity: 1; }
+  .lov-ink { opacity: 0; }
+  /* the hero light holds still — the pools stay where they start, so the
+     glow is there but nothing moves */
   .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }
   .iris-lens { display: none; }
 }
