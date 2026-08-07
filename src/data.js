@@ -37,12 +37,6 @@ export const P = {
   name: "Crafted & Captured",   // the studio, shown in the masthead bar
   photographer: "Viraj Mehta",  // the person the home page is about
   photoBrand: "Lensofviraj",    // the photography practice — /photography
-  /* The same name split for the /photography wordmark, where it is set as
-     a lockup rather than a word: the two halves in the display face, the
-     joint in the mono one. Kept next to the string it is cut from so the
-     two can't drift apart. Nothing is inserted between the parts, so the
-     accessible name stays "Lensofviraj" exactly as above. */
-  photoBrandParts: ["Lens", "of", "viraj"],
   email: "craftedandcaptured@gmail.com",  // the only contact address — no personal ones
   phone: "+1 (672) 968-9680",
   city: "Vancouver",
@@ -93,7 +87,7 @@ export const INTRO = {
 /* ROLES — the hero line that types itself out (Typewriter in ui.jsx).
    Order matters: it types the first, erases it, types the next, and
    cycles. Keep them short — the line holds one row in the masthead. */
-export const ROLES = ["Mobile app designer", "Web designer", "Photographer"];
+export const ROLES = ["Mobile App Designer", "Web Designer", "Photographer"];
 
 /* --- real photos (from the Contentful sync) -------------------------
    scripts/sync-contentful.mjs writes photos.manifest.json at build time.
@@ -1420,33 +1414,13 @@ export const CSS = `
 .band { padding: 12vh 0 7vh; }
 .band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
   font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
-/* --- the Lensofviraj wordmark ---
-   The practice's name is the one place on this page that is a name rather
-   than a sentence, so it is set as a lockup instead of a heading: the two
-   halves in the display face at a size above the band's own h2, the joint
-   dropped into the mono face at a third the size and pushed off the
-   baseline. Both faces are already loaded — this invents no new type.
-
-   The joint is --dim, not --accent: the accent in this palette is #E4E4E7
-   against #ECECEC ink, a difference of twelve values that nobody can see.
-   Contrast has to come from the grey.
-
-   Baseline alignment (not centre) is what holds it together — the mono
-   cap sits on the same line the display letters stand on, then rides up
-   from there, so the three parts read as one word set three ways. */
-.pbrand { display: flex; align-items: baseline; flex-wrap: wrap;
-  font-weight: 300; letter-spacing: -0.045em; line-height: .95;
+/* --- the Lensofviraj name ---
+   Set plainly, at a size above the band's own h2. It used to be a lockup
+   — the two halves in the display face with the joint dropped into the
+   mono face, shrunk and lifted off the baseline — which made "of" a mark
+   to be read on its own rather than three letters inside a name. */
+.pbrand { font-weight: 300; letter-spacing: -0.045em; line-height: .95;
   font-size: clamp(38px, 7vw, 86px); }
-.pbrand-of { font-family: 'IBM Plex Mono', monospace; font-weight: 400;
-  font-size: .3em; letter-spacing: .2em; text-transform: uppercase;
-  color: var(--dim);
-  /* the .2em of tracking above hangs off the F as trailing space, so the
-     right margin has to be .2em short of the left one for the two gaps
-     to measure the same on screen */
-  margin: 0 .14em 0 .34em; transform: translateY(-0.62em); }
-/* the tail carries the name; a hair more weight than the opening half so
-   the eye lands on "viraj" rather than on "Lens" */
-.pbrand-tail { font-weight: 400; letter-spacing: -0.05em; }
 .band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
 /* the photography philosophy line — brighter and larger than the note below it.
    Written as .band p.band-lead, not .band-lead: a bare class (0,1,0) loses
