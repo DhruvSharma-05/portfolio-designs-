@@ -463,8 +463,14 @@ export default function Home() {
                     </div>
                     {hasPhoto(w.cover) ? (
                       <div className="browser-view">
-                        <img src={img(w.cover, 1200, reduced ? 825 : 2100)} srcSet={srcSet(w.cover)}
-                          sizes="(max-width: 819px) 84vw, 720px"
+                        {/* The condition mirrors the flat-layout media query
+                            below exactly — that one also breaks on height, so
+                            a landscape phone (wide, but short) stacks the
+                            cards full-width. Keyed on width alone, the hint
+                            claimed 720px there while the card was really the
+                            best part of the screen. */}
+                        <img src={img(w.cover, 1200)} srcSet={srcSet(w.cover)}
+                          sizes="(min-width: 820px) and (min-height: 620px) 720px, 92vw"
                           alt={`${w.t} full page`} loading="lazy" />
                       </div>
                     ) : w.embed && w.href ? (

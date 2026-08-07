@@ -1011,9 +1011,21 @@ export const CSS = `
   background: var(--accent); transform: scaleX(0); transform-origin: right;
   transition: transform .5s cubic-bezier(.76,0,.24,1); }
 .mail:hover::after { transform: scaleX(1); transform-origin: left; }
-.colophon { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 28px;
+/* 230px tracks, not 180px: the email is the widest single unbreakable
+   thing on the site (~223px at this size) and a 180px minimum let a
+   430px phone — an iPhone Pro Max — form two 181px columns, so the
+   address overflowed its own track and printed straight across "Based
+   in" next to it. The minimum is now the width the address actually
+   needs, so a second column only appears once one genuinely fits. */
+.colophon { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 28px;
   margin-top: 13vh; padding-top: 22px; border-top: 1px solid var(--rule); }
-.colophon dd { margin: 8px 0 0; font-size: 14px; line-height: 1.72; color: var(--dim); }
+/* belt and braces: a grid item's automatic minimum is its min-content
+   width, which is what let the address push past its track in the first
+   place. These two mean it wraps inside the column instead, whatever
+   the address grows into later. */
+.colophon > div { min-width: 0; }
+.colophon dd { margin: 8px 0 0; font-size: 14px; line-height: 1.72; color: var(--dim);
+  overflow-wrap: anywhere; }
 
 /* --- contact form --- */
 .contact-form { max-width: 620px; margin-top: 30px; display: flex; flex-direction: column; gap: 18px; }
@@ -1705,7 +1717,13 @@ export const CSS = `
 .dz-kicker { margin-bottom: 30px; }
 .dz-hero-copy h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
   font-size: clamp(42px, 6.4vw, 92px); text-wrap: balance; }
+/* The one mono row here that can wrap. At 11px with .16em tracking two
+   lines set solid read as a slab of spaced caps rather than a list, so
+   it gets its own leading — and a phone gets the tracking eased off,
+   which is what decides whether it needs a second line at all. */
 .dz-role { margin-top: 18px; }
+.dz-role .mono { display: block; line-height: 2; }
+@media (max-width: 560px) { .dz-role .mono { letter-spacing: .1em; } }
 
 /* the featured slot: a label rides above the browser frame so it reads as
    "featured" rather than just another card, and the CTA sits under the
@@ -1713,8 +1731,6 @@ export const CSS = `
    big target, the CTA the worded one. */
 .dz-hero-media { min-width: 0; }
 .dz-hero-shot { display: block; }
-.dz-hero-tag { display: block; color: var(--dim); margin-bottom: 14px; }
-.dz-hero-shot:hover .dz-hero-tag { color: var(--accent); }
 .dz-hero-cta { margin-top: 20px; }
 
 .dz-open { display: inline-flex; align-items: center; gap: 10px; color: var(--accent); }
