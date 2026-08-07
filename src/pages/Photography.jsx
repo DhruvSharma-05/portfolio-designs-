@@ -98,10 +98,16 @@ export default function Photography() {
                   so below 640px the frame is shown whole (letterboxed) over
                   a blurred copy of itself instead of being cropped to fill */}
               <img className="phero-bg" src={img(f.seed, 300, 300)} alt="" aria-hidden="true" />
-              <motion.img className="phero-fg" src={img(f.seed, 2000, 1200)} srcSet={srcSet(f.seed)} sizes="100vw" alt=""
-                initial={{ scale: 1.12 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: reduced ? 0 : 8, ease: "linear" }} />
+              {/* No Ken Burns zoom. It scaled the frame to 1.12 and eased
+                  back to 1 over 8s while a slide only holds for HOLD
+                  (5.4s), so the picture was never once shown at scale 1 —
+                  it sat permanently stretched 4-12% past its rasterised
+                  size, on a compositor layer that rasterises once and then
+                  scales the texture. That reads as a soft, low-resolution
+                  photograph however large the source file is. Same call
+                  the project hero already made (see PhotoProject.jsx). */}
+              <img className="phero-fg" src={img(f.seed, 2000)} srcSet={srcSet(f.seed)}
+                sizes="100vw" alt="" />
             </motion.figure>
           </AnimatePresence>
         </div>

@@ -120,13 +120,19 @@ export const img = (s, w = 1200) => {
   return w <= 640 ? p.sm : p.lg;
 };
 
-/* srcSet(seed): the sm+lg pair as a srcset descriptor, so <img> can ship
-   the resolution that actually matches the viewport instead of always
-   whatever fixed width img() was called with. undefined for an unsynced
-   seed, same as img(). */
+/* srcSet(seed): every rendered width for a seed, so <img> can ship the
+   resolution that actually matches the slot instead of always whatever
+   fixed width img() was called with. The sync writes this string with
+   each file's true width (see renderVariants in sync-contentful.mjs) —
+   the widths can't be inferred here, because a source photo narrower
+   than a resize step keeps its native size, and a descriptor claiming
+   more detail than the file holds corrupts the browser's own quality
+   choice. The Figma cover screenshots predate the field and still carry
+   only an sm/lg pair. undefined for an unsynced seed, same as img(). */
 export const srcSet = (s) => {
   const p = PHOTOS.get(s);
-  return p ? `${p.sm} 640w, ${p.lg} 2000w` : undefined;
+  if (!p) return undefined;
+  return p.srcset || `${p.sm} 640w, ${p.lg} ${p.w || 2000}w`;
 };
 
 /* ratio(seed, fw, fh): CSS aspect-ratio for a seed — the synced photo's
@@ -1313,9 +1319,19 @@ export const CSS = `
 .phero-stage { position: absolute; inset: 0; }
 .phero-fr { position: absolute; inset: 0; }
 /* full-bleed cover — the frame fills the banner; object-position keeps the
-   upper-middle (faces) in view when a tall photo is cropped to fit */
-.phero-fr img { will-change: transform; object-position: center 30%; }
-.phero-bg { display: none; }
+   upper-middle (faces) in view when a tall photo is cropped to fit.
+   No will-change: transform. Nothing here is transformed any more (the
+   Ken Burns zoom is gone), and the hint alone promotes the image to a
+   compositor layer that rasterises once — which softened a photograph
+   the whole page exists to show. */
+.phero-fr img { object-position: center 30%; }
+/* Written as .pf img.phero-bg (0,2,1), not a bare .phero-bg (0,1,0):
+   .pf img above sets display:block at (0,1,1) and wins over the bare
+   class, so the phone backdrop stayed displayed on a desktop — and being
+   a static-flow child of .phero-fr it took the whole banner and pushed
+   the real frame out below it, leaving a 640px thumbnail stretched
+   across the hero. Same trap as .band p.band-lead and .pf button.mono. */
+.pf img.phero-bg { display: none; }
 .phero-fr::after { content: ""; position: absolute; inset: 0;
   background: linear-gradient(180deg,
     color-mix(in srgb, var(--bg) 46%, transparent) 0%,
@@ -1358,7 +1374,10 @@ export const CSS = `
      landscape (FEATURED only ever picks wide covers) — cover would crop
      most of the photo's width away, so it's shown whole over a blurred
      fill instead. See the .phero-bg comment in Photography.jsx. */
-  .phero-bg { display: block; position: absolute; inset: 0; width: 100%; height: 100%;
+  /* .pf img.phero-bg for the same specificity reason as the base rule —
+     as a bare class even the blur lost to .pf img's filter, so the
+     "blurred" backdrop was rendering perfectly sharp. */
+  .pf img.phero-bg { display: block; position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; object-position: center; filter: blur(40px) brightness(.55) saturate(1.15);
     transform: scale(1.25); }
   .phero-fr img.phero-fg { object-fit: contain; object-position: center; }

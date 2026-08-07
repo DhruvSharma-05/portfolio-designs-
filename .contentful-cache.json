@@ -3,10 +3,15 @@
     "seed": "viraj-portrait",
     "stamp": "rHXHPhIcekIUDfXHUpGw8:2026-07-24T08:53:48.971Z",
     "variants": {
-      "sm": "/photos/portrait/viraj-portrait-sm.webp",
-      "lg": "/photos/portrait/viraj-portrait-lg.webp",
-      "w": 2000,
-      "h": 2667
+      "w640": "/photos/portrait/viraj-portrait-640.webp",
+      "w1600": "/photos/portrait/viraj-portrait-1600.webp",
+      "w2600": "/photos/portrait/viraj-portrait-2600.webp",
+      "w4200": "/photos/portrait/viraj-portrait-4200.webp",
+      "sm": "/photos/portrait/viraj-portrait-640.webp",
+      "lg": "/photos/portrait/viraj-portrait-4200.webp",
+      "srcset": "/photos/portrait/viraj-portrait-640.webp 640w, /photos/portrait/viraj-portrait-1600.webp 1600w, /photos/portrait/viraj-portrait-2600.webp 2600w, /photos/portrait/viraj-portrait-4200.webp 3024w",
+      "w": 3024,
+      "h": 4032
     },
     "exif": ""
   },
@@ -14,10 +19,14 @@
     "seed": "modern-venus",
     "stamp": "3kApkX3aUJpobOLsl8evls:2026-07-23T11:14:28.013Z",
     "variants": {
-      "sm": "/photos/projects/modern/modern-venus-sm.webp",
-      "lg": "/photos/projects/modern/modern-venus-lg.webp",
-      "w": 2000,
-      "h": 2858
+      "w640": "/photos/projects/modern/modern-venus-640.webp",
+      "w1600": "/photos/projects/modern/modern-venus-1600.webp",
+      "w2600": "/photos/projects/modern/modern-venus-2600.webp",
+      "sm": "/photos/projects/modern/modern-venus-640.webp",
+      "lg": "/photos/projects/modern/modern-venus-2600.webp",
+      "srcset": "/photos/projects/modern/modern-venus-640.webp 640w, /photos/projects/modern/modern-venus-1600.webp 1600w, /photos/projects/modern/modern-venus-2600.webp 2434w",
+      "w": 2434,
+      "h": 3478
     },
     "exif": "50mm · f/2 · 1/60 · ISO 1000"
   },
@@ -25,10 +34,15 @@
     "seed": "modern-green-machine",
     "stamp": "5ICEdEMXsmQjvdH4oind8t:2026-07-23T11:14:08.919Z",
     "variants": {
-      "sm": "/photos/projects/modern/modern-green-machine-sm.webp",
-      "lg": "/photos/projects/modern/modern-green-machine-lg.webp",
-      "w": 2000,
-      "h": 3081
+      "w640": "/photos/projects/modern/modern-green-machine-640.webp",
+      "w1600": "/photos/projects/modern/modern-green-machine-1600.webp",
+      "w2600": "/photos/projects/modern/modern-green-machine-2600.webp",
+      "w4200": "/photos/projects/modern/modern-green-machine-4200.webp",
+      "sm": "/photos/projects/modern/modern-green-machine-640.webp",
+      "lg": "/photos/projects/modern/modern-green-machine-4200.webp",
+      "srcset": "/photos/projects/modern/modern-green-machine-640.webp 640w, /photos/projects/modern/modern-green-machine-1600.webp 1600w, /photos/projects/modern/modern-green-machine-2600.webp 2600w, /photos/projects/modern/modern-green-machine-4200.webp 3368w",
+      "w": 3368,
+      "h": 5189
     },
     "exif": ""
   },
@@ -36,10 +50,15 @@
     "seed": "modern-after-hours",
     "stamp": "1207ubKaD6sXwz6UaTYrai:2026-07-23T11:14:17.413Z",
     "variants": {
-      "sm": "/photos/projects/modern/modern-after-hours-sm.webp",
-      "lg": "/photos/projects/modern/modern-after-hours-lg.webp",
-      "w": 2000,
-      "h": 3555
+      "w640": "/photos/projects/modern/modern-after-hours-640.webp",
+      "w1600": "/photos/projects/modern/modern-after-hours-1600.webp",
+      "w2600": "/photos/projects/modern/modern-after-hours-2600.webp",
+      "w4200": "/photos/projects/modern/modern-after-hours-4200.webp",
+      "sm": "/photos/projects/modern/modern-after-hours-640.webp",
+      "lg": "/photos/projects/modern/modern-after-hours-4200.webp",
+      "srcset": "/photos/projects/modern/modern-after-hours-640.webp 640w, /photos/projects/modern/modern-after-hours-1600.webp 1600w, /photos/projects/modern/modern-after-hours-2600.webp 2600w, /photos/projects/modern/modern-after-hours-4200.webp 3376w",
+      "w": 3376,
+      "h": 6000
     },
     "exif": ""
   },
@@ -47,10 +66,15 @@
     "seed": "modern-pink-field",
     "stamp": "45db0fmDfxUFDJJgmg7WXz:2026-07-23T11:20:23.077Z",
     "variants": {
-      "sm": "/photos/projects/modern/modern-pink-field-sm.webp",
-      "lg": "/photos/projects/modern/modern-pink-field-lg.webp",
-      "w": 2000,
-      "h": 3555
+      "w640": "/photos/projects/modern/modern-pink-field-640.webp",
+      "w1600": "/photos/projects/modern/modern-pink-field-1600.webp",
+      "w2600": "/photos/projects/modern/modern-pink-field-2600.webp",
+      "w4200": "/photos/projects/modern/modern-pink-field-4200.webp",
+      "sm": "/photos/projects/modern/modern-pink-field-640.webp",
+      "lg": "/photos/projects/modern/modern-pink-field-4200.webp",
+      "srcset": "/photos/projects/modern/modern-pink-field-640.webp 640w, /photos/projects/modern/modern-pink-field-1600.webp 1600w, /photos/projects/modern/modern-pink-field-2600.webp 2600w, /photos/projects/modern/modern-pink-field-4200.webp 3376w",
+      "w": 3376,
+      "h": 6000
     },
     "exif": ""
   },
@@ -58,10 +82,15 @@
     "seed": "modern-motion",
     "stamp": "4aXWQz2J837pnKQVIVgW2:2026-08-07T09:54:17.829Z",
     "variants": {
-      "sm": "/photos/projects/modern/modern-motion-sm.webp",
-      "lg": "/photos/projects/modern/modern-motion-lg.webp",
-      "w": 2000,
-      "h": 3563
+      "w640": "/photos/projects/modern/modern-motion-640.webp",
+      "w1600": "/photos/projects/modern/modern-motion-1600.webp",
+      "w2600": "/photos/projects/modern/modern-motion-2600.webp",
+      "w4200": "/photos/projects/modern/modern-motion-4200.webp",
+      "sm": "/photos/projects/modern/modern-motion-640.webp",
+      "lg": "/photos/projects/modern/modern-motion-4200.webp",
+      "srcset": "/photos/projects/modern/modern-motion-640.webp 640w, /photos/projects/modern/modern-motion-1600.webp 1600w, /photos/projects/modern/modern-motion-2600.webp 2600w, /photos/projects/modern/modern-motion-4200.webp 3368w",
+      "w": 3368,
+      "h": 6000
     },
     "exif": "50mm · f/4.5 · 1/4000 · ISO 800"
   },
@@ -69,10 +98,15 @@
     "seed": "modern-two-men-car",
     "stamp": "6FwFACqQXFnq4dGupQHXYG:2026-07-23T11:18:55.732Z",
     "variants": {
-      "sm": "/photos/projects/modern/modern-two-men-car-sm.webp",
-      "lg": "/photos/projects/modern/modern-two-men-car-lg.webp",
-      "w": 2000,
-      "h": 3563
+      "w640": "/photos/projects/modern/modern-two-men-car-640.webp",
+      "w1600": "/photos/projects/modern/modern-two-men-car-1600.webp",
+      "w2600": "/photos/projects/modern/modern-two-men-car-2600.webp",
+      "w4200": "/photos/projects/modern/modern-two-men-car-4200.webp",
+      "sm": "/photos/projects/modern/modern-two-men-car-640.webp",
+      "lg": "/photos/projects/modern/modern-two-men-car-4200.webp",
+      "srcset": "/photos/projects/modern/modern-two-men-car-640.webp 640w, /photos/projects/modern/modern-two-men-car-1600.webp 1600w, /photos/projects/modern/modern-two-men-car-2600.webp 2600w, /photos/projects/modern/modern-two-men-car-4200.webp 3368w",
+      "w": 3368,
+      "h": 6000
     },
     "exif": "50mm · f/1.8 · 1/80 · ISO 320"
   },
@@ -80,10 +114,15 @@
     "seed": "modern-green-car",
     "stamp": "3H4BOljtZE0PCmG4LoOu8e:2026-07-23T11:19:36.399Z",
     "variants": {
-      "sm": "/photos/projects/modern/modern-green-car-sm.webp",
-      "lg": "/photos/projects/modern/modern-green-car-lg.webp",
-      "w": 2000,
-      "h": 3062
+      "w640": "/photos/projects/modern/modern-green-car-640.webp",
+      "w1600": "/photos/projects/modern/modern-green-car-1600.webp",
+      "w2600": "/photos/projects/modern/modern-green-car-2600.webp",
+      "w4200": "/photos/projects/modern/modern-green-car-4200.webp",
+      "sm": "/photos/projects/modern/modern-green-car-640.webp",
+      "lg": "/photos/projects/modern/modern-green-car-4200.webp",
+      "srcset": "/photos/projects/modern/modern-green-car-640.webp 640w, /photos/projects/modern/modern-green-car-1600.webp 1600w, /photos/projects/modern/modern-green-car-2600.webp 2600w, /photos/projects/modern/modern-green-car-4200.webp 3368w",
+      "w": 3368,
+      "h": 5156
     },
     "exif": "50mm · f/5 · 1/80 · ISO 2000"
   },
@@ -91,10 +130,15 @@
     "seed": "modern-friends",
     "stamp": "7juT01qZMNweI1Lt6AcGUR:2026-07-23T11:20:48.548Z",
     "variants": {
-      "sm": "/photos/projects/modern/modern-friends-sm.webp",
-      "lg": "/photos/projects/modern/modern-friends-lg.webp",
-      "w": 2000,
-      "h": 1123
+      "w640": "/photos/projects/modern/modern-friends-640.webp",
+      "w1600": "/photos/projects/modern/modern-friends-1600.webp",
+      "w2600": "/photos/projects/modern/modern-friends-2600.webp",
+      "w4200": "/photos/projects/modern/modern-friends-4200.webp",
+      "sm": "/photos/projects/modern/modern-friends-640.webp",
+      "lg": "/photos/projects/modern/modern-friends-4200.webp",
+      "srcset": "/photos/projects/modern/modern-friends-640.webp 640w, /photos/projects/modern/modern-friends-1600.webp 1600w, /photos/projects/modern/modern-friends-2600.webp 2600w, /photos/projects/modern/modern-friends-4200.webp 4200w",
+      "w": 4200,
+      "h": 2358
     },
     "exif": "90mm · f/4.5 · 1/4000 · ISO 800"
   },
@@ -102,8 +146,11 @@
     "seed": "traditional-cream-gold",
     "stamp": "79RfuxQFnRRXiY5jfixVvv:2026-07-23T11:20:10.385Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-cream-gold-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-cream-gold-lg.webp",
+      "w640": "/photos/projects/traditional/traditional-cream-gold-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-cream-gold-1600.webp",
+      "sm": "/photos/projects/traditional/traditional-cream-gold-640.webp",
+      "lg": "/photos/projects/traditional/traditional-cream-gold-1600.webp",
+      "srcset": "/photos/projects/traditional/traditional-cream-gold-640.webp 640w, /photos/projects/traditional/traditional-cream-gold-1600.webp 1365w",
       "w": 1365,
       "h": 2048
     },
@@ -113,10 +160,15 @@
     "seed": "traditional-fountain-portrait",
     "stamp": "3pGjznd2Y0QBC3FWGKcC9X:2026-07-23T11:12:41.361Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-fountain-portrait-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-fountain-portrait-lg.webp",
-      "w": 2000,
-      "h": 3553
+      "w640": "/photos/projects/traditional/traditional-fountain-portrait-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-fountain-portrait-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-fountain-portrait-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-fountain-portrait-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-fountain-portrait-640.webp",
+      "lg": "/photos/projects/traditional/traditional-fountain-portrait-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-fountain-portrait-640.webp 640w, /photos/projects/traditional/traditional-fountain-portrait-1600.webp 1600w, /photos/projects/traditional/traditional-fountain-portrait-2600.webp 2600w, /photos/projects/traditional/traditional-fountain-portrait-4200.webp 3815w",
+      "w": 3815,
+      "h": 6778
     },
     "exif": ""
   },
@@ -124,10 +176,15 @@
     "seed": "traditional-blue-traditional",
     "stamp": "1zX2hzvhIChlGteN4iAbj9:2026-07-23T11:20:36.180Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-blue-traditional-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-blue-traditional-lg.webp",
-      "w": 2000,
-      "h": 3563
+      "w640": "/photos/projects/traditional/traditional-blue-traditional-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-blue-traditional-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-blue-traditional-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-blue-traditional-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-blue-traditional-640.webp",
+      "lg": "/photos/projects/traditional/traditional-blue-traditional-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-blue-traditional-640.webp 640w, /photos/projects/traditional/traditional-blue-traditional-1600.webp 1600w, /photos/projects/traditional/traditional-blue-traditional-2600.webp 2600w, /photos/projects/traditional/traditional-blue-traditional-4200.webp 3368w",
+      "w": 3368,
+      "h": 6000
     },
     "exif": "74mm · f/4.5 · 1/640 · ISO 400"
   },
@@ -135,10 +192,15 @@
     "seed": "traditional-evening-elegance",
     "stamp": "5t3gqYhj5tYk2GHaUWxNRX:2026-07-23T11:13:37.954Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-evening-elegance-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-evening-elegance-lg.webp",
-      "w": 2000,
-      "h": 3554
+      "w640": "/photos/projects/traditional/traditional-evening-elegance-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-evening-elegance-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-evening-elegance-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-evening-elegance-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-evening-elegance-640.webp",
+      "lg": "/photos/projects/traditional/traditional-evening-elegance-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-evening-elegance-640.webp 640w, /photos/projects/traditional/traditional-evening-elegance-1600.webp 1600w, /photos/projects/traditional/traditional-evening-elegance-2600.webp 2600w, /photos/projects/traditional/traditional-evening-elegance-4200.webp 3944w",
+      "w": 3944,
+      "h": 7008
     },
     "exif": ""
   },
@@ -146,10 +208,15 @@
     "seed": "traditional-between-takes",
     "stamp": "2NcKEag63D5AxJu5hDvoVu:2026-07-23T11:13:19.766Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-between-takes-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-between-takes-lg.webp",
-      "w": 2000,
-      "h": 1126
+      "w640": "/photos/projects/traditional/traditional-between-takes-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-between-takes-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-between-takes-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-between-takes-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-between-takes-640.webp",
+      "lg": "/photos/projects/traditional/traditional-between-takes-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-between-takes-640.webp 640w, /photos/projects/traditional/traditional-between-takes-1600.webp 1600w, /photos/projects/traditional/traditional-between-takes-2600.webp 2600w, /photos/projects/traditional/traditional-between-takes-4200.webp 4200w",
+      "w": 4200,
+      "h": 2364
     },
     "exif": ""
   },
@@ -157,8 +224,11 @@
     "seed": "traditional-maroon",
     "stamp": "6coIfVL2ZdbDfeIB03QopW:2026-07-23T11:19:46.116Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-maroon-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-maroon-lg.webp",
+      "w640": "/photos/projects/traditional/traditional-maroon-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-maroon-1600.webp",
+      "sm": "/photos/projects/traditional/traditional-maroon-640.webp",
+      "lg": "/photos/projects/traditional/traditional-maroon-1600.webp",
+      "srcset": "/photos/projects/traditional/traditional-maroon-640.webp 640w, /photos/projects/traditional/traditional-maroon-1600.webp 1150w",
       "w": 1150,
       "h": 2048
     },
@@ -168,8 +238,11 @@
     "seed": "traditional-green-traditional",
     "stamp": "1KYBatN5c1XfEM46G1aB2y:2026-07-23T11:19:13.298Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-green-traditional-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-green-traditional-lg.webp",
+      "w640": "/photos/projects/traditional/traditional-green-traditional-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-green-traditional-1600.webp",
+      "sm": "/photos/projects/traditional/traditional-green-traditional-640.webp",
+      "lg": "/photos/projects/traditional/traditional-green-traditional-1600.webp",
+      "srcset": "/photos/projects/traditional/traditional-green-traditional-640.webp 640w, /photos/projects/traditional/traditional-green-traditional-1600.webp 1150w",
       "w": 1150,
       "h": 2048
     },
@@ -179,10 +252,15 @@
     "seed": "traditional-the-gathering",
     "stamp": "68RDwIpKoyU5il3WhBMvSz:2026-07-23T11:13:02.153Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-the-gathering-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-the-gathering-lg.webp",
-      "w": 2000,
-      "h": 1190
+      "w640": "/photos/projects/traditional/traditional-the-gathering-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-the-gathering-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-the-gathering-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-the-gathering-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-the-gathering-640.webp",
+      "lg": "/photos/projects/traditional/traditional-the-gathering-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-the-gathering-640.webp 640w, /photos/projects/traditional/traditional-the-gathering-1600.webp 1600w, /photos/projects/traditional/traditional-the-gathering-2600.webp 2600w, /photos/projects/traditional/traditional-the-gathering-4200.webp 4200w",
+      "w": 4200,
+      "h": 2500
     },
     "exif": ""
   },
@@ -190,8 +268,11 @@
     "seed": "traditional-white-a",
     "stamp": "7rFqFCdt3Pbs47C4qBtxlB:2026-07-23T11:19:04.285Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-white-a-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-white-a-lg.webp",
+      "w640": "/photos/projects/traditional/traditional-white-a-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-white-a-1600.webp",
+      "sm": "/photos/projects/traditional/traditional-white-a-640.webp",
+      "lg": "/photos/projects/traditional/traditional-white-a-1600.webp",
+      "srcset": "/photos/projects/traditional/traditional-white-a-640.webp 640w, /photos/projects/traditional/traditional-white-a-1600.webp 1150w",
       "w": 1150,
       "h": 2048
     },
@@ -201,8 +282,11 @@
     "seed": "traditional-white-b",
     "stamp": "BoYnjUO43MzMbLkQSo4TX:2026-07-23T11:19:22.229Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-white-b-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-white-b-lg.webp",
+      "w640": "/photos/projects/traditional/traditional-white-b-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-white-b-1600.webp",
+      "sm": "/photos/projects/traditional/traditional-white-b-640.webp",
+      "lg": "/photos/projects/traditional/traditional-white-b-1600.webp",
+      "srcset": "/photos/projects/traditional/traditional-white-b-640.webp 640w, /photos/projects/traditional/traditional-white-b-1600.webp 1365w",
       "w": 1365,
       "h": 2048
     },
@@ -212,10 +296,15 @@
     "seed": "traditional-white-fence",
     "stamp": "584iTWCvgIUhy5gBD4V7Hz:2026-07-23T11:21:02.827Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-white-fence-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-white-fence-lg.webp",
-      "w": 2000,
-      "h": 3563
+      "w640": "/photos/projects/traditional/traditional-white-fence-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-white-fence-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-white-fence-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-white-fence-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-white-fence-640.webp",
+      "lg": "/photos/projects/traditional/traditional-white-fence-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-white-fence-640.webp 640w, /photos/projects/traditional/traditional-white-fence-1600.webp 1600w, /photos/projects/traditional/traditional-white-fence-2600.webp 2600w, /photos/projects/traditional/traditional-white-fence-4200.webp 3368w",
+      "w": 3368,
+      "h": 6000
     },
     "exif": "55mm · f/4.5 · 1/80 · ISO 640"
   },
@@ -223,10 +312,15 @@
     "seed": "traditional-sherwani",
     "stamp": "1L0mVh4dcMQ7CpDdRYomSV:2026-07-23T11:17:20.878Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-sherwani-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-sherwani-lg.webp",
-      "w": 2000,
-      "h": 3877
+      "w640": "/photos/projects/traditional/traditional-sherwani-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-sherwani-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-sherwani-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-sherwani-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-sherwani-640.webp",
+      "lg": "/photos/projects/traditional/traditional-sherwani-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-sherwani-640.webp 640w, /photos/projects/traditional/traditional-sherwani-1600.webp 1600w, /photos/projects/traditional/traditional-sherwani-2600.webp 2600w, /photos/projects/traditional/traditional-sherwani-4200.webp 3476w",
+      "w": 3476,
+      "h": 6738
     },
     "exif": ""
   },
@@ -234,10 +328,15 @@
     "seed": "traditional-black-fountain",
     "stamp": "18t9nNZBg8Zn0IG0vYSaKL:2026-07-23T11:17:54.509Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-black-fountain-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-black-fountain-lg.webp",
-      "w": 2000,
-      "h": 3554
+      "w640": "/photos/projects/traditional/traditional-black-fountain-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-black-fountain-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-black-fountain-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-black-fountain-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-black-fountain-640.webp",
+      "lg": "/photos/projects/traditional/traditional-black-fountain-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-black-fountain-640.webp 640w, /photos/projects/traditional/traditional-black-fountain-1600.webp 1600w, /photos/projects/traditional/traditional-black-fountain-2600.webp 2600w, /photos/projects/traditional/traditional-black-fountain-4200.webp 3944w",
+      "w": 3944,
+      "h": 7008
     },
     "exif": ""
   },
@@ -245,10 +344,15 @@
     "seed": "traditional-floral-seated",
     "stamp": "176LNEYo7QrkXwQ8XVwjuX:2026-07-23T11:18:19.799Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-floral-seated-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-floral-seated-lg.webp",
-      "w": 2000,
-      "h": 3178
+      "w640": "/photos/projects/traditional/traditional-floral-seated-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-floral-seated-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-floral-seated-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-floral-seated-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-floral-seated-640.webp",
+      "lg": "/photos/projects/traditional/traditional-floral-seated-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-floral-seated-640.webp 640w, /photos/projects/traditional/traditional-floral-seated-1600.webp 1600w, /photos/projects/traditional/traditional-floral-seated-2600.webp 2600w, /photos/projects/traditional/traditional-floral-seated-4200.webp 3825w",
+      "w": 3825,
+      "h": 6078
     },
     "exif": ""
   },
@@ -256,10 +360,15 @@
     "seed": "traditional-dusk",
     "stamp": "3lhsnzi3C2rGUxy1pNyK1c:2026-07-23T11:18:39.226Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-dusk-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-dusk-lg.webp",
-      "w": 2000,
-      "h": 3553
+      "w640": "/photos/projects/traditional/traditional-dusk-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-dusk-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-dusk-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-dusk-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-dusk-640.webp",
+      "lg": "/photos/projects/traditional/traditional-dusk-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-dusk-640.webp 640w, /photos/projects/traditional/traditional-dusk-1600.webp 1600w, /photos/projects/traditional/traditional-dusk-2600.webp 2600w, /photos/projects/traditional/traditional-dusk-4200.webp 3731w",
+      "w": 3731,
+      "h": 6629
     },
     "exif": ""
   },
@@ -267,10 +376,15 @@
     "seed": "traditional-group-women",
     "stamp": "sNBv6EIjw5CnGMnOIXMP2:2026-07-23T11:16:07.064Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-group-women-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-group-women-lg.webp",
-      "w": 2000,
-      "h": 3554
+      "w640": "/photos/projects/traditional/traditional-group-women-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-group-women-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-group-women-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-group-women-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-group-women-640.webp",
+      "lg": "/photos/projects/traditional/traditional-group-women-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-group-women-640.webp 640w, /photos/projects/traditional/traditional-group-women-1600.webp 1600w, /photos/projects/traditional/traditional-group-women-2600.webp 2600w, /photos/projects/traditional/traditional-group-women-4200.webp 3944w",
+      "w": 3944,
+      "h": 7008
     },
     "exif": ""
   },
@@ -278,10 +392,15 @@
     "seed": "traditional-large-group",
     "stamp": "6zAh7f6oxbghqVos9MlaId:2026-07-23T11:17:37.066Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-large-group-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-large-group-lg.webp",
-      "w": 2000,
-      "h": 1444
+      "w640": "/photos/projects/traditional/traditional-large-group-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-large-group-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-large-group-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-large-group-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-large-group-640.webp",
+      "lg": "/photos/projects/traditional/traditional-large-group-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-large-group-640.webp 640w, /photos/projects/traditional/traditional-large-group-1600.webp 1600w, /photos/projects/traditional/traditional-large-group-2600.webp 2600w, /photos/projects/traditional/traditional-large-group-4200.webp 4200w",
+      "w": 4200,
+      "h": 3032
     },
     "exif": ""
   },
@@ -289,10 +408,15 @@
     "seed": "traditional-event-seated",
     "stamp": "AUjbtM9cbCqoty38Vwqih:2026-07-23T11:15:30.718Z",
     "variants": {
-      "sm": "/photos/projects/traditional/traditional-event-seated-sm.webp",
-      "lg": "/photos/projects/traditional/traditional-event-seated-lg.webp",
-      "w": 2000,
-      "h": 1137
+      "w640": "/photos/projects/traditional/traditional-event-seated-640.webp",
+      "w1600": "/photos/projects/traditional/traditional-event-seated-1600.webp",
+      "w2600": "/photos/projects/traditional/traditional-event-seated-2600.webp",
+      "w4200": "/photos/projects/traditional/traditional-event-seated-4200.webp",
+      "sm": "/photos/projects/traditional/traditional-event-seated-640.webp",
+      "lg": "/photos/projects/traditional/traditional-event-seated-4200.webp",
+      "srcset": "/photos/projects/traditional/traditional-event-seated-640.webp 640w, /photos/projects/traditional/traditional-event-seated-1600.webp 1600w, /photos/projects/traditional/traditional-event-seated-2600.webp 2600w, /photos/projects/traditional/traditional-event-seated-4200.webp 4200w",
+      "w": 4200,
+      "h": 2387
     },
     "exif": ""
   },
@@ -300,10 +424,15 @@
     "seed": "wildlife-bighorn",
     "stamp": "JbCOaFHiurT109fxqm6Zy:2026-07-23T11:13:53.542Z",
     "variants": {
-      "sm": "/photos/projects/wildlife/wildlife-bighorn-sm.webp",
-      "lg": "/photos/projects/wildlife/wildlife-bighorn-lg.webp",
-      "w": 2000,
-      "h": 1126
+      "w640": "/photos/projects/wildlife/wildlife-bighorn-640.webp",
+      "w1600": "/photos/projects/wildlife/wildlife-bighorn-1600.webp",
+      "w2600": "/photos/projects/wildlife/wildlife-bighorn-2600.webp",
+      "w4200": "/photos/projects/wildlife/wildlife-bighorn-4200.webp",
+      "sm": "/photos/projects/wildlife/wildlife-bighorn-640.webp",
+      "lg": "/photos/projects/wildlife/wildlife-bighorn-4200.webp",
+      "srcset": "/photos/projects/wildlife/wildlife-bighorn-640.webp 640w, /photos/projects/wildlife/wildlife-bighorn-1600.webp 1600w, /photos/projects/wildlife/wildlife-bighorn-2600.webp 2600w, /photos/projects/wildlife/wildlife-bighorn-4200.webp 4200w",
+      "w": 4200,
+      "h": 2364
     },
     "exif": "191mm · f/4 · 1/200 · ISO 100"
   },
@@ -311,10 +440,15 @@
     "seed": "wildlife-lionesses",
     "stamp": "4eauKkjLFkLVLfrEyCWNDp:2026-07-23T11:15:47.650Z",
     "variants": {
-      "sm": "/photos/projects/wildlife/wildlife-lionesses-sm.webp",
-      "lg": "/photos/projects/wildlife/wildlife-lionesses-lg.webp",
-      "w": 2000,
-      "h": 1126
+      "w640": "/photos/projects/wildlife/wildlife-lionesses-640.webp",
+      "w1600": "/photos/projects/wildlife/wildlife-lionesses-1600.webp",
+      "w2600": "/photos/projects/wildlife/wildlife-lionesses-2600.webp",
+      "w4200": "/photos/projects/wildlife/wildlife-lionesses-4200.webp",
+      "sm": "/photos/projects/wildlife/wildlife-lionesses-640.webp",
+      "lg": "/photos/projects/wildlife/wildlife-lionesses-4200.webp",
+      "srcset": "/photos/projects/wildlife/wildlife-lionesses-640.webp 640w, /photos/projects/wildlife/wildlife-lionesses-1600.webp 1600w, /photos/projects/wildlife/wildlife-lionesses-2600.webp 2600w, /photos/projects/wildlife/wildlife-lionesses-4200.webp 4200w",
+      "w": 4200,
+      "h": 2364
     },
     "exif": "182mm · f/4 · 1/200 · ISO 800"
   },
@@ -322,10 +456,15 @@
     "seed": "wildlife-cheetah-rest",
     "stamp": "40to6wAMefgsid23Y0DP2y:2026-07-23T11:14:50.879Z",
     "variants": {
-      "sm": "/photos/projects/wildlife/wildlife-cheetah-rest-sm.webp",
-      "lg": "/photos/projects/wildlife/wildlife-cheetah-rest-lg.webp",
-      "w": 2000,
-      "h": 1126
+      "w640": "/photos/projects/wildlife/wildlife-cheetah-rest-640.webp",
+      "w1600": "/photos/projects/wildlife/wildlife-cheetah-rest-1600.webp",
+      "w2600": "/photos/projects/wildlife/wildlife-cheetah-rest-2600.webp",
+      "w4200": "/photos/projects/wildlife/wildlife-cheetah-rest-4200.webp",
+      "sm": "/photos/projects/wildlife/wildlife-cheetah-rest-640.webp",
+      "lg": "/photos/projects/wildlife/wildlife-cheetah-rest-4200.webp",
+      "srcset": "/photos/projects/wildlife/wildlife-cheetah-rest-640.webp 640w, /photos/projects/wildlife/wildlife-cheetah-rest-1600.webp 1600w, /photos/projects/wildlife/wildlife-cheetah-rest-2600.webp 2600w, /photos/projects/wildlife/wildlife-cheetah-rest-4200.webp 4200w",
+      "w": 4200,
+      "h": 2364
     },
     "exif": "200mm · f/4 · 1/200 · ISO 320"
   },
@@ -333,10 +472,15 @@
     "seed": "wildlife-cheetah",
     "stamp": "42QXkWMIHcz3pDCvlsxKC4:2026-07-23T11:18:04.399Z",
     "variants": {
-      "sm": "/photos/projects/wildlife/wildlife-cheetah-sm.webp",
-      "lg": "/photos/projects/wildlife/wildlife-cheetah-lg.webp",
-      "w": 2000,
-      "h": 1153
+      "w640": "/photos/projects/wildlife/wildlife-cheetah-640.webp",
+      "w1600": "/photos/projects/wildlife/wildlife-cheetah-1600.webp",
+      "w2600": "/photos/projects/wildlife/wildlife-cheetah-2600.webp",
+      "w4200": "/photos/projects/wildlife/wildlife-cheetah-4200.webp",
+      "sm": "/photos/projects/wildlife/wildlife-cheetah-640.webp",
+      "lg": "/photos/projects/wildlife/wildlife-cheetah-4200.webp",
+      "srcset": "/photos/projects/wildlife/wildlife-cheetah-640.webp 640w, /photos/projects/wildlife/wildlife-cheetah-1600.webp 1600w, /photos/projects/wildlife/wildlife-cheetah-2600.webp 2600w, /photos/projects/wildlife/wildlife-cheetah-4200.webp 4200w",
+      "w": 4200,
+      "h": 2422
     },
     "exif": "197mm · f/4 · 1/200 · ISO 200"
   },
@@ -344,10 +488,15 @@
     "seed": "wildlife-cheetahs",
     "stamp": "2Lzi7gzNyAvDJCLVHgso8J:2026-07-23T11:16:44.055Z",
     "variants": {
-      "sm": "/photos/projects/wildlife/wildlife-cheetahs-sm.webp",
-      "lg": "/photos/projects/wildlife/wildlife-cheetahs-lg.webp",
-      "w": 2000,
-      "h": 1126
+      "w640": "/photos/projects/wildlife/wildlife-cheetahs-640.webp",
+      "w1600": "/photos/projects/wildlife/wildlife-cheetahs-1600.webp",
+      "w2600": "/photos/projects/wildlife/wildlife-cheetahs-2600.webp",
+      "w4200": "/photos/projects/wildlife/wildlife-cheetahs-4200.webp",
+      "sm": "/photos/projects/wildlife/wildlife-cheetahs-640.webp",
+      "lg": "/photos/projects/wildlife/wildlife-cheetahs-4200.webp",
+      "srcset": "/photos/projects/wildlife/wildlife-cheetahs-640.webp 640w, /photos/projects/wildlife/wildlife-cheetahs-1600.webp 1600w, /photos/projects/wildlife/wildlife-cheetahs-2600.webp 2600w, /photos/projects/wildlife/wildlife-cheetahs-4200.webp 4200w",
+      "w": 4200,
+      "h": 2364
     },
     "exif": "197mm · f/4 · 1/200 · ISO 200"
   },
@@ -355,10 +504,15 @@
     "seed": "wildlife-deer-pair",
     "stamp": "wAgs6KSZQT7UyMXIsx9e7:2026-07-23T11:17:06.386Z",
     "variants": {
-      "sm": "/photos/projects/wildlife/wildlife-deer-pair-sm.webp",
-      "lg": "/photos/projects/wildlife/wildlife-deer-pair-lg.webp",
-      "w": 2000,
-      "h": 1126
+      "w640": "/photos/projects/wildlife/wildlife-deer-pair-640.webp",
+      "w1600": "/photos/projects/wildlife/wildlife-deer-pair-1600.webp",
+      "w2600": "/photos/projects/wildlife/wildlife-deer-pair-2600.webp",
+      "w4200": "/photos/projects/wildlife/wildlife-deer-pair-4200.webp",
+      "sm": "/photos/projects/wildlife/wildlife-deer-pair-640.webp",
+      "lg": "/photos/projects/wildlife/wildlife-deer-pair-4200.webp",
+      "srcset": "/photos/projects/wildlife/wildlife-deer-pair-640.webp 640w, /photos/projects/wildlife/wildlife-deer-pair-1600.webp 1600w, /photos/projects/wildlife/wildlife-deer-pair-2600.webp 2600w, /photos/projects/wildlife/wildlife-deer-pair-4200.webp 4200w",
+      "w": 4200,
+      "h": 2364
     },
     "exif": "200mm · f/4 · 1/200 · ISO 100"
   },
@@ -366,10 +520,15 @@
     "seed": "wildlife-buck",
     "stamp": "LNAr7c8nlFRL5f0xmxR4W:2026-07-23T11:16:25.850Z",
     "variants": {
-      "sm": "/photos/projects/wildlife/wildlife-buck-sm.webp",
-      "lg": "/photos/projects/wildlife/wildlife-buck-lg.webp",
-      "w": 2000,
-      "h": 1126
+      "w640": "/photos/projects/wildlife/wildlife-buck-640.webp",
+      "w1600": "/photos/projects/wildlife/wildlife-buck-1600.webp",
+      "w2600": "/photos/projects/wildlife/wildlife-buck-2600.webp",
+      "w4200": "/photos/projects/wildlife/wildlife-buck-4200.webp",
+      "sm": "/photos/projects/wildlife/wildlife-buck-640.webp",
+      "lg": "/photos/projects/wildlife/wildlife-buck-4200.webp",
+      "srcset": "/photos/projects/wildlife/wildlife-buck-640.webp 640w, /photos/projects/wildlife/wildlife-buck-1600.webp 1600w, /photos/projects/wildlife/wildlife-buck-2600.webp 2600w, /photos/projects/wildlife/wildlife-buck-4200.webp 4200w",
+      "w": 4200,
+      "h": 2364
     },
     "exif": "200mm · f/4 · 1/200 · ISO 100"
   },
@@ -377,10 +536,15 @@
     "seed": "wildlife-stags",
     "stamp": "24UMsfsfP9ndGdhoHwKdt4:2026-07-23T11:15:12.895Z",
     "variants": {
-      "sm": "/photos/projects/wildlife/wildlife-stags-sm.webp",
-      "lg": "/photos/projects/wildlife/wildlife-stags-lg.webp",
-      "w": 2000,
-      "h": 1126
+      "w640": "/photos/projects/wildlife/wildlife-stags-640.webp",
+      "w1600": "/photos/projects/wildlife/wildlife-stags-1600.webp",
+      "w2600": "/photos/projects/wildlife/wildlife-stags-2600.webp",
+      "w4200": "/photos/projects/wildlife/wildlife-stags-4200.webp",
+      "sm": "/photos/projects/wildlife/wildlife-stags-640.webp",
+      "lg": "/photos/projects/wildlife/wildlife-stags-4200.webp",
+      "srcset": "/photos/projects/wildlife/wildlife-stags-640.webp 640w, /photos/projects/wildlife/wildlife-stags-1600.webp 1600w, /photos/projects/wildlife/wildlife-stags-2600.webp 2600w, /photos/projects/wildlife/wildlife-stags-4200.webp 4200w",
+      "w": 4200,
+      "h": 2364
     },
     "exif": "197mm · f/4 · 1/200 · ISO 400"
   }

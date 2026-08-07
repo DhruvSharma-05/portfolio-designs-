@@ -30,9 +30,17 @@ const PUBLIC_PHOTOS = path.join(ROOT, "public", "photos");
 const MANIFEST = path.join(ROOT, "src", "photos.manifest.json");
 const CACHE = path.join(ROOT, ".contentful-cache.json");
 
-/* Output widths. -sm serves thumbnails (contact strip); -lg serves
-   cards, gallery and detail heroes. object-fit: cover handles crop. */
-const SIZES = { sm: 640, lg: 2000 };
+/* Output widths, ascending. Files are named by width, and every step is
+   published in the manifest's `srcset` so the browser picks the one that
+   actually matches the slot it is filling.
+
+   The top step exists for the full-bleed frames — the photography hero
+   and the frames carousel both render near 100vw, and on a HiDPI window
+   that is a physical pixel count roughly double the CSS width (a 1920px
+   window at 2x wants ~3840). A single 2000-wide file was being stretched
+   to fill those, which is what read as "low resolution". The middle
+   steps keep a 33vw card from having to download the hero-sized file. */
+const SIZES = [640, 1600, 2600, 4200];
 
 const ROLES = ["work", "gallery", "portrait"];
 
@@ -107,30 +115,61 @@ async function fetchEntries(spaceId, environment, token) {
   return { items, assets };
 }
 
+/* Downloads one source image. The originals are full-resolution camera
+   files (15-20MB each), and a single dropped connection partway through
+   the set used to abandon the whole sync — so each one gets a few
+   attempts with a widening pause before it gives up. */
+async function downloadAsset(url, attempts = 4) {
+  for (let i = 1; ; i++) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`asset download failed: ${res.status}`);
+      return Buffer.from(await res.arrayBuffer());
+    } catch (e) {
+      if (i >= attempts) throw e;
+      warn(`retry ${i}/${attempts - 1} after ${e?.message || e}`);
+      await new Promise((r) => setTimeout(r, i * 1500));
+    }
+  }
+}
+
 /* -------------------------------------------------------------- images */
 
-/* Resize a source buffer into every SIZES variant. Returns the public
-   URL paths plus the natural dimensions of the largest render. */
+/* Resize a source buffer into every SIZES step. Returns each step's URL,
+   a ready-built `srcset` carrying each file's TRUE width, `sm`/`lg`
+   pointers at the smallest and largest renders, and the largest render's
+   natural dimensions. */
 async function renderVariants(buffer, role, seed) {
   const outDir = path.join(PUBLIC_PHOTOS, role);
   await mkdir(outDir, { recursive: true });
   const out = {};
-  let w = 0;
-  let h = 0;
-  for (const [label, width] of Object.entries(SIZES)) {
-    const file = `${seed}-${label}.webp`;
+  const steps = [];
+  /* withoutEnlargement caps a step at the source's own width, so once a
+     step comes back narrower than it asked for, every larger step would
+     be the same pixels under a new name — and a srcset entry promising
+     detail the file doesn't hold. Stop there instead. */
+  let atNative = false;
+  for (const width of SIZES) {
+    if (atNative) break;
+    const file = `${seed}-${width}.webp`;
     const info = await sharp(buffer)
       .rotate() // honor EXIF orientation
       .resize({ width, withoutEnlargement: true })
       .webp({ quality: 82 })
       .toFile(path.join(outDir, file));
-    out[label] = `/photos/${role}/${file}`;
-    if (label === "lg") {
-      w = info.width;
-      h = info.height;
-    }
+    out[`w${width}`] = `/photos/${role}/${file}`;
+    steps.push({ url: `/photos/${role}/${file}`, w: info.width, h: info.height });
+    if (info.width < width) atNative = true;
   }
-  return { ...out, w, h };
+  const largest = steps[steps.length - 1];
+  return {
+    ...out,
+    sm: steps[0].url,
+    lg: largest.url,
+    srcset: steps.map((s) => `${s.url} ${s.w}w`).join(", "),
+    w: largest.w,
+    h: largest.h,
+  };
 }
 
 /* -------------------------------------------------------------- main */
@@ -201,9 +240,7 @@ async function main() {
       } else {
         log(`fetch ${role}/${entry.fields.title}`);
         const assetUrl = fileUrl.startsWith("//") ? `https:${fileUrl}` : fileUrl;
-        const res = await fetch(assetUrl);
-        if (!res.ok) throw new Error(`asset download failed: ${res.status}`);
-        const buffer = Buffer.from(await res.arrayBuffer());
+        const buffer = await downloadAsset(assetUrl);
         exif = role === "work" ? await formatExif(buffer) : "";
         variants = await renderVariants(buffer, role, seed);
       }
@@ -222,6 +259,7 @@ async function main() {
           role: entry.fields.role || "",
           sm: variants.sm,
           lg: variants.lg,
+          srcset: variants.srcset,
           w: variants.w,
           h: variants.h,
         });
@@ -232,7 +270,8 @@ async function main() {
           // entry ("Professional Photoshoot" | "Open"). Missing/unknown
           // values land in "Open" on the site — see normCat() in src/data.js.
           ...(role === "gallery" && entry.fields.category ? { cat: entry.fields.category } : {}),
-          sm: variants.sm, lg: variants.lg, w: variants.w, h: variants.h,
+          sm: variants.sm, lg: variants.lg, srcset: variants.srcset,
+          w: variants.w, h: variants.h,
         });
       }
     }
@@ -314,15 +353,16 @@ async function main() {
       } else {
         log(`fetch ${roleDir}/${entry.fields.title}`);
         const assetUrl = fileUrl.startsWith("//") ? `https:${fileUrl}` : fileUrl;
-        const res = await fetch(assetUrl);
-        if (!res.ok) throw new Error(`asset download failed: ${res.status}`);
-        const buffer = Buffer.from(await res.arrayBuffer());
+        const buffer = await downloadAsset(assetUrl);
         exif = await formatExif(buffer);
         variants = await renderVariants(buffer, roleDir, seed);
       }
 
       nextCache[cacheKey] = { seed, stamp, variants, exif };
-      projectPhotos.push({ seed, sm: variants.sm, lg: variants.lg, w: variants.w, h: variants.h });
+      projectPhotos.push({
+        seed, sm: variants.sm, lg: variants.lg, srcset: variants.srcset,
+        w: variants.w, h: variants.h,
+      });
       photos.push(seed);
       if (!firstExif && exif) firstExif = exif;
     }
@@ -387,7 +427,10 @@ async function pruneOrphans(usedSeeds) {
       continue;
     }
     for (const file of names) {
-      const seed = file.replace(/-(sm|lg)\.webp$/, "");
+      /* Width-suffixed only: files from the old -sm/-lg naming don't
+         resolve to a live seed here, so they get pruned as the leftovers
+         they are. */
+      const seed = file.replace(/-(\d+)\.webp$/, "");
       if (!usedSeeds.has(`${role}/${seed}`)) {
         await rm(path.join(dir, file), { force: true });
         log(`prune ${role}/${file}`);
