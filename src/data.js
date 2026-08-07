@@ -676,6 +676,10 @@ export const CSS = `
   max-width: 46ch; font-weight: 300;
   letter-spacing: -0.015em; line-height: 1.5; font-size: clamp(14px, 1.45vw, 17px);
   color: color-mix(in srgb, var(--ink) 62%, transparent); }
+.mast-sub::before { content: "\\201C"; color: var(--accent); }
+.mast-sub::after { content: "\\201D"; color: var(--accent); }
+.mast-sub-by { display: block; margin-top: 10px; font-size: 10px;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
 /* The first-scroll cue is deliberately part of the hero, not a fixed UI
    element: it disappears with the mast and never competes with the work
    below. The travelling dash is a lightweight CSS animation, with no

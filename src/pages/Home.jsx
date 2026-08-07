@@ -381,8 +381,8 @@ export default function Home() {
               </div>
 
               <p className="mast-sub hero-reveal" style={{ "--rd": `${SUB_IN}s` }}>
-                Vancouver based designer who loves beautiful things and blends
-                creativity and technology into every screen.
+                Simplicity is the ultimate sophistication.
+                <span className="mast-sub-by mono">— Leonardo da Vinci</span>
               </p>
             </div>
           </div>
