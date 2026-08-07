@@ -760,6 +760,24 @@ export const CSS = `
   max-width: 46ch; font-weight: 300;
   letter-spacing: -0.015em; line-height: 1.5; font-size: clamp(14px, 1.45vw, 17px);
   color: color-mix(in srgb, var(--ink) 62%, transparent); }
+/* The first-scroll cue is deliberately part of the hero, not a fixed UI
+   element: it disappears with the mast and never competes with the work
+   below. The travelling dash is a lightweight CSS animation, with no
+   scroll listener required. */
+.mast-scroll { position: absolute; z-index: 3; left: 50%; bottom: clamp(20px, 4vh, 42px);
+  translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  color: color-mix(in srgb, var(--ink) 54%, transparent); font-size: 9px; line-height: 1;
+  white-space: nowrap; transition: color .25s ease; }
+.mast-scroll:hover { color: var(--ink); }
+.mast-scroll i { position: relative; display: block; width: 1px; height: 28px; overflow: hidden;
+  background: color-mix(in srgb, var(--ink) 18%, transparent); }
+.mast-scroll i::after { content: ""; position: absolute; top: -9px; left: 0; width: 1px; height: 10px;
+  background: var(--accent); animation: scrollCue 1.7s cubic-bezier(.65,0,.35,1) infinite; }
+@keyframes scrollCue { to { transform: translateY(38px); } }
+@media (max-width: 560px) {
+  .mast-scroll { bottom: 18px; gap: 8px; font-size: 8px; }
+  .mast-scroll i { height: 22px; }
+}
 
 /* the opening: the studio name fades up, swells past the edge of the
    frame and clears out, leaving the role line in its place. Absolute, so
