@@ -174,7 +174,7 @@ export function ContactForm({ email }) {
     return (
       <div className="form-done" role="status">
         <p className="pj-intro">Thanks. Your message is in.</p>
-        <p className="mono">Usually replies within 24 hours.</p>
+        <p className="mono">Usually replies within 24 to 48 hours.</p>
       </div>
     );
   }
@@ -223,7 +223,7 @@ export function ContactForm({ email }) {
         )}
       </div>
       <div className="cf-after">
-        <span className="mono cf-reply">Usually replies within 24 hours.</span>
+        <span className="mono cf-reply">Usually replies within 24 to 48 hours.</span>
         <SocialIcons />
       </div>
     </form>
@@ -320,7 +320,7 @@ export function ContactModal({ email, onClose, reduced }) {
             <h2 id="cmodal-title">Tell me about your vision</h2>
             <p className="cmodal-sub">
               Whether it's a photoshoot, a website, or a creative collaboration, I'd love to
-              hear your ideas. Fill out the form below and I'll get back to you within 24 hours.
+              hear your ideas. Fill out the form below and I'll get back to you within 24 to 48 hours.
             </p>
           </div>
           <button type="button" className="cmodal-x" onClick={onClose} aria-label="Close enquiry form">✕</button>

@@ -93,9 +93,13 @@ export default function Design() {
             opens rather than across the page in the copy column */}
         {feat && (
           <div className="dz-hero-media">
+            {/* No "Featured · {tag}" label above the frame: the browser bar
+                inside it already reads "TrackHer · Figma prototype", so the
+                two stacked mono rows repeated "prototype" and "design" at
+                each other — and "More work" heading the section below is
+                what says this one was featured. */}
             <TLink to={`/design/${feat.slug}`} className="dz-hero-shot"
               aria-label={`Open ${feat.t}`}>
-              <span className="mono dz-hero-tag">Featured · {feat.tag}</span>
               <Preview w={feat} reduced={reduced} sizes="(max-width: 900px) 100vw, 50vw" eager />
             </TLink>
             <TLink to={`/design/${feat.slug}`} className="dz-open mono dz-hero-cta">
@@ -113,7 +117,14 @@ export default function Design() {
             {rest.map((w, i) => (
               <Reveal key={w.slug} delay={i * 0.06}>
                 <TLink to={`/design/${w.slug}`} className="dz-card" aria-label={`Open ${w.t}`}>
-                  <Preview w={w} reduced={reduced} sizes="(max-width: 760px) 100vw, 33vw" />
+                  {/* 33vw was the old hint and it was wrong between 760 and
+                      ~1000px, where .dz-grid's minmax(300px,1fr) lays out
+                      TWO columns of ~46vw, not three — so a tablet asked for
+                      a third of the screen and got a file too small for the
+                      slot it landed in. Three columns only form past ~1000px,
+                      and .wrap caps them at ~360px. */}
+                  <Preview w={w} reduced={reduced}
+                    sizes="(max-width: 760px) 92vw, (max-width: 1000px) 46vw, 360px" />
                   <div className="dz-card-cap">
                     <div className="dz-card-line">
                       <span className="dz-card-idx mono">{String(i + 2).padStart(2, "0")}</span>

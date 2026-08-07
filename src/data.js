@@ -120,13 +120,19 @@ export const img = (s, w = 1200) => {
   return w <= 640 ? p.sm : p.lg;
 };
 
-/* srcSet(seed): the sm+lg pair as a srcset descriptor, so <img> can ship
-   the resolution that actually matches the viewport instead of always
-   whatever fixed width img() was called with. undefined for an unsynced
-   seed, same as img(). */
+/* srcSet(seed): every rendered width for a seed, so <img> can ship the
+   resolution that actually matches the slot instead of always whatever
+   fixed width img() was called with. The sync writes this string with
+   each file's true width (see renderVariants in sync-contentful.mjs) —
+   the widths can't be inferred here, because a source photo narrower
+   than a resize step keeps its native size, and a descriptor claiming
+   more detail than the file holds corrupts the browser's own quality
+   choice. The Figma cover screenshots predate the field and still carry
+   only an sm/lg pair. undefined for an unsynced seed, same as img(). */
 export const srcSet = (s) => {
   const p = PHOTOS.get(s);
-  return p ? `${p.sm} 640w, ${p.lg} 2000w` : undefined;
+  if (!p) return undefined;
+  return p.srcset || `${p.sm} 640w, ${p.lg} ${p.w || 2000}w`;
 };
 
 /* ratio(seed, fw, fh): CSS aspect-ratio for a seed — the synced photo's
@@ -1005,9 +1011,21 @@ export const CSS = `
   background: var(--accent); transform: scaleX(0); transform-origin: right;
   transition: transform .5s cubic-bezier(.76,0,.24,1); }
 .mail:hover::after { transform: scaleX(1); transform-origin: left; }
-.colophon { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 28px;
+/* 230px tracks, not 180px: the email is the widest single unbreakable
+   thing on the site (~223px at this size) and a 180px minimum let a
+   430px phone — an iPhone Pro Max — form two 181px columns, so the
+   address overflowed its own track and printed straight across "Based
+   in" next to it. The minimum is now the width the address actually
+   needs, so a second column only appears once one genuinely fits. */
+.colophon { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 28px;
   margin-top: 13vh; padding-top: 22px; border-top: 1px solid var(--rule); }
-.colophon dd { margin: 8px 0 0; font-size: 14px; line-height: 1.72; color: var(--dim); }
+/* belt and braces: a grid item's automatic minimum is its min-content
+   width, which is what let the address push past its track in the first
+   place. These two mean it wraps inside the column instead, whatever
+   the address grows into later. */
+.colophon > div { min-width: 0; }
+.colophon dd { margin: 8px 0 0; font-size: 14px; line-height: 1.72; color: var(--dim);
+  overflow-wrap: anywhere; }
 
 /* --- contact form --- */
 .contact-form { max-width: 620px; margin-top: 30px; display: flex; flex-direction: column; gap: 18px; }
@@ -1313,9 +1331,19 @@ export const CSS = `
 .phero-stage { position: absolute; inset: 0; }
 .phero-fr { position: absolute; inset: 0; }
 /* full-bleed cover — the frame fills the banner; object-position keeps the
-   upper-middle (faces) in view when a tall photo is cropped to fit */
-.phero-fr img { will-change: transform; object-position: center 30%; }
-.phero-bg { display: none; }
+   upper-middle (faces) in view when a tall photo is cropped to fit.
+   No will-change: transform. Nothing here is transformed any more (the
+   Ken Burns zoom is gone), and the hint alone promotes the image to a
+   compositor layer that rasterises once — which softened a photograph
+   the whole page exists to show. */
+.phero-fr img { object-position: center 30%; }
+/* Written as .pf img.phero-bg (0,2,1), not a bare .phero-bg (0,1,0):
+   .pf img above sets display:block at (0,1,1) and wins over the bare
+   class, so the phone backdrop stayed displayed on a desktop — and being
+   a static-flow child of .phero-fr it took the whole banner and pushed
+   the real frame out below it, leaving a 640px thumbnail stretched
+   across the hero. Same trap as .band p.band-lead and .pf button.mono. */
+.pf img.phero-bg { display: none; }
 .phero-fr::after { content: ""; position: absolute; inset: 0;
   background: linear-gradient(180deg,
     color-mix(in srgb, var(--bg) 46%, transparent) 0%,
@@ -1358,7 +1386,10 @@ export const CSS = `
      landscape (FEATURED only ever picks wide covers) — cover would crop
      most of the photo's width away, so it's shown whole over a blurred
      fill instead. See the .phero-bg comment in Photography.jsx. */
-  .phero-bg { display: block; position: absolute; inset: 0; width: 100%; height: 100%;
+  /* .pf img.phero-bg for the same specificity reason as the base rule —
+     as a bare class even the blur lost to .pf img's filter, so the
+     "blurred" backdrop was rendering perfectly sharp. */
+  .pf img.phero-bg { display: block; position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; object-position: center; filter: blur(40px) brightness(.55) saturate(1.15);
     transform: scale(1.25); }
   .phero-fr img.phero-fg { object-fit: contain; object-position: center; }
@@ -1686,7 +1717,13 @@ export const CSS = `
 .dz-kicker { margin-bottom: 30px; }
 .dz-hero-copy h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
   font-size: clamp(42px, 6.4vw, 92px); text-wrap: balance; }
+/* The one mono row here that can wrap. At 11px with .16em tracking two
+   lines set solid read as a slab of spaced caps rather than a list, so
+   it gets its own leading — and a phone gets the tracking eased off,
+   which is what decides whether it needs a second line at all. */
 .dz-role { margin-top: 18px; }
+.dz-role .mono { display: block; line-height: 2; }
+@media (max-width: 560px) { .dz-role .mono { letter-spacing: .1em; } }
 
 /* the featured slot: a label rides above the browser frame so it reads as
    "featured" rather than just another card, and the CTA sits under the
@@ -1694,8 +1731,6 @@ export const CSS = `
    big target, the CTA the worded one. */
 .dz-hero-media { min-width: 0; }
 .dz-hero-shot { display: block; }
-.dz-hero-tag { display: block; color: var(--dim); margin-bottom: 14px; }
-.dz-hero-shot:hover .dz-hero-tag { color: var(--accent); }
 .dz-hero-cta { margin-top: 20px; }
 
 .dz-open { display: inline-flex; align-items: center; gap: 10px; color: var(--accent); }
