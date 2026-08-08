@@ -140,6 +140,54 @@ export function SectionHead({ n, children }) {
   );
 }
 
+/* ---------------- centred section header ----------------
+   The one header shape every major block on the home page uses:
+   headline, a line or two of description, an optional call to action —
+   see the CENTRED SECTION SYSTEM block in data.js.
+
+   There is deliberately no eyebrow prop. A mono label above the
+   headline said "Design" over "Prototyped, not mocked up." and
+   "Photography" over a row of photographs — a caption for something
+   already on screen, which is exactly the filler the copy rule in
+   CLAUDE.md forbids. Don't add one back.
+
+   `title` takes a node rather than a string so a section can put ONE
+   WORD in <span className="serif">. One, literally — the italic is
+   there to catch the eye on the word the headline turns on, and an
+   italic phrase ("as one", "handed over", "by them") is just a second
+   voice reading half the line. Pick the word the sentence would lose
+   most by dropping, and prefer the opening verb.
+
+   `small` steps the headline down a size, for a section where the block
+   underneath is the loud part.
+
+   Under the headline are two optional tiers, and the point of them is
+   that a section takes only the ones it has something to put in:
+
+     lead  the one sentence, at full ink and the body weight
+     sub   the longer explanation, a step lighter and dimmer
+
+   So a section that needs the whole ladder passes both; one with a
+   single explanation passes `sub` alone; and one whose headline says
+   everything — the testimonials — passes neither and gets a headline
+   with nothing under it. That is the shape, not an omission to fix.
+   `cta` is optional on the same terms.
+
+   The heading level is a prop because this is used for both a section
+   inside the page (h2) and, potentially, a page's own opening (h1) —
+   the ring of headings has to stay honest for a screen reader even
+   though every one of these looks identical. */
+export function CenterHead({ title, lead, sub, cta, small, as: Tag = "h2", id }) {
+  return (
+    <div className="chead">
+      <Tag className={`chead-title${small ? " chead-title-sm" : ""}`} id={id}>{title}</Tag>
+      {lead && <p className="chead-lead">{lead}</p>}
+      {sub && <p className="chead-sub">{sub}</p>}
+      {cta && <div className="chead-cta">{cta}</div>}
+    </div>
+  );
+}
+
 /* ---------------- contact form ----------------
    Real enquiry form for a static site: it POSTs to a form-backend
    service (Formspree) that emails Viraj — no server of our own. The

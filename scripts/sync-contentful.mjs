@@ -14,15 +14,31 @@
    Runs automatically via the "prebuild" npm script, or manually with
    `npm run sync`. If credentials are missing it warns and exits 0 so
    the build still succeeds on placeholder images.
+
+   `--cached` (what "predev" passes) returns immediately when a manifest
+   with photos in it is already on disk, so starting the dev server does
+   not wait on Contentful. The per-image cache below still saves the
+   re-encoding, but it cannot save the round trip: every start was
+   fetching the whole entry list and stat-ing every asset before it could
+   decide there was nothing to do. `npm run sync` and `npm run build`
+   never pass the flag, so a real pull is always one command away and a
+   deploy is always fresh.
    ================================================================== */
 
 import { readFile, writeFile, mkdir, rm, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import sharp from "sharp";
-import exifr from "exifr";
 import "dotenv/config";
+
+/* sharp and exifr are loaded on first use, not at the top of the file.
+   sharp is a native addon and the pair of them cost the best part of two
+   seconds to pull in — which the --cached path above pays on every `npm
+   run dev` for two modules it then never calls. A real sync loads them
+   once, on the first image, and never notices. */
+let _sharp, _exifr;
+const sharp = async (...a) => ((_sharp ??= (await import("sharp")).default))(...a);
+const exifr = async () => (_exifr ??= (await import("exifr")).default);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -53,6 +69,13 @@ const EMPTY_MANIFEST = {
   projectPhotos: [], photoProjects: [], webProjects: [],
 };
 
+/* Has a previous run actually put photos on disk? `webProjects` is not
+   counted: it is read-merged from whatever is already in the manifest
+   and is present even when no photo has ever been synced. */
+const manifestHasPhotos = (m) =>
+  Boolean(m?.work?.length || m?.gallery?.length || m?.portrait
+    || m?.projectPhotos?.length);
+
 /* -------------------------------------------------------------- utils */
 
 const slug = (s) =>
@@ -69,7 +92,7 @@ const slug = (s) =>
 async function formatExif(buffer) {
   let x;
   try {
-    x = await exifr.parse(buffer, {
+    x = await (await exifr()).parse(buffer, {
       pick: ["FocalLength", "FNumber", "ExposureTime", "ISO"],
     });
   } catch {
@@ -152,7 +175,7 @@ async function renderVariants(buffer, role, seed) {
   for (const width of SIZES) {
     if (atNative) break;
     const file = `${seed}-${width}.webp`;
-    const info = await sharp(buffer)
+    const info = await (await sharp(buffer))
       .rotate() // honor EXIF orientation
       .resize({ width, withoutEnlargement: true })
       .webp({ quality: 82 })
@@ -178,6 +201,16 @@ async function main() {
   const existing = existsSync(MANIFEST)
     ? JSON.parse(await readFile(MANIFEST, "utf8"))
     : EMPTY_MANIFEST;
+
+  /* --cached: the dev server's start-up path. Anything in the manifest
+     means the photos have been pulled at least once and are already
+     optimized under public/photos, so there is nothing to wait for.
+     An empty manifest still syncs — a first checkout has to fetch once
+     or the site comes up with no pictures at all. */
+  if (process.argv.includes("--cached") && manifestHasPhotos(existing)) {
+    log(`using the cached manifest from ${existing.generatedAt || "an earlier run"} — \`npm run sync\` to pull again`);
+    return;
+  }
 
   const spaceId = process.env.CONTENTFUL_SPACE_ID;
   const token = process.env.CONTENTFUL_ACCESS_TOKEN;

@@ -73,8 +73,9 @@ and the GSAP reveals/parallax fall back to the content's final state.
 
 ```bash
 npm install
-npm run dev      # local dev server (HMR)
-npm run build    # production build → dist/
+npm run dev      # local dev server (HMR) — reuses the synced photos, no network
+npm run sync     # pull + optimize Contentful photos (run after publishing)
+npm run build    # production build → dist/ (always does a full sync first)
 npm run preview  # preview the production build
 npm run lint     # oxlint
 ```
