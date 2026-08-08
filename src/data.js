@@ -308,10 +308,18 @@ export const COLLAGE = (() => {
 
    PLACEHOLDER COPY: `intro`/`note`/`role`/`year` are Viraj's to fill in
    with the real brief. `shots` is empty on purpose (the embed is the
-   visual); add real screen seeds later for a static gallery too. */
+   visual); add real screen seeds later for a static gallery too.
+
+   `shape` is what device the prototype is drawn for — "phone" or "wide"
+   — and it is structural, not copy. The home showcase sizes its stage
+   from it: a phone prototype in a full-width frame is fitted by height
+   and ends up a 330px sliver stranded in a thousand pixels of Figma's
+   own black canvas, so "phone" gets a narrow tall stage it actually
+   fills. Anything without the field is treated as "wide". */
 const WEB_PROJECTS_FALLBACK = [
   {
     slug: "trackher",
+    shape: "phone",
     t: "TrackHer",
     tag: "Product design · Prototype",
     year: "",
@@ -332,6 +340,7 @@ const WEB_PROJECTS_FALLBACK = [
   },
   {
     slug: "wingwise",
+    shape: "wide",
     t: "WingWise",
     tag: "Product design · Prototype",
     year: "",
@@ -352,6 +361,7 @@ const WEB_PROJECTS_FALLBACK = [
   },
   {
     slug: "moments",
+    shape: "phone",
     t: "MOMents",
     tag: "Product design · Prototype",
     year: "",
@@ -372,6 +382,7 @@ const WEB_PROJECTS_FALLBACK = [
   },
   {
     slug: "artasta",
+    shape: "phone",
     t: "ArtAsta",
     tag: "Product design · Prototype",
     year: "",
@@ -564,7 +575,6 @@ export const CSS = `
    eye reads the section first and the items second. Hover still lifts
    them to the accent. */
 .projcap h3,
-.wcard-cap h3,
 .dz-card-line h3 { color: color-mix(in srgb, var(--ink) 72%, transparent); }
 
 /* --- aperture page transition ---
@@ -1112,6 +1122,79 @@ export const CSS = `
    reading measure and stays centred on the same axis, so the section
    still reads as one column with a wider band of work under it. */
 .wrap-wide { max-width: 1340px; }
+
+/* ==================================================================
+   DESIGN SHOWCASE — one prototype at a time, names as the switch
+
+   This replaced a three-up grid of project cards, and the reason was
+   the copy rather than the layout: intro, tag, role and tool are the
+   same placeholder string on every project and year is empty, so three
+   cards side by side differed only in their title and read as one card
+   printed three times. "Figma" alone appeared nine times in that row.
+
+   One project on screen fixes it without a word being invented — there
+   is nothing left to repeat — and hands the whole column to a single
+   prototype instead of splitting it three ways. The names above the
+   stage are the switch, standing where the section's call to action
+   used to be; the call to action moves below the work, which is also
+   where it belongs, after you have seen something.
+   ================================================================== */
+.dshow-tabs { display: flex; flex-wrap: wrap; justify-content: center;
+  gap: clamp(18px, 3vw, 44px); margin-bottom: clamp(30px, 4vw, 48px); }
+/* The mono control tier, same as .nav and .extlink — this is a control,
+   not a caption, so it takes the 500. .pf-scoped so the border and
+   padding survive the .pf button reset. */
+.pf .dshow-tab { position: relative; padding: 6px 2px; color: var(--dim);
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: .16em; text-transform: uppercase;
+  transition: color .3s ease; }
+.pf .dshow-tab:hover { color: var(--ink); }
+.pf .dshow-tab[aria-selected="true"] { color: var(--ink); }
+/* the underline is on a pseudo-element and scaled, not a border toggled
+   on and off: a border would shift the row by a pixel as it appears */
+.dshow-tab::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 1px; background: var(--accent); transform: scaleX(0);
+  transition: transform .4s cubic-bezier(.2,.8,.2,1); }
+.dshow-tab[aria-selected="true"]::after { transform: scaleX(1); }
+
+/* The stage. Its height is viewport-relative so the prototype fills the
+   screen rather than a fixed box, and its width comes from the active
+   project's shape — see the data-shape rules below. */
+.dshow-stage { position: relative; margin-inline: auto;
+  height: min(72svh, 760px); }
+/* Panels are stacked and crossfaded rather than swapped, so switching
+   does not collapse the section's height for a frame and bounce the
+   page under the pointer. */
+.dshow-panel { position: absolute; inset: 0; opacity: 0; pointer-events: none;
+  transition: opacity .45s ease; }
+.dshow-panel[data-on="1"] { opacity: 1; pointer-events: auto; }
+/* the frame primitives fill the stage here rather than carrying their
+   own aspect ratio — the stage is the shape */
+.dshow-panel .browser { height: 100%; display: flex; flex-direction: column; }
+.dshow-panel .figbox, .dshow-panel .browser-view, .dshow-panel .browser-ph {
+  aspect-ratio: auto; flex: 1; min-height: 0; }
+.dshow-panel .browser-view img { height: 100%; object-fit: cover; }
+
+/* A phone prototype sits in the middle of its cover with a wide margin
+   of Figma's own black either side, so in a full-width stage it lands as
+   a narrow sliver stranded in a thousand pixels of nothing. Narrowing
+   the stage to roughly a phone's proportions and letting object-fit:
+   cover crop crops that margin away instead of showing it. */
+.dshow[data-shape="phone"] .dshow-stage { max-width: min(100%, 420px); }
+/* The wide covers are the opposite case: the device is the whole frame,
+   so cropping it to fill takes the bottom off the laptop. Contain shows
+   the machine intact, and the small side margins it leaves are the same
+   black the cover itself is shot on — see the background below, which is
+   what stops them reading as bars. */
+.dshow[data-shape="wide"] .dshow-stage { max-width: 100%; }
+.dshow[data-shape="wide"] .browser-view { background: #000; }
+.dshow[data-shape="wide"] .browser-view img { object-fit: contain; }
+.dshow-cta { display: flex; justify-content: center;
+  margin-top: clamp(34px, 4.5vw, 56px); }
+@media (max-width: 640px) {
+  .dshow-stage { height: min(62svh, 560px); }
+  .dshow-tabs { gap: 16px 22px; }
+}
 /* one card: it keeps a card's proportions instead of stretching across
    the whole 1180px column, and stays on the page's axis */
 .cgrid-1 { grid-template-columns: minmax(0, min(520px, 100%)); justify-content: center; }
@@ -1912,22 +1995,12 @@ export const CSS = `
 .figma-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 @media (max-width: 640px) { .figma-embed { height: min(80vh, 700px); } }
 
-.wgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 28px; }
-@media (max-width: 760px) { .wgrid { grid-template-columns: 1fr; } }
-/* The caption used to put the title/intro on the left and the tool badge
-   hard right on the same row. That was written for a 720px card; in a
-   three-up column it is barely 350px wide, and a right-floated pill next
-   to a wrapping title reads as two columns fighting over one line. So
-   the caption is a centred stack: title, line, badge under it. */
-.wcard-cap { display: flex; flex-direction: column; align-items: center;
-  gap: 14px; padding: 22px 4px 0; text-align: center; }
-.wcard-cap h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(20px, 2.4vw, 27px);
-  transition: color .3s; }
-.wcard:hover .wcard-cap h3 { color: var(--accent); }
-.wcard-cap p { color: var(--dim); font-size: 14.5px; line-height: 1.6; margin-top: 10px;
-  max-width: 38ch; margin-inline: auto; }
-.tool-badge { flex: 0 0 auto; border: 1px solid var(--rule); border-radius: 100px;
-  padding: 5px 12px; }
+/* .wgrid, .wcard-cap and .tool-badge are gone with the three-up design
+   grid they styled. The caption they drew — title, the identical intro
+   line, a "Figma" pill — is exactly the repetition that grid was
+   removed for; the showcase names the project in its tab instead, so
+   there is nothing left for a caption to say. .wcard survives as the
+   link wrapper. */
 
 
 /* ==================================================================
@@ -1936,7 +2009,8 @@ export const CSS = `
    Masthead → one featured build (large split) → a numbered grid of the
    rest. Reuses the shared .browser / .figbox / .pill primitives so the
    card previews stay identical to the home page; only the surrounding
-   layout and captions are new (dz- prefix) — Home.jsx keeps .wgrid/.wcard.
+   layout and captions are new (dz- prefix); Home.jsx keeps .wcard as the
+   showcase link wrapper.
    ================================================================== */
 /* --- hero: headline (left) + featured live preview (right) --- */
 .dz-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
@@ -2129,7 +2203,7 @@ export const CSS = `
      difference too small to read as hierarchy and large enough to look
      like a mistake once the cards are stacked in one column. */
   .get-card p, .approach p, .sl-row p, .cap p, .band p,
-  .wcard-cap p, .dz-card-cap p, .colophon dd { font-size: 15px; }
+  .dz-card-cap p, .colophon dd { font-size: 15px; }
 }
 
 /* ==================================================================

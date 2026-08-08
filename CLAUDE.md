@@ -109,6 +109,27 @@ grid. The CSS lives in the **CENTRED SECTION SYSTEM** block in
   the hero.** A full-width glow band between sections was tried and
   removed — repeating the hero's glow down the page spends the effect.
   Don't reintroduce one.
+- **The design section is one prototype at a time, not a grid**
+  (`DesignShowcase` in [src/pages/Home.jsx](src/pages/Home.jsx)). The
+  three project names are a `tablist` standing where the section's CTA
+  used to be; the CTA moved below the work. **Don't put the grid back**
+  — `intro`, `tag`, `role` and `tool` are the same placeholder string on
+  every entry in `WEB_PROJECTS` and `year` is empty, so three cards
+  side by side differed only in their title and printed "Figma" nine
+  times across the row. One project on screen fixes that without a word
+  being invented, because there is nothing left to repeat.
+  - **Only visited projects are mounted.** A Figma embed is an iframe
+    loading a whole editor runtime; `seen` grows as tabs are used and
+    panels are never unmounted after, so first paint costs one and
+    going back is instant rather than a reload.
+  - **`shape` on each project drives the stage** — `"phone"` gets a
+    420px column and `object-fit: cover` so the cover's black margins
+    are cropped away; `"wide"` gets the full column and
+    `object-fit: contain` so the laptop isn't cropped. Missing ⇒
+    `"wide"`. It is structural metadata, not copy.
+  - Arrow keys move between tabs (roving `tabIndex`); inactive panels
+    are `aria-hidden` with their link taken out of the tab order, since
+    they stay painted for the crossfade.
 - **The testimonials are an infinite rail, not a grid** (`Testimonials`
   in [src/pages/Home.jsx](src/pages/Home.jsx)). Three cards **hold for
   `HOLD_MS` (5.5s), then slide exactly one card in `SLIDE_MS` (0.72s)**:

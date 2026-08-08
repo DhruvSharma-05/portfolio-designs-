@@ -373,79 +373,10 @@ export default function Home() {
       </section>
 
       {/* a room's width of quiet before the work starts */}
-      {/* design — the centred header, then exactly three projects in three
-          equal columns. The three used to travel sideways inside a pinned
-          section; the page now reads top-down in one shape from here to
-          the footer, and a scroll-jacked run in the middle of it was the
-          one section a visitor had to learn how to use. */}
+      {/* design — one prototype at a time, the project names as the
+          switch. See DesignShowcase below for why it is not a grid. */}
       {HAS_REAL_WEB ? (
-        <section className="csec" id="design">
-          {/* the header keeps the reading measure; the work below it gets
-              the wide column — see .wrap-wide */}
-          <div className="wrap">
-            <Reveal>
-              <CenterHead
-                title={<><span className="serif">Prototyped</span>, not mocked up.</>}
-                lead="Every screen drawn and wired in Figma."
-                sub="Clickable long before anything is built, and specced for a developer to pick up."
-                cta={
-                  <TLink to="/design" className="extlink">
-                    All designs <span className="arrow">→</span>
-                  </TLink>
-                }
-              />
-            </Reveal>
-          </div>
-
-          <div className="wrap wrap-wide">
-            {/* Three, not WEB_PROJECTS.length: .cgrid-3 is three equal
-                columns, and a fourth card would open a second row with one
-                card in it. The rest live on /design, which the header's
-                call to action opens. */}
-            <div className="cgrid cgrid-3">
-              {WEB_PROJECTS.slice(0, 3).map((w, i) => (
-                <Reveal key={w.slug} delay={i * 0.06}>
-                  <TLink to={`/design/${w.slug}`} className="wcard"
-                    aria-label={`Open ${w.t}`}>
-                    <div className="browser">
-                      <div className="browser-bar">
-                        <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
-                        <span className="browser-url mono">
-                          {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
-                        </span>
-                        <span className="mono" style={{ opacity: 0.5 }}>{w.year || w.tool}</span>
-                      </div>
-                      {hasPhoto(w.cover) ? (
-                        <div className="browser-view">
-                          {/* the widths .cgrid-3 actually resolves to: a
-                              third of the 1340px wide column above 900px,
-                              the full column below it */}
-                          <img src={img(w.cover, 1200)} srcSet={srcSet(w.cover)}
-                            sizes="(min-width: 900px) 410px, 92vw"
-                            alt={`${w.t} full page`} loading="lazy" />
-                        </div>
-                      ) : w.embed && w.href ? (
-                        <FigmaFrame w={w} />
-                      ) : (
-                        <div className="browser-ph">
-                          <span className="browser-ph-name">{w.t}</span>
-                          <span className="mono">{w.tag}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="wcard-cap">
-                      <div>
-                        <h3>{w.t}</h3>
-                        <p>{w.intro}</p>
-                      </div>
-                      <span className="tool-badge mono">{w.tool}</span>
-                    </div>
-                  </TLink>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
+        <DesignShowcase />
       ) : (
         <section className="csec" id="design">
           <div className="wrap">
@@ -616,6 +547,145 @@ export default function Home() {
         </div>
       </section>
     </motion.div>
+  );
+}
+
+/* ==================================================================
+   DESIGN SHOWCASE — one prototype at a time, names as the switch.
+
+   This replaced a three-up grid of project cards, and the reason was
+   the copy rather than the layout. intro, tag, role and tool are the
+   same placeholder string on every entry in WEB_PROJECTS and year is
+   empty, so three cards side by side differed only in their title and
+   read as one card printed three times — with "Figma" appearing nine
+   times across the row, which the copy rule in CLAUDE.md forbids
+   outright. One project on screen fixes that without a word being
+   invented, because there is nothing left to repeat, and it hands the
+   whole column to a single prototype instead of splitting it in three.
+
+   ONLY THE PROJECTS THAT HAVE BEEN LOOKED AT ARE MOUNTED. A Figma
+   embed is an iframe loading a whole editor runtime; three of them on
+   the home page is three of those, and two would have been for
+   prototypes nobody had asked to see. `seen` grows as tabs are visited
+   and panels are never unmounted after that — so the first paint costs
+   one embed, and going back to a project already looked at is instant
+   rather than a reload.
+   ================================================================== */
+function DesignShowcase() {
+  const items = WEB_PROJECTS.slice(0, 3);
+  const [at, setAt] = useState(0);
+  // which panels exist in the DOM — the active one plus everything
+  // already visited. Never shrinks; see the note above.
+  const [seen, setSeen] = useState(() => new Set([0]));
+  const tabs = useRef(null);
+
+  const go = (n) => {
+    const i = (n + items.length) % items.length;
+    setAt(i);
+    setSeen((s) => (s.has(i) ? s : new Set(s).add(i)));
+  };
+
+  /* Roving arrow keys, the standard tablist behaviour. Without it the
+     row is a mouse-only control: Tab alone lands on each button but
+     never changes the panel, and the arrow keys — which is what anyone
+     using a keyboard reaches for on tabs — do nothing at all. */
+  const onKey = (e) => {
+    const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    const i = (at + d + items.length) % items.length;
+    go(i);
+    tabs.current?.children[i]?.focus();
+  };
+
+  if (!items.length) return null;
+  const shape = items[at]?.shape === "phone" ? "phone" : "wide";
+
+  return (
+    <section className="csec dshow" id="design" data-shape={shape}>
+      {/* the header keeps the reading measure; the work below it gets
+          the wide column — see .wrap-wide */}
+      <div className="wrap">
+        <Reveal>
+          <CenterHead
+            title={<><span className="serif">Prototyped</span>, not mocked up.</>}
+            lead="Every screen drawn and wired in Figma."
+            sub="Clickable long before anything is built, and specced for a developer to pick up."
+          />
+        </Reveal>
+      </div>
+
+      <div className="wrap wrap-wide">
+        <Reveal>
+          <div className="dshow-tabs" role="tablist" aria-label="Design projects"
+            ref={tabs} onKeyDown={onKey}>
+            {items.map((w, i) => (
+              <button key={w.slug} type="button" role="tab" className="dshow-tab"
+                aria-selected={i === at} aria-controls={`dshow-${w.slug}`}
+                /* only the active tab is a tab stop — Tab moves past the
+                   row, the arrows move within it */
+                tabIndex={i === at ? 0 : -1}
+                onClick={() => go(i)}>
+                {w.t}
+              </button>
+            ))}
+          </div>
+
+          <div className="dshow-stage">
+            {items.map((w, i) => (!seen.has(i) ? null : (
+              <div className="dshow-panel" key={w.slug} id={`dshow-${w.slug}`}
+                role="tabpanel" data-on={i === at ? "1" : "0"}
+                aria-label={w.t}
+                /* the inactive panels are still painted (they are
+                   crossfaded, not swapped) so they have to be taken out
+                   of the accessibility tree by hand, and their link out
+                   of the tab order — see tabIndex on the TLink below */
+                aria-hidden={i === at ? undefined : "true"}>
+                <TLink to={`/design/${w.slug}`} className="wcard"
+                  aria-label={`Open ${w.t}`} tabIndex={i === at ? 0 : -1}>
+                  <div className="browser">
+                    <div className="browser-bar">
+                      <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
+                      {/* the bar carries the name and nothing else. It used
+                          to end with {w.year || w.tool}, and with year empty
+                          on every project that was a second "Figma" a few
+                          centimetres from the first. */}
+                      <span className="browser-url mono">
+                        {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
+                      </span>
+                    </div>
+                    {hasPhoto(w.cover) ? (
+                      <div className="browser-view">
+                        {/* the stage is either a 460px phone column or the
+                            full 1340px wide column — see .dshow[data-shape] */}
+                        <img src={img(w.cover, 1600)} srcSet={srcSet(w.cover)}
+                          sizes="(min-width: 900px) 1284px, 92vw"
+                          alt={`${w.t} full page`} loading="lazy" />
+                      </div>
+                    ) : w.embed && w.href ? (
+                      <FigmaFrame w={w} />
+                    ) : (
+                      <div className="browser-ph">
+                        <span className="browser-ph-name">{w.t}</span>
+                        <span className="mono">{w.tag}</span>
+                      </div>
+                    )}
+                  </div>
+                </TLink>
+              </div>
+            )))}
+          </div>
+
+          {/* the call to action moves below the work — after you have seen
+              something, rather than before */}
+          <div className="dshow-cta">
+            <TLink to="/design" className="extlink">
+              All designs <span className="arrow">→</span>
+            </TLink>
+          </div>
+        </Reveal>
+      </div>
+    </section>
   );
 }
 
