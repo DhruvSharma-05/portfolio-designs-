@@ -326,7 +326,9 @@ export default function Home() {
               </div>
 
               <p className="mast-sub hero-reveal" style={{ "--rd": `${SUB_IN}s` }}>
-                Simplicity is the ultimate sophistication.
+                {/* the sentence carries its own quote marks — see
+                    .mast-quote for why they can't sit on the paragraph */}
+                <span className="mast-quote">Simplicity is the ultimate sophistication.</span>
                 <span className="mast-sub-by mono">— Leonardo da Vinci</span>
               </p>
             </div>

@@ -742,8 +742,13 @@ export const CSS = `
   max-width: 46ch; font-weight: 300;
   letter-spacing: -0.015em; line-height: 1.5; font-size: clamp(14px, 1.45vw, 17px);
   color: color-mix(in srgb, var(--ink) 62%, transparent); }
-.mast-sub::before { content: "\\201C"; color: var(--accent); }
-.mast-sub::after { content: "\\201D"; color: var(--accent); }
+/* The quote marks belong to the quotation, not to the paragraph that
+   holds it. On .mast-sub the ::after came after ALL of its content —
+   including the attribution, which is display: block — so the closing
+   mark was pushed onto a line of its own underneath da Vinci's name.
+   Wrapped round the sentence itself, it closes where the sentence does. */
+.mast-quote::before { content: "\\201C"; color: var(--accent); }
+.mast-quote::after { content: "\\201D"; color: var(--accent); }
 .mast-sub-by { display: block; margin-top: 10px; font-size: 10px;
   letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
 /* The first-scroll cue is deliberately part of the hero, not a fixed UI
