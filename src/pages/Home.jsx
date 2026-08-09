@@ -8,7 +8,7 @@ import {
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, ROLES,
   gridCols,
 } from "../data.js";
-import { Reveal, TLink, FigmaFrame, Typewriter, CenterHead, Timeline } from "../ui.jsx";
+import { Reveal, TLink, FigmaFrame, Typewriter, CenterHead, Timeline, Colophon } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -577,36 +577,7 @@ export default function Home() {
             </div>
           </Reveal>
 
-          <Reveal as="dl" className="colophon">
-            <div>
-              <dt className="mono">Contact</dt>
-              <dd>
-                <a href={`mailto:${P.email}`}>{P.email}</a><br />
-                <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
-              </dd>
-            </div>
-            <div>
-              <dt className="mono">Based in</dt>
-              <dd>{P.city} · {P.area}<br />{P.region}</dd>
-            </div>
-            <div>
-              <dt className="mono">Elsewhere</dt>
-              <dd>
-                {P.socials.map((s) => (
-                  <span key={s.href} style={{ display: "block" }}>
-                    <a href={s.href} target="_blank" rel="noreferrer">
-                      {s.k} · {s.v}
-                    </a>
-                  </span>
-                ))}
-              </dd>
-            </div>
-          </Reveal>
-
-          <hr className="rule" style={{ marginTop: 44 }} />
-          <div style={{ paddingTop: 18 }}>
-            <span className="mono">© {P.name}</span>
-          </div>
+          <Colophon />
         </div>
       </section>
     </motion.div>

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
-import { Reveal, TLink, CenterHead, FigmaFrame, Timeline } from "../ui.jsx";
+import { Reveal, TLink, CenterHead, FigmaFrame, Timeline, Colophon } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -176,9 +176,7 @@ export default function Design() {
             </button>
           </div>
         </Reveal>
-        <div style={{ marginTop: 44 }}>
-          <TLink to="/" className="mono back"><span className="arrow">←</span> Back to home</TLink>
-        </div>
+        <Colophon back />
       </section>
     </motion.main>
   );

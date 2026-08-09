@@ -426,6 +426,57 @@ export function useSwipe(onLeft, onRight, threshold = 40) {
    instead of the block as a whole — for something already built out of
    lines, like the studio tagline's .st-line spans, where moving the
    whole paragraph as one object throws away the shape it already has. */
+/* ---------------- the footer ----------------
+   The three standing facts — how to reach him, where he is, where else
+   he is — then the rule and the copyright line. It closes every page,
+   which is the point: /design and /photography used to stop at the
+   contact button, so two of the five routes simply had no footer and a
+   visitor who landed on one from a search had nowhere to find an email.
+
+   `back` adds the way home on the same row as the copyright. The home
+   page passes nothing, because it is home. */
+export function Colophon({ back = false }) {
+  return (
+    <>
+      <Reveal as="dl" className="colophon">
+        <div>
+          <dt className="mono">Contact</dt>
+          <dd>
+            <a href={`mailto:${P.email}`}>{P.email}</a><br />
+            <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
+          </dd>
+        </div>
+        <div>
+          <dt className="mono">Based in</dt>
+          <dd>{P.city} · {P.area}<br />{P.region}</dd>
+        </div>
+        <div>
+          <dt className="mono">Elsewhere</dt>
+          <dd>
+            {P.socials.map((s) => (
+              <span key={s.href} style={{ display: "block" }}>
+                <a href={s.href} target="_blank" rel="noreferrer">
+                  {s.k} · {s.v}
+                </a>
+              </span>
+            ))}
+          </dd>
+        </div>
+      </Reveal>
+
+      <hr className="rule" style={{ marginTop: 44 }} />
+      <div className="colophon-foot">
+        <span className="mono">© {P.name}</span>
+        {back && (
+          <TLink to="/" className="mono back">
+            <span className="arrow">←</span> Back to home
+          </TLink>
+        )}
+      </div>
+    </>
+  );
+}
+
 /* ---------------- the scrolling timeline ----------------
    A rail down the middle of the column with the steps hung off it,
    alternating right and left, and exactly one of them lit at a time —

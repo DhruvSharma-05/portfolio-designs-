@@ -599,6 +599,37 @@ export const CSS = `
 .projcap h3,
 .dz-card-line h3 { color: color-mix(in srgb, var(--ink) 72%, transparent); }
 
+/* --- the loader ---
+   Above everything, including the iris (500), because it covers the
+   whole first paint. Same three marks the site is built from: the name
+   in the display face, one hairline, one mono figure — no spinner, no
+   logo animation, nothing that has to be watched.
+
+   It leaves by lifting its own content out and fading the panel, which
+   is the reverse of how the hero arrives underneath it. The node stays
+   mounted for the length of that transition and is removed after — see
+   the leaving/gone pair in Loader.jsx. */
+.loadr { position: fixed; inset: 0; z-index: 600; background: var(--bg);
+  display: grid; place-items: center;
+  transition: opacity .8s cubic-bezier(.4, 0, .2, 1); }
+.loadr[data-leaving] { opacity: 0; pointer-events: none; }
+.loadr-in { display: flex; flex-direction: column; align-items: center; gap: 22px;
+  transition: transform .8s cubic-bezier(.2, .8, .2, 1), opacity .5s ease; }
+.loadr[data-leaving] .loadr-in { transform: translateY(-12px); opacity: 0; }
+.loadr-name { font-family: var(--font-accent); font-weight: 300;
+  font-size: clamp(21px, 3vw, 32px); letter-spacing: -0.01em; color: var(--ink); }
+/* the same 1px rule the whole site is ruled with, filling left to right */
+.loadr-rail { display: block; width: min(230px, 44vw); height: 1px;
+  background: var(--rule); overflow: hidden; }
+/* The transition is what actually animates the bar. Loader.jsx steps the
+   scale a few times a second and this carries it between steps, on the
+   compositor — which matters because the loader is on screen exactly
+   while the main thread is too busy to run a per-frame tween. */
+.loadr-rail i { display: block; height: 100%; background: var(--accent);
+  transform-origin: left center;
+  transition: transform .5s cubic-bezier(.3, 0, .2, 1); }
+.loadr-pct { color: var(--dim); font-size: 10px; letter-spacing: .2em; }
+
 /* --- aperture page transition ---
    A single accent circle scaled up to cover the screen (shutter closing)
    then back down (opening), revealing the next page from the edges in.
@@ -1406,6 +1437,10 @@ export const CSS = `
    place. These two mean it wraps inside the column instead, whatever
    the address grows into later. */
 .colophon > div { min-width: 0; }
+/* the copyright, and on every page but home the way back, on one row —
+   the two things that close a page, so they close it together */
+.colophon-foot { display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; padding-top: 18px; }
 .colophon dd { margin: 8px 0 0; font-size: 14px; line-height: 1.72; color: var(--dim);
   overflow-wrap: anywhere; }
 
@@ -1603,10 +1638,30 @@ export const CSS = `
   .about-body-text { order: 1; }
   .about-body-viz { order: 2; }
 }
-/* .approach is gone. Its three panels are a Timeline now
-   — the same numbered card the home page and both process sections
-   use — so the site has one card idiom rather than a welded row of
-   panels on /about and cards everywhere else. */
+/* --- .approach: the welded row of panels on /about ---
+   This was briefly a Timeline, for consistency with the home page's
+   "What you get" and both process sections. Reverted at the client's
+   request: "How I work" is three standing positions, not three steps
+   you pass through in order, and a rail that lights one at a time
+   implies a sequence that isn't there. The panels say "and", the
+   timeline said "then". Everything numbered elsewhere on the site is
+   still a Timeline. */
+.approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
+  background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+/* panels are plain <div> on the about page and <a> on the home page,
+   where each one is a door into that practice */
+.approach div, .approach a { position: relative; background: var(--bg); padding: 34px 26px 30px;
+  display: block; transition: background-color .4s ease; }
+.approach div::before, .approach a::before { content: ""; position: absolute; left: 0; right: 0; top: 0;
+  height: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+.approach div:hover::before, .approach a:hover::before { transform: scaleX(1); }
+.approach a:hover { background: var(--panel); }
+.approach a:hover h3 { color: var(--accent); }
+.approach-n { display: block; color: var(--accent); opacity: .85; margin-bottom: 18px; }
+.approach h3 { transition: color .3s ease; }
+.approach h3 { font-weight: 400; letter-spacing: -0.02em; font-size: 19px; margin-bottom: 12px; }
+.approach p { color: var(--dim); font-size: 14.5px; line-height: 1.6; }
 
 /* --- timeline: a real spine with accent dot markers --- */
 .timeline { position: relative; margin-top: 4vh; }
@@ -1637,6 +1692,8 @@ export const CSS = `
   margin-right: calc(50% - 50vw); padding: 11vh 0;
   background: var(--panel);
   border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+/* the approach panels sit on the band, so they take its tone, not the page's */
+.invert-band .approach div, .invert-band .approach a { background: var(--panel); }
 
 /* ==================================================================
    THE TIMELINE — a rail down the middle, steps alternating off it
@@ -1715,9 +1772,11 @@ export const CSS = `
 
 /* The numbered card (.get-card / .get-num) is gone, and with it the
    cursor-tracked pool of light that sat on it. Every place it was
-   used — the home page's "What you get", both process sections and
-   /about's "How I work" — renders a Timeline instead: four boxes say
-   "four separate things", and these are all one sequence. The lit /
+   used — the home page's "What you get" and both process sections —
+   renders a Timeline instead: four boxes say "four separate things",
+   and these are all one sequence. (/about's "How I work" went that way
+   too and came back; see .approach above — it is the one such list that
+   isn't a sequence.) The lit /
    dimmed step does the job the hover depth was doing, on scroll
    rather than on pointer. See THE TIMELINE above. */
 
@@ -2330,7 +2389,8 @@ export const CSS = `
 
   /* one inset for every bordered text block, so all boxed copy starts on
      the same vertical line down the page */
-  .tcard, .metric, .cap, .teaser a, .disc { padding: 22px; }
+  .tcard, .metric, .cap, .approach div, .approach a,
+  .teaser a, .disc { padding: 22px; }
   /* the teaser leant on 240px of height to hold its shape at desktop
      padding; at this inset that is just a hole under the text */
   .teaser a { min-height: 0; gap: 12px; }
@@ -2345,7 +2405,7 @@ export const CSS = `
   /* one size for supporting copy. These ranged 14 / 14.5 / 15px, a
      difference too small to read as hierarchy and large enough to look
      like a mistake once the cards are stacked in one column. */
-  .cap p, .band p,
+  .approach p, .cap p, .band p,
   .dz-card-cap p, .colophon dd { font-size: 15px; }
 }
 

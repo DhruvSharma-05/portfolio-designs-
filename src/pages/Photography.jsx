@@ -9,7 +9,7 @@ import {
   P, img, srcSet, ratio, isLandscape, FEATURED, PHOTO_PROJECTS, PHOTO_POOL, projectCover,
   prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
-import { Reveal, TLink, CenterHead, Timeline, useSwipe } from "../ui.jsx";
+import { Reveal, TLink, CenterHead, Timeline, Colophon, useSwipe } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -255,9 +255,7 @@ export default function Photography() {
               </button>
             </div>
           </Reveal>
-          <div style={{ marginTop: 44 }}>
-            <TLink to="/" className="mono back"><span className="arrow">←</span> Back to home</TLink>
-          </div>
+          <Colophon back />
         </div>
       </section>
     </motion.div>

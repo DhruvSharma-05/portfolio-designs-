@@ -323,12 +323,19 @@ what stops one heading being left behind on the sans.
 
 ### Numbered steps are a Timeline, not cards
 
-Every numbered k/v list on the site — the home page's "What you get",
-both "How a … goes" process sections and /about's "How I work" —
+Every numbered k/v list that is genuinely a **sequence** — the home
+page's "What you get" and both "How a … goes" process sections —
 renders `Timeline` from [src/ui.jsx](src/ui.jsx). Four boxes say "four
 separate things"; these are one sequence, and a rail you travel down
 says so. **No box, no border, no panel** — the type is the whole design,
 which is also what keeps the copy legible at this measure.
+
+- ⚠ **/about's "How I work" is the exception, and it was tried the other
+  way.** It renders the original `.approach` — a welded row of panels —
+  because its three entries are standing positions, not steps you pass
+  through in order: a rail that lights one at a time said "then" where
+  the copy means "and". Reverted at the client's request. Before moving
+  any list onto the Timeline, check it actually has an order.
 
 - **One step is lit at a time**: the last one whose top the middle of the
   screen has passed. The rest sit at `opacity: .34` and `scale(.94)`,
@@ -365,7 +372,6 @@ rather than restyling them — if a new block doesn't fit `CenterHead` +
 | `SectionHead` / `.shead` | mono label + self-drawing rule | `CenterHead` |
 | `.sec-grid` / `.sec-label` | sticky mono label beside content | `CenterHead` over a `.cgrid` |
 | `.sl-row` | numbered process list, ×2 pages | `Timeline` |
-| `.approach` | welded row of panels on /about | `Timeline` |
 | `.get-card` / `.get-num` | numbered card grid | `Timeline` |
 | `.pbrand` / `.band-lead` | hand-built lockup on /photography | `CenterHead` with a `kicker` |
 
@@ -376,6 +382,67 @@ auto margins, leaving it centred as text but parked left as a block.
 **The timeline on /about keeps its left-aligned dot rail on purpose** — a
 chronology reads down a spine, and centring it would cost the thing that
 makes it legible. A centred header over left-aligned rows is fine.
+
+### One footer, every page
+
+The contact block at the bottom is `Colophon` in [src/ui.jsx](src/ui.jsx) —
+a `<dl class="colophon">` of email / based in / elsewhere, a hairline, then
+`.colophon-foot` with the copyright and (with `back`) a link home. Home
+renders `<Colophon />`; About, Design and Photography render
+`<Colophon back />`.
+
+- **It was only on the home page and About**, so `/design` and
+  `/photography` ended on a cross-link teaser with no way to reach Viraj
+  from the bottom of the page — the two pages a visitor is most likely to
+  land on from a portfolio link.
+- The detail pages (`/design/:slug`, `/photography/:slug`) deliberately
+  **don't** take it: they already end in a back-link to their index, and a
+  full footer under a single project is a second ending.
+- It goes **inside the existing `.end` section**, after the headline and
+  CTA — not in a section of its own, which would add another hairline
+  rule for nothing.
+
+### The loader
+
+[src/Loader.jsx](src/Loader.jsx), mounted once in
+[src/App.jsx](src/App.jsx) inside `.pf` so it inherits the palette. It
+exists for one reason: the home page opens on a timed sequence and hands
+straight over to the collage zoom, and both look broken if they start
+before their assets land — the hero types in a fallback face and reflows
+when Fraunces arrives, and the collage zooms over frames that pop in
+mid-run.
+
+- **It waits for exactly two things**: `document.fonts.ready`, and the
+  collage frames **decoded** (not merely fetched — `decode()` is the
+  difference between "the bytes arrived" and "this can be painted without
+  stalling a frame", which is the whole point when a scroll-linked zoom is
+  next). Four frames on a narrow screen, five otherwise, matching what
+  `Home.jsx` actually paints. Nothing here blocks anything; it only delays
+  the reveal.
+- **Three rules it obeys, and they are the interesting part**: capped at
+  `CAP_MS` (a preloader waiting on a slow network is a blank page, which
+  is worse than the reflow it prevents); once per session via
+  `sessionStorage` (a refresh to check a change must not cost the wait
+  again); and it doesn't render at all under reduced motion, since it
+  exists to protect an animation that isn't playing.
+- **The percentage is the higher of work-done and a time floor.** There is
+  no honest byte count — fonts report nothing and `decode()` is
+  all-or-nothing per image — so a "real" number would be a lie told
+  precisely. The floor creeps to 88% across the cap so the rail never sits
+  dead still on a fast connection; the work term is what lets it finish
+  early.
+- ⚠ **The counter steps coarsely on a `setInterval` and CSS carries the
+  bar between steps. Don't "improve" it into a rAF-eased counter — that
+  is what it was, and it barely moved.** The loader is on screen precisely
+  while the main thread is saturated parsing modules and decoding five
+  2000px photographs, so the frame callback fired about three times a
+  second and the bar crawled from 0 to 0.088 and then jumped to gone.
+  Stepping the target every 160ms and letting a `transform` transition on
+  `.loadr-rail i` do the motion puts the animation on the compositor,
+  which is the one place it can't be starved. Verified: `0 → 32 → 64 → 80
+  → 100`, hold, exit, node gone at ~4.9s.
+- `leaving` and `gone` are separate state on purpose — the node has to
+  stay in the tree long enough to play its own exit transition.
 
 ### The four faces, and what each one is for
 
