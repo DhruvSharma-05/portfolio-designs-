@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { P, img, srcSet, WEB_PROJECTS, hasPhoto, prefersReduced } from "../data.js";
-import { Reveal, TLink, SectionHead, FigmaFrame } from "../ui.jsx";
+import { Reveal, TLink, CenterHead, FigmaFrame, Timeline } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -112,7 +112,7 @@ export default function Design() {
       {/* ---------- the rest of the work ---------- */}
       {rest.length > 0 && (
         <section className="dz-work-sec">
-          <SectionHead>More work</SectionHead>
+          <CenterHead small title={<>More <span className="serif">work</span>.</>} />
           <div className="dz-grid">
             {rest.map((w, i) => (
               <Reveal key={w.slug} delay={i * 0.06}>
@@ -140,22 +140,16 @@ export default function Design() {
         </section>
       )}
 
-      {/* ---------- process ---------- */}
-      <section className="sec">
-        <div className="sec-grid">
-          <div className="sec-label mono">How a project goes</div>
-          {/* no reveal on these — the rows just sit there, and the only
-              motion is the hover lift */}
-          <div>
-            {PROCESS.map((s, i) => (
-              <div className="sl-row" key={s.k}>
-                <span className="mono">{String(i + 1).padStart(2, "0")}</span>
-                <h3>{s.k}</h3>
-                <p>{s.v}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* ---------- process ----------
+          A sequence, so it reads as one: a rail down the middle with the
+          four steps hung off it, alternating, one lit at a time. See
+          Timeline in ui.jsx. It was a left-aligned numbered list beside
+          a sticky mono label, then briefly a grid of cards — both of
+          which said "four separate things" about four steps that are
+          one. */}
+      <section className="csec">
+        <CenterHead title={<>How a project <span className="serif">goes</span>.</>} />
+        <Timeline items={PROCESS} />
       </section>
 
       {/* ---------- cross-link to photography ---------- */}

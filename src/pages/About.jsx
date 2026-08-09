@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import { P, img, srcSet, ABOUT, hasPhoto, prefersReduced, heavyVisualsAllowed } from "../data.js";
-import { Reveal, TLink, SectionHead } from "../ui.jsx";
+import { Reveal, TLink, CenterHead, Timeline } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -96,21 +96,13 @@ export default function About() {
 
       <section className="invert-band">
         <div className="wrap">
-          <SectionHead n="01">How I work</SectionHead>
-          <Reveal className="approach">
-            {ABOUT.approach.map((a, i) => (
-              <div key={a.k}>
-                <span className="approach-n mono">{String(i + 1).padStart(2, "0")}</span>
-                <h3>{a.k}</h3>
-                <p>{a.v}</p>
-              </div>
-            ))}
-          </Reveal>
+          <CenterHead small title={<>How I <span className="serif">work</span>.</>} />
+          <Timeline items={ABOUT.approach} />
         </div>
       </section>
 
       <section className="timeline">
-        <SectionHead n="02">The short version</SectionHead>
+        <CenterHead small title={<>The <span className="serif">short</span> version.</>} />
         {ABOUT.timeline.map((t, i) => (
           <Reveal className="tl-row" key={t.y} delay={i * 0.05}>
             <b>{t.y}</b>

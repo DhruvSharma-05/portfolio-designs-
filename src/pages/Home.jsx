@@ -8,7 +8,7 @@ import {
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, ROLES,
   gridCols,
 } from "../data.js";
-import { Reveal, TLink, FigmaFrame, Typewriter, CenterHead } from "../ui.jsx";
+import { Reveal, TLink, FigmaFrame, Typewriter, CenterHead, Timeline } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -27,6 +27,26 @@ const SWELL = 2.3;
 const ROLES_IN = SWELL - 0.45;   // fades in under the name, before it goes
 const ROLES_TYPE = SWELL + 0.05; // first keystroke — the frame is its own
 const SUB_IN = SWELL + 0.35;
+
+/* The word the collage resolves into. Not P.photoBrand any more: this
+   canvas is the doorway into the photography work, and the section that
+   fades in under it opens on the same word, so the run now hands the
+   visitor a subject rather than a second brand name to learn. The
+   practice is still named as Lensofviraj on /photography and in the bar.
+   The capital is load-bearing: this word stands opposite "Design" as
+   the other practice's name, and .lov-cut's old lowercase transform —
+   right when it was a brand mark — set the two of them differently. */
+const COLLAGE_WORD = "Photography";
+
+/* The sentence the collage's word turns out to mean. It lives out here
+   because it is rendered in two different places depending on whether
+   there are photographs to build a collage from: inside the sticky
+   canvas when there are, and as an ordinary section header above the
+   collections when there aren't. */
+const PHOTO_COPY = {
+  title: "Every frame earns its place.",
+  sub: "Shot on available light, graded for consistency, delivered ready to print or post — nothing leaves the set that wouldn't make the final cut.",
+};
 
 /* ==================================================================
    WORK — the front page.
@@ -206,15 +226,27 @@ export default function Home() {
     const stage = lovStage.current;
     let lovDist = 0, lovTop = 0, lovWipe = null;
 
+    /* The run is now two acts inside one sticky frame. The first is the
+       zoom that turns the collage into the word; the second holds that
+       word on screen and brings the sentence up underneath it. So the
+       progress the section reports is split: `z` drives the zoom over
+       the opening ZOOM_END of it, and `c` drives the copy over the tail.
+       The word does not leave — it lifts a little to make the room. */
+    const ZOOM_END = 0.62;  // the word has fully resolved by here
+    const COPY_IN = 0.68;   // ...and the sentence starts arriving here
+    const COPY_FULL = 0.92;
+    const clamp01 = (v) => Math.min(Math.max(v, 0), 1);
+
     const paint = (p) => {
       const vw = window.innerWidth;
+      const z = clamp01(p / ZOOM_END);
       // one glyph fills the screen at the start; a headline at the end
       const from = vw * 2.2;
       const to = Math.max(56, Math.min(130, vw * 0.09));
-      stage.style.setProperty("--fs", `${from * (to / from) ** p}px`);
-      /* the handover, in the last fifth: the picture inside the letters
-         goes out as flat ink comes in, so the section ends on type */
-      const ink = Math.min(Math.max((p - 0.78) / 0.16, 0), 1);
+      stage.style.setProperty("--fs", `${from * (to / from) ** z}px`);
+      /* the handover, in the last fifth of the zoom: the picture inside
+         the letters goes out as flat ink comes in, so the act ends on type */
+      const ink = clamp01((z - 0.78) / 0.16);
       stage.style.setProperty("--ink-o", ink.toFixed(3));
       stage.style.setProperty("--shot-o", (1 - ink).toFixed(3));
       /* The opening: the surround is eaten from the edges inward, so the
@@ -224,8 +256,18 @@ export default function Home() {
          the radius); 0 is gone. The last thing to go is the middle of the
          screen, which is the one place a hole appearing out of nowhere
          would be noticed. */
-      const wipe = 1 - Math.min(Math.max((p - 0.06) / 0.3, 0), 1);
+      const wipe = 1 - clamp01((z - 0.06) / 0.3);
       if (lovWipe) lovWipe.setAttribute("r", (1.2 * wipe).toFixed(4));
+
+      /* Act two. The copy fades up from below and the word rises out of
+         the middle to clear the space for it — a fraction of the stage's
+         own height, so the two stay apart at any viewport. It starts
+         after `ink` has finished, so the sentence never arrives over a
+         word that is still a photograph. */
+      const c = clamp01((p - COPY_IN) / (COPY_FULL - COPY_IN));
+      const ease = c * c * (3 - 2 * c);   // smoothstep, so it settles
+      stage.style.setProperty("--copy-o", ease.toFixed(3));
+      stage.style.setProperty("--lift", `${(-ease * stage.clientHeight * 0.17).toFixed(1)}px`);
     };
     const lovScroll = () => {
       if (!lov || !stage || lovDist <= 0) return;
@@ -237,12 +279,14 @@ export default function Home() {
     };
     const lovMeasure = () => {
       if (!lov || !stage) return;
-      // two screens of scroll to cross the zoom — one is over before the
-      // word is legible, three is a visitor wondering if the page is stuck
+      /* Three screens, not two. Two was the whole budget when the run
+         ended on the word; the same two now buy the zoom (it is
+         ZOOM_END of the total) and the third pays for reading the
+         sentence that arrives after it. */
       const box = stage.getBoundingClientRect();
       lovWipe = stage.querySelector("#lov-wipe");
       lovTop = parseFloat(getComputedStyle(root.current).getPropertyValue("--bar-h")) || 0;
-      lovDist = Math.round(window.innerHeight * 2);
+      lovDist = Math.round(window.innerHeight * 3);
       lov.style.height = `${Math.round(box.height) + lovDist}px`;
       lovTiles(box);
       lovScroll();
@@ -382,7 +426,6 @@ export default function Home() {
       ) : (
         <section className="csec" id="design">
           <div className="wrap">
-            <Reveal>
               <CenterHead
                 title={<>The design work is <span className="serif">on its way</span>.</>}
                 sub="This space is held for the design side: identities, layouts and product prototypes. Projects appear here as they are published."
@@ -392,7 +435,6 @@ export default function Home() {
                   </TLink>
                 }
               />
-            </Reveal>
           </div>
         </section>
       )}
@@ -411,7 +453,7 @@ export default function Home() {
         <section className="lov" ref={lovSec} aria-label="Frames">
           <div className="lov-stage" ref={lovStage}>
             <svg className="lov-svg" role="img" focusable="false"
-              aria-label={`${P.photoBrand} — selected frames`}>
+              aria-label={`${COLLAGE_WORD} — selected frames`}>
               <defs>
                 {/* The opening is a wipe, not a fade. Fading the surround out
                     dims the whole picture uniformly on the way, and a
@@ -432,7 +474,7 @@ export default function Home() {
                       shrinking, and the text below is what stays behind */}
                   <rect className="lov-open" fill="url(#lov-wipe)" />
                   <text className="lov-cut" x="50%" y="50%" fill="#fff"
-                    textAnchor="middle" dominantBaseline="central">{P.photoBrand}</text>
+                    textAnchor="middle" dominantBaseline="central">{COLLAGE_WORD}</text>
                 </mask>
               </defs>
               {/* slice is SVG's object-fit: cover, so each frame crops to its
@@ -452,8 +494,34 @@ export default function Home() {
               {/* the same word, same size, same place — flat ink, faded in as
                   the run settles. aria-hidden: the svg's label already says it */}
               <text className="lov-cut lov-ink" x="50%" y="50%" aria-hidden="true"
-                textAnchor="middle" dominantBaseline="central">{P.photoBrand}</text>
+                textAnchor="middle" dominantBaseline="central">{COLLAGE_WORD}</text>
             </svg>
+
+            {/* Act two, inside the same sticky frame: the word stays put
+                and this comes up underneath it. There is no kicker on
+                this header — the collage's own word is the kicker, and
+                repeating it here would be the second "Photography" on
+                one screen. Opacity and lift are driven by --copy-o from
+                paint() above. */}
+            <div className="lov-copy">
+              <div className="wrap">
+                {/* The kicker only appears under reduced motion. Normally
+                    the collage's own word is the kicker and printing it
+                    again here would be two "Photography"s on one screen —
+                    but with motion off the zoom never runs, the word is
+                    never cut out of the frames, and then this header does
+                    have to name its own section. */}
+                {/* still: this lockup's visibility is already driven by
+                    the collage run's own scroll progress (--copy-o), and
+                    a reveal timeline fighting that would flicker */}
+                <CenterHead
+                  still
+                  kicker={reduced ? "Photography" : undefined}
+                  title={PHOTO_COPY.title}
+                  sub={PHOTO_COPY.sub}
+                />
+              </div>
+            </div>
           </div>
         </section>
       )}
@@ -465,7 +533,10 @@ export default function Home() {
           and the offer */}
       <section className="statement">
         <div className="wrap">
-          <Reveal as="p">
+          {/* the two sentences arrive one after the other rather than as
+              one block — they are already separate lines, and the second
+              is the answer to the first */}
+          <Reveal as="p" sel=".st-line" stagger={0.14} y={22}>
             {TAGLINE.split(". ").map((s, i, a) => (
               <span className="st-line" key={i}>{s}{i < a.length - 1 ? "." : ""}</span>
             ))}
@@ -478,21 +549,11 @@ export default function Home() {
           two full rows, no stagger and no odd card out. */}
       <section className="csec">
         <div className="wrap">
-          <Reveal>
-            <CenterHead
-              title={<><span className="serif">Finished</span> work, handed over.</>}
-              sub="The same standard on both halves of the job — what leaves here is ready to use, in the sizes and the files you need."
-            />
-          </Reveal>
-          <div className="cgrid cgrid-2">
-            {INTRO.offer.map((o, i) => (
-              <Reveal className="get-card" key={o.k} delay={i * 0.06}>
-                <span className="get-num">{String(i + 1).padStart(2, "0")}</span>
-                <h3>{o.k}</h3>
-                <p>{o.v}</p>
-              </Reveal>
-            ))}
-          </div>
+          <CenterHead
+            title={<><span className="serif">Finished</span> work, handed over.</>}
+            sub="The same standard on both halves of the job — what leaves here is ready to use, in the sizes and the files you need."
+          />
+          <Timeline items={INTRO.offer} />
         </div>
       </section>
 
@@ -608,13 +669,16 @@ function DesignShowcase() {
       {/* the header keeps the reading measure; the work below it gets
           the wide column — see .wrap-wide */}
       <div className="wrap">
-        <Reveal>
-          <CenterHead
-            title={<><span className="serif">Prototyped</span>, not mocked up.</>}
-            lead="Every screen drawn and wired in Figma."
-            sub="Clickable long before anything is built, and specced for a developer to pick up."
-          />
-        </Reveal>
+        {/* same lockup as the photography one: the section's word in the
+            italic, the headline plain under it, the description in
+            Inter. The headline gives up its own italic word — the kicker
+            is the one italic in the header. No <Reveal> around it:
+            CenterHead reveals its own rungs in order. */}
+        <CenterHead
+          kicker="Design"
+          title="Prototyped, not mocked up."
+          sub="Every screen wired and made clickable in Figma before a line of code exists — tested against real flows, specced and ready for a developer to pick up."
+        />
       </div>
 
       <div className="wrap wrap-wide">
@@ -906,9 +970,7 @@ function Testimonials() {
         {/* Headline only, and a size down: here the headline introduces
             the block rather than carrying it — the quotes underneath are
             what the visitor came to read. */}
-        <Reveal>
-          <CenterHead small title={<><span className="serif">Read</span> what people say</>} />
-        </Reveal>
+        <CenterHead small title={<><span className="serif">Read</span> what people say</>} />
       </div>
 
       <div className="wrap wrap-wide">
@@ -971,20 +1033,17 @@ function PhotoProjects() {
   if (!PHOTO_PROJECTS.length) return null;
   return (
     <section className="gwork" id="gallery" aria-label="Photography">
-      <div className="wrap">
-        <Reveal>
-          <CenterHead
-            title={<><span className="serif">Shot</span>, selected and graded as one.</>}
-            lead="Each set is a single body of work."
-            sub="Open any of them for the full edit."
-            cta={
-              <TLink to="/photography" className="extlink">
-                All collections <span className="arrow">→</span>
-              </TLink>
-            }
-          />
-        </Reveal>
-      </div>
+      {/* Normally this section opens straight onto the collections: the
+          header for it is the .lov canvas above, which holds the word
+          "photography" on screen and brings the sentence up underneath
+          it inside its own sticky frame. With no photographs there is no
+          collage to carry that, so the same copy is rendered here as an
+          ordinary header — and only then does it need the kicker back. */}
+      {COLLAGE.length === 0 && (
+        <div className="wrap">
+          <CenterHead kicker="Photography" title={PHOTO_COPY.title} sub={PHOTO_COPY.sub} />
+        </div>
+      )}
 
       {/* the frames get the wide column; the copy above keeps the
           reading measure — see .wrap-wide */}
@@ -1020,6 +1079,14 @@ function PhotoProjects() {
             </Reveal>
             );
           })}
+        </div>
+
+        {/* below the work, same as the design section's — the beat above
+            is a statement and a call to action would have undercut it */}
+        <div className="dshow-cta">
+          <TLink to="/photography" className="extlink">
+            All collections <span className="arrow">→</span>
+          </TLink>
         </div>
       </div>
     </section>

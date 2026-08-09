@@ -32,11 +32,14 @@ they belonged to. That is backwards, everywhere, always.
   it gets `var(--ink)` — brightness only, **never a weight bump**. The
   mono face at 11px thickens badly when bolded and reads as shouting. The
   shared list lives in the "HEADINGS LEAD" block next to `.mono` in
-  [src/data.js](src/data.js) — add new section labels there, don't
-  re-style them per page.
-- A kicker that sits *above* a real headline (`.about-kicker`,
-  `.dz-kicker`, and every `.chead-label` in the centred section system
-  below) stays dim — there the `h1`/`h2` is what leads.
+  [src/data.js](src/data.js). **It is empty today**: every section on
+  the site leads with a Fraunces headline, so no mono label *is* a
+  heading any more. The rule stands for anything added later.
+- A **page hero's** mono kicker (`.about-kicker`, `.dz-kicker`) stays
+  dim — there the `h1` is what leads. Section headers no longer have a
+  mono kicker at all; theirs is `.chead-kicker`, the display face's
+  italic, and it is full ink because it *is* the first line of the
+  heading rather than a label on top of one.
 - Item titles under a section label sit one step back
   (`color-mix(… var(--ink) 72% …)`), so the eye reads section → items.
 - Before shipping any new block, check the visual order top-down: heading
@@ -48,31 +51,90 @@ they belonged to. That is backwards, everywhere, always.
   centred via `margin-inline: auto` and must stay that way for every
   collection, portrait or landscape, existing or new.
 
-## The home page is one centred section shape
+## The whole site is one centred section shape
 
-Every major block on the home page — Design, Photography, "What you get",
-Kind words, Contact — is built from the same header and the same kind of
-grid. The CSS lives in the **CENTRED SECTION SYSTEM** block in
+Every major block on **every page** — Design, Photography, "What you get",
+Kind words and Contact on the home page; the process grids, "More work",
+"The collections", "How I work" and "The short version" on the inner
+pages — is built from the same header and the same kind of grid. The CSS lives in the **CENTRED SECTION SYSTEM** block in
 [src/data.js](src/data.js); the header is `CenterHead` in
 [src/ui.jsx](src/ui.jsx). Don't lay a new section out by hand.
 
-- **The header is a four-rung ladder, and a section takes only the rungs
-  it has something to put in.** In order: `title` (`h2.chead-title`,
-  Fraunces, with exactly **one word** in `<span className="serif">`) →
-  `lead` (Inter **400**, `var(--ink)`, one sentence) → `sub` (Inter
-  **300**, `var(--dim)`, the longer explanation) → `cta`. Every one
-  after the title is optional and renders nothing when omitted. On the
-  home page today: Design and Photography take all four, "What you get"
-  takes `sub` only, and Kind words is a headline with **nothing** under
-  it — that is the shape, not an omission to fix.
+- **The header is a five-rung ladder, and a section takes only the rungs
+  it has something to put in.** In order: `kicker` (the section's own
+  word, **Fraunces italic**, `.chead-kicker`) → `title`
+  (`h2.chead-title`, Fraunces roman) → `lead` (Inter **400**,
+  `var(--ink)`, one sentence) → `sub` (Inter **300**, `var(--dim)`, the
+  longer explanation) → `cta`. Everything except `title` is optional and
+  renders nothing when omitted. On the home page today: Design and
+  Photography take `kicker` + `title` + `sub`, "What you get" takes
+  `sub` only, and Kind words is a headline with **nothing** under it —
+  that is the shape, not an omission to fix.
+- **A header carries exactly one italic, and the kicker takes it when
+  there is one.** Design puts its word in the kicker, so its headline is
+  plain Fraunces roman with no `.serif` span inside. Headers with no
+  kicker keep the italic on one word of the headline instead ("Finished
+  work, *handed over*."). Never both.
+- **The italic lockup is two numbers, and both are fractions of the
+  italic** — `--italic-ratio: 0.52` (the roman's size) and
+  `--italic-gap: 0.28` (the space between them), on `.pf`. A lockup is
+  built from **one** size, `--kicker-fs` on `.chead`, and the roman and
+  the gap come off it; a section that wants a bigger lockup sets that
+  one value. Fixing the roman size and the gap in pixels is what made
+  Design and Photography look unrelated — the same pair of lines at two
+  different proportions.
+  - **Design and Photography are the same size, not merely the same
+    proportion.** `.chead`'s `--kicker-fs` is `clamp(56px, 9vw, 130px)`,
+    which is deliberately the same expression `paint()` in Home.jsx ends
+    on — `max(56, min(130, vw * 0.09))`. The two practices carry equal
+    weight on the page and introduce themselves at equal volume; sized
+    apart, Design read as the smaller of the two. **If the collage's
+    final word size changes, change this clamp with it.** Verified equal
+    at 1900/1440/1280/820/390.
+  - `.lov-copy` is positioned off the **word**, not the floor of the
+    stage. Anchored to the bottom of the viewport it left ~180px between
+    italic and roman against Design's ~18px. The `0.565` in its `top`
+    is how far "Photography" 's ink falls below its own centre — it was
+    **measured**, by scanning the rendered pixels for the last lit row
+    of the italic and the first of the roman and tuning until the
+    optical gap matched Design's. At a shared 130px italic they land
+    **45px and 43px**. Re-measure if the word or the face changes;
+    changing its *case* does not matter, since the gap is set by the
+    descenders (g, p, y) and those are the same either way.
+  - **Both kickers are capitalised.** `.lov-cut` carried
+    `text-transform: lowercase` from when it was the lensofviraj
+    wordmark — right for a brand mark, wrong now that the word is a
+    practice's name standing opposite "Design". Removed.
+  - Titles with **no** kicker keep the full 66px — there the headline is
+    the only thing in the lockup.
 - `lead` and `sub` are the **same size** on purpose. They separate by
   weight and colour only; adding a size step would be a third variable
   doing a job two already do, and stacking those steps per section is
   what made the page look like six different type scales.
 - The spacing between the header and what it heads is `.chead`'s own
-  `margin-bottom`, *not* `.chead + *`: every header is wrapped in a
-  `<Reveal>`, so the grid's previous sibling is the reveal's div and an
-  adjacent-sibling rule matches nothing.
+  `margin-bottom`, *not* `.chead + *`: headers sit inside wrappers, so
+  an adjacent-sibling rule matches the wrapper rather than the grid.
+- **`CenterHead` reveals itself — don't wrap it in a `<Reveal>`.** A
+  Reveal fades the whole block as one object, which is the wrong motion
+  for a lockup: the kicker, headline and description are read in that
+  order and should arrive in it. The display tier rises out of a mask
+  (`.chead-line`, `yPercent: 135`), the copy under it fades in 0.22s
+  later, all on one timeline off one ScrollTrigger.
+  - `.chead-line`'s `padding-bottom: .24em` / `margin-bottom: -.24em`
+    pair is load-bearing: `overflow` clips at the **padding** edge, so
+    the padding is what keeps the descenders of an italic "Photography"
+    from being shaved off at rest, and the negative margin takes the
+    space back out of the layout. `.chead-kicker` re-states the
+    subtraction in its own `margin-bottom` because its declaration wins
+    over `.chead-line`'s — without that the header's gap opens by a
+    quarter of the italic.
+  - **`still`** opts a header out entirely, for one whose visibility is
+    already driven by something else — the photography lockup is faded
+    in by the collage run's `--copy-o`, and a second animation fighting
+    it flickers.
+- `Reveal` takes `sel` + `stagger` to animate matching descendants in
+  sequence rather than the block as a whole — used on the tagline, whose
+  `.st-line` spans are already the shape the motion should follow.
 - **Work grids go wide; copy stays at the reading measure.** The design
   and photography card grids sit in `.wrap.wrap-wide` (1340px) while
   their headers stay in the plain 1180px `.wrap` — three cards in the
@@ -80,11 +142,31 @@ grid. The CSS lives in the **CENTRED SECTION SYSTEM** block in
   look at the work. The testimonial rail takes the wide column too. The
   "What you get" cards are the one grid that keeps the narrow measure:
   they are copy, and 548px is already a generous line for them.
-- **There is no eyebrow, and one must not be added back.** `CenterHead`
-  has no `label` prop on purpose. A mono label above the headline said
-  "Design" over "Prototyped, not mocked up." and "Photography" over a
-  row of photographs — a caption for something already on screen, which
-  is the filler the copy rule above forbids.
+- **There is no *mono* eyebrow, and one must not be added back.**
+  `CenterHead` has no `label` prop on purpose: an 11px mono caption
+  above the headline restated the heading below it in a second
+  typeface, which is the filler the copy rule above forbids. The
+  `kicker` is a different thing — the display face carrying the first
+  line of a lockup, at headline scale, and the headline pays for it by
+  giving up its own italic.
+- **The photography section has no header of its own — the collage is
+  its header.** The `.lov` run is two acts inside one sticky frame:
+  the zoom that turns five photographs into the word "photography"
+  (`ZOOM_END` of the scroll), then a hold where that word stays on
+  screen, lifts ~17% of the stage height, and the sentence fades up
+  underneath it in `.lov-copy`. The section is **three** screens tall,
+  not two — the third pays for reading the sentence. `.gwork` then opens
+  straight onto the collections.
+  - **`.lov-copy` has no kicker** with motion on: the collage's own word
+    is the kicker, and printing it again would be two "Photography"s on
+    one screen. Under **reduced motion** the zoom never runs and the word
+    is never cut out, so Home.jsx puts the kicker back and the CSS drops
+    `.lov-copy` out of its absolute layer into ordinary flow — left as an
+    overlay it would sit at `opacity: 0` forever, since the driver that
+    writes `--copy-o` never runs.
+  - The lift is a transform on the **whole `<svg>`**, not on the text
+    nodes: the mask's copy of the word and the flat-ink copy have to stay
+    in registration, and a mask that has drifted a pixel shows as a seam.
 - **The grid never auto-fits.** `.cgrid-1/2/3` are explicit column
   counts, chosen so every row is full: four "What you get" cards are
   `.cgrid-2` (two full rows), three design cards and three photography
@@ -104,11 +186,18 @@ grid. The CSS lives in the **CENTRED SECTION SYSTEM** block in
   `.statement` and `.end`. The exception is the `.lov` collage and the
   `.gwork` section under it, which are **deliberately borderless**:
   `.lov-stage` is sticky and a screen tall, so a border travelled with
-  it and came to rest as a line ruled directly under the lensofviraj
-  wordmark. Don't put either one back. **The only lit thing on the site is
+  it and came to rest as a line ruled directly under the word the
+  collage resolves into. Don't put either one back. **The only lit thing on the site is
   the hero.** A full-width glow band between sections was tried and
   removed — repeating the hero's glow down the page spends the effect.
   Don't reintroduce one.
+- **The collage resolves into "photography", not the brand.**
+  `COLLAGE_WORD` in [src/pages/Home.jsx](src/pages/Home.jsx), rendered
+  lowercase by `.lov-cut`. It used to be `P.photoBrand`; the canvas is
+  the doorway into the photography work and the `.cbeat` under it opens
+  on the same word, so the run hands the visitor a subject rather than a
+  second brand name to learn. Lensofviraj still names the practice on
+  `/photography` and in the bar.
 - **The design section is one prototype at a time, not a grid**
   (`DesignShowcase` in [src/pages/Home.jsx](src/pages/Home.jsx)). The
   three project names are a `tablist` standing where the section's CTA
@@ -209,11 +298,14 @@ block next to `.mono` in [src/data.js](src/data.js): `.display`,
 headline there rather than setting `font-family` on it — that list is
 what stops one heading being left behind on the sans.
 
-- **One word in the italic. One, literally** — never a phrase. The
-  italic exists to catch the eye on the word the headline turns on, and
-  an italic phrase ("as one", "handed over", "by them") reads as a
-  second voice speaking half the line instead. Pick the word the
-  sentence would lose most by dropping, and prefer the opening verb:
+- **One italic per header, and never a phrase.** Where a header has a
+  `kicker` that word is the italic and the headline stays roman
+  throughout (Design, Photography). Where it doesn't, one word of the
+  headline takes it. The italic exists to catch the eye on the word the
+  line turns on, and an italic phrase ("as one", "handed over", "by
+  them") reads as a second voice speaking half the line instead. Pick
+  the word the sentence would lose most by dropping, and prefer the
+  opening verb:
   *Prototyped*, not mocked up. · *Shot*, selected and graded as one. ·
   *Read* what people say. A headline with every word in `.serif` has no
   emphasis at all.
@@ -223,10 +315,67 @@ what stops one heading being left behind on the sans.
 - Tracking and leading were retuned for the serif (roughly -0.01em and
   +0.1 line-height against the old Inter values). A serif at Inter 300's
   -0.04em and 0.95 line-height collides with itself.
-- Body copy, nav, card titles and every `.mono` label stay on Inter /
-  IBM Plex Mono, untouched. The other pages' own heading classes
-  (`.dz-hero-copy h1`, `.about-hero h1`, `.band h2`, `.detail-head h1`)
-  are still on Inter — extend the list above if they should follow.
+- Body copy, nav and every `.mono` label stay on Inter / IBM Plex Mono,
+  untouched. **Card and row titles stay on Inter too** — `.dz-card-line
+  h3`, `.projcap h3`, `.tl-row b`, `.get-card h3` and the testimonial
+  cards are items *under* a headline, and putting the display face on
+  them flattens the very order the HEADINGS LEAD rule exists to keep.
+
+### Numbered steps are a Timeline, not cards
+
+Every numbered k/v list on the site — the home page's "What you get",
+both "How a … goes" process sections and /about's "How I work" —
+renders `Timeline` from [src/ui.jsx](src/ui.jsx). Four boxes say "four
+separate things"; these are one sequence, and a rail you travel down
+says so. **No box, no border, no panel** — the type is the whole design,
+which is also what keeps the copy legible at this measure.
+
+- **One step is lit at a time**: the last one whose top the middle of the
+  screen has passed. The rest sit at `opacity: .34` and `scale(.94)`,
+  shrinking *toward* the rail (`transform-origin` follows the side) so
+  they fall back rather than drift away.
+- Odd steps sit right of the rail and read left-to-right; even ones sit
+  left and are set ragged-left, so both columns hug the line.
+- **One rAF-throttled scroll handler** drives both the rail fill
+  (`--prog`) and which step is lit. An IntersectionObserver per step is
+  the obvious alternative and is worse: the band that decides "current"
+  is a line, not a box, so it needs a `-50%/-50%` rootMargin and still
+  goes quiet whenever that line sits in the gap between two steps.
+- Below 760px the rail moves to the left edge and every step hangs off
+  the same side — alternating in a 350px column gives each one about
+  150px to say its piece in.
+- Reduced motion sets `data-still`: every step lit, rail drawn full,
+  nothing scaled. The list still reads in order, it just doesn't animate.
+
+**`clearProps` on every `Reveal` tween is not optional.** GSAP leaves
+its inline `transform: translate(0px, 0px)` behind when a tween
+finishes, and an inline declaration beats every rule in the stylesheet —
+so any `:hover` transform on something that is also a `Reveal` silently
+never fires. Verified by asserting no visible `.rv` carries an inline
+transform, on every route.
+
+### One card, one header, site-wide
+
+Applying the system to the inner pages deleted four one-off components
+rather than restyling them — if a new block doesn't fit `CenterHead` +
+`.cgrid` + `.get-card`, that is a signal, not a missing style:
+
+| Gone | Was | Now |
+| --- | --- | --- |
+| `SectionHead` / `.shead` | mono label + self-drawing rule | `CenterHead` |
+| `.sec-grid` / `.sec-label` | sticky mono label beside content | `CenterHead` over a `.cgrid` |
+| `.sl-row` | numbered process list, ×2 pages | `Timeline` |
+| `.approach` | welded row of panels on /about | `Timeline` |
+| `.get-card` / `.get-num` | numbered card grid | `Timeline` |
+| `.pbrand` / `.band-lead` | hand-built lockup on /photography | `CenterHead` with a `kicker` |
+
+`.band p` had to go with the last of those: at (0,1,1) it beat
+`.chead-sub` at (0,1,0) and would have stripped the centred paragraph's
+auto margins, leaving it centred as text but parked left as a block.
+
+**The timeline on /about keeps its left-aligned dot rail on purpose** — a
+chronology reads down a spine, and centring it would cost the thing that
+makes it legible. A centred header over left-aligned rows is fine.
 
 ### The four faces, and what each one is for
 

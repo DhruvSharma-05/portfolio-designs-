@@ -504,12 +504,25 @@ export const CSS = `
      set in it — see .serif — and nothing else on the site is, which is
      why only the 300 italic is loaded. */
   --font-accent: 'Fraunces', Georgia, 'Times New Roman', serif;
+  /* THE ITALIC LOCKUP, in two numbers, because it appears at two very
+     different scales and has to read as the same thing at both. The
+     photography section's italic is the collage's own word at up to
+     130px; Design's is 84px. Fixing the roman size and the gap in
+     pixels made those two lockups look unrelated — the same pair of
+     lines, differently proportioned. Both are now fractions of whatever
+     the italic happens to be, so the relationship is identical
+     everywhere and only the scale changes.
+
+     ratio: the roman headline's size, as a fraction of the italic.
+     gap:   the space between them, likewise. */
+  --italic-ratio: 0.52;
+  --italic-gap: 0.28;
   font-family: 'Inter', system-ui, sans-serif; font-weight: 400;
   -webkit-font-smoothing: antialiased; letter-spacing: -0.01em;
   transition: color .5s ease; position: relative; min-height: 100vh;
   /* clip, not hidden: hidden would compute overflow-y to auto and turn
      .pf into a scroll container, which silently kills every position:sticky
-     inside it (the bar, .card, .sec-label). clip contains the same
+     inside it (the bar, .card, .lov-stage). clip contains the same
      horizontal overflow without creating a scrollport. */
   overflow-x: clip; }
 .pf a { color: inherit; text-decoration: none; }
@@ -545,8 +558,15 @@ export const CSS = `
    line-heights were set for a thin Inter 300, and a serif at the same
    numbers collides with itself — the letters carry more weight per glyph
    and the ascenders and descenders need the room. */
-.display, .mast-roles, .chead-title, .end h2, .statement p {
+.display, .mast-roles, .chead-title, .chead-kicker, .end h2, .statement p,
+.dz-hero-copy h1, .about-hero h1, .detail-head h1,
+.cap h2, .phero-cap h1, .cmodal-head h2 {
   font-family: var(--font-accent); font-weight: 300; }
+/* CARD AND ROW TITLES STAY ON INTER. They are items under a headline,
+   not headlines: .dz-card-line h3, .projcap h3, .wcard-cap
+   h3, .tl-row b and the get/testimonial cards all sit one rung down the
+   ladder, and putting the display face on them flattens the very order
+   the HEADINGS LEAD rule exists to keep. */
 /* the emphasis inside a headline: one word taken to the italic. It is the
    only contrast the headline has, so a headline where every word is in
    here has none — never wrap the whole thing. */
@@ -568,8 +588,10 @@ export const CSS = `
    Colour only — no weight bump. Bolding the mono face at 11px thickened
    the letterforms and read as shouting; brightness alone is enough to
    put the label ahead of the cards. */
-.sec-label,
-.shead-label { color: var(--ink); }
+/* Nothing is left in this list. Every section on the site now leads
+   with a Fraunces headline in the centred system rather than a mono
+   label, so there is no mono label that IS a heading any more. The rule
+   still stands for anything added later. */
 
 /* …and the cards under a section label sit one step back from it, so the
    eye reads the section first and the items second. Hover still lifts
@@ -862,16 +884,70 @@ export const CSS = `
 .lov-stage { position: sticky; top: var(--bar-h);
   height: calc(100svh - var(--bar-h)); overflow: hidden;
   background: var(--bg); }
-.lov-svg { display: block; width: 100%; height: 100%; }
+/* The lift is written by paint() as the sentence arrives: the word rises
+   out of the middle of the frame to clear room for it rather than
+   leaving. The whole svg moves, so the mask, the picture inside the
+   letters and the flat ink stay in registration — moving the text nodes
+   alone would need the mask's copy and the ink copy kept in step by
+   hand, and a mask that has drifted a pixel shows as a seam. Nothing is
+   revealed at the foot by the move: the canvas is already at opacity 0
+   by the time this starts. */
+.lov-svg { display: block; width: 100%; height: 100%;
+  transform: translateY(var(--lift, 0px)); }
 .lov-tile { /* geometry is written by Home.jsx — see lovTiles */ }
 /* the surround: a white disc in the mask, closed in from the edges by the
    driver (it writes the gradient's radius). No opacity of its own — a
    half-transparent surround is a haze over the whole frame, and it makes
    the letters read as translucent even at full strength. */
 .lov-canvas { opacity: var(--shot-o, 0); }
-.lov-cut { font-size: var(--fs, clamp(56px, 9vw, 130px)); font-weight: 300;
-  letter-spacing: -0.045em; text-transform: lowercase; }
+/* The accent face's italic, same as .chead-kicker — this word IS the
+   photography section's kicker, it just happens to arrive by being cut
+   out of five photographs. Tracking comes back from .045em to almost
+   nothing: the negative track was set for a geometric sans at display
+   size and closes the serif's italic up into a single mark. */
+/* No text-transform. It carried lowercase from when this was the
+   lensofviraj wordmark, where a lowercase mark was the brand; now the
+   word is a section's name standing opposite "Design", and a lowercase
+   p against a capital D set the two practices differently again.
+   COLLAGE_WORD in Home.jsx carries the capital. */
+.lov-cut { font-family: var(--font-accent); font-style: italic;
+  font-size: var(--fs, clamp(56px, 9vw, 130px)); font-weight: 300;
+  letter-spacing: -0.01em; }
 .lov-ink { fill: var(--ink); opacity: var(--ink-o, 1); }
+
+/* The sentence, in the lower part of the same sticky frame. Absolutely
+   placed rather than in flow: the svg fills the stage, and this has to
+   sit over its lower third without changing the geometry the mask is
+   measured against. --copy-o is written by paint(); the translate is
+   derived from it so the fade and the rise cannot fall out of step. */
+/* Hung off the WORD, not off the floor of the stage. Anchoring it to
+   the bottom of the viewport left roughly 180px between the italic and
+   the roman here against 18px on the Design lockup — the same two lines
+   at two unrelated spacings. Positioned from the word's own centre it
+   sits --italic-gap below it, exactly as Design's does.
+
+   0.565 is how far the word's ink reaches below its centre: the text is
+   dominant-baseline:central and "photography" is all lowercase with
+   three descenders, so a little over half its em box hangs below the
+   middle. It was measured, not derived — rendered both lockups, scanned
+   the pixels for the last lit row of the italic and the first of the
+   roman, and tuned it until the optical gap came to the same fraction
+   of the italic in each (0.345). --lov-k is the word's live size,
+   clamped — during the zoom
+   --fs runs to a couple of thousand pixels, and the copy is invisible
+   then but would still be laid out a screen and a half down. */
+.lov-copy { --lov-k: clamp(56px, var(--fs, 130px), 130px);
+  position: absolute; left: 0; right: 0;
+  top: calc(50% + var(--lift, 0px) + var(--lov-k) * (0.565 + var(--italic-gap)));
+  text-align: center;
+  opacity: var(--copy-o, 0);
+  transform: translateY(calc((1 - var(--copy-o, 0)) * 26px));
+  pointer-events: none; }
+/* the collage's word is this lockup's italic, so the roman under it is
+   sized off that rather than off .chead's own default */
+.lov-copy .chead { margin-bottom: 0; --kicker-fs: var(--lov-k); }
+.lov-copy .chead-title {
+  font-size: calc(var(--kicker-fs) * var(--italic-ratio)); line-height: 1.2; }
 
 /* --- the two practices, moved out of the hero and given their own room ---
    No light in here. This section used to open with a carry-over of the
@@ -948,7 +1024,7 @@ export const CSS = `
    margins centre the copy in whatever space is left over; the meta keeps
    its place on the bottom rule. */
 .cap > :first-child { margin-block: auto; }
-.cap h2 { font-weight: 400; letter-spacing: -0.03em; font-size: clamp(24px, 3vw, 38px); line-height: 1.05; }
+.cap h2 { font-weight: 300; letter-spacing: -0.008em; font-size: clamp(24px, 3vw, 38px); line-height: 1.16; }
 .cap p { color: var(--dim); line-height: 1.68; font-size: 15px; margin-top: 14px; }
 .cap .meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   padding-top: 16px; border-top: 1px solid var(--rule); }
@@ -1081,8 +1157,56 @@ export const CSS = `
    nothing. Set here rather than on each grid, so the header and what it
    heads can never drift apart from one section to the next. */
 .chead { max-width: 760px; margin: 0 auto clamp(52px, 7vw, 90px); text-align: center; }
+/* The section's own word, in the accent face's italic, above the
+   headline. It reads as the first line of a display lockup rather than
+   a label on top of one — which is why it is the same face as the
+   headline and only a size down, not the 11px mono caption that used to
+   sit here. A header carrying a kicker gives up the italic word inside
+   its headline: one italic per header, and this is it. */
+/* --kicker-fs is the one size a lockup is built from: the italic takes
+   it directly, and the roman and the gap are fractions of it.
+
+   This is deliberately the SAME EXPRESSION the collage's word resolves
+   to — paint() in Home.jsx ends at max(56, min(130, vw * 0.09)), which
+   is this clamp. The two sections carry equal weight on the page and
+   should introduce themselves at equal volume; sized apart, Design read
+   as the smaller of the two practices rather than the other half of the
+   same studio. If the collage's final size changes, change this with
+   it. */
+.chead { --kicker-fs: clamp(56px, 9vw, 130px); }
+
+/* The mask the display tier rises out of. See CenterHead in ui.jsx.
+
+   The padding/negative-margin pair is the whole trick: overflow clips at
+   the padding edge, so pushing that edge 0.24em past the text leaves
+   room for the descenders of an italic "Photography" to sit outside the
+   line box without being cut off at rest, and the negative margin takes
+   the space straight back out of the layout so nothing below it moves.
+   Without it the mask shaves the tails off g, p and y permanently. */
+.chead-line { display: block; overflow: hidden;
+  padding-bottom: 0.24em; margin-bottom: -0.24em; }
+.chead-line > span { display: block; }
+.chead-kicker { font-family: var(--font-accent); font-style: italic;
+  font-weight: 300; color: var(--ink);
+  font-size: var(--kicker-fs); line-height: 1.08;
+  letter-spacing: -0.005em;
+  /* The kicker carries .chead-line too, and its own margin-bottom would
+     otherwise beat that rule's -0.24em compensation — leaving the mask's
+     descender padding in the layout and opening the gap by a quarter of
+     the italic. Subtracting it here is the same cancellation, done where
+     the winning declaration is. 0.24em resolves against this element's
+     own font-size, which is --kicker-fs, so the two match exactly. */
+  margin-bottom: calc(var(--kicker-fs) * var(--italic-gap) - 0.24em); }
 .chead-title { font-weight: 300; letter-spacing: -0.008em; line-height: 1.14;
   font-size: clamp(33px, 5.2vw, 66px); text-wrap: balance; }
+/* THE ITALIC IS THE BIGGER OF THE TWO where a header has a kicker, and
+   by exactly --italic-ratio — a roman headline at the same scale as the
+   italic above it reads as two headlines arguing. Headers with no
+   kicker keep the full size above, because there the headline is the
+   only thing in the lockup. */
+.chead-kicker + .chead-title {
+  font-size: calc(var(--kicker-fs) * var(--italic-ratio));
+  line-height: 1.2; }
 /* One step down, for a section where the headline introduces the block
    rather than carrying it — the testimonials, where the quotes are what
    the visitor came to read. Still unmistakably the headline tier; it is
@@ -1108,6 +1232,11 @@ export const CSS = `
    paragraph, so the two sit closer than either sits to the headline */
 .chead-lead + .chead-sub { margin-top: 8px; }
 .chead-cta { margin-top: 34px; display: flex; justify-content: center; }
+
+/* .cbeat — a header given its own screen — is gone. It was written for
+   the moment after the collage, and that moment now happens inside the
+   collage's own sticky frame instead: the word stays and the sentence
+   arrives under it. See .lov-copy. */
 
 /* --- the grids ---
    minmax(0, 1fr), not 1fr: a grid item's automatic minimum is its
@@ -1210,9 +1339,10 @@ export const CSS = `
 
 /* --- section shell with sticky label --- */
 .sec { padding: 13vh 0; border-top: 1px solid var(--rule); }
-.sec-grid { display: grid; grid-template-columns: 180px 1fr; gap: 40px; align-items: start; }
-.sec-label { position: sticky; top: 100px; }
-@media (max-width: 860px) { .sec-grid { grid-template-columns: 1fr; gap: 24px; } .sec-label { position: static; } }
+/* .sec-grid and .sec-label are gone with the sticky-mono-label layout
+   they made. Both sections that used them — the two "How a project
+   goes" blocks — are a centred header over a .cgrid now, same as the
+   home page. .sec survives as a plain ruled section shell. */
 
 /* --- metrics --- */
 .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -1228,27 +1358,8 @@ export const CSS = `
 /* the % / wks rides in as the number lands, so it needs its own box */
 .metric b .suf { display: inline-block; margin-top: 0; will-change: transform, opacity; }
 
-/* --- services / shot list ---
-   No entrance animation: the rows are simply there. The only motion in
-   the block is the hover, and it stays small — the row lifts a few
-   pixels and its rule and number brighten. The old version swept a
-   solid accent fill across and inverted the text, which was far more
-   than a list of four steps needs. */
-.sl-row { display: grid; grid-template-columns: 42px 1fr 1.1fr;
-  gap: 20px; align-items: baseline; padding: 22px 0;
-  border-bottom: 1px solid var(--rule);
-  transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s ease; }
-.sl-row:first-child { border-top: 1px solid var(--rule); }
-.sl-row:hover { transform: translateY(-4px);
-  border-bottom-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
-.sl-row h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(18px, 2.1vw, 25px);
-  transition: color .35s ease; }
-.sl-row p { color: var(--dim); font-size: 14.5px; line-height: 1.58; }
-.sl-row .mono { transition: color .35s ease; }
-/* the number carries the state — accent is near-white, so brightening
-   the dim mono reads far more clearly than tinting the already-light h3 */
-.sl-row:hover .mono { color: var(--accent); }
-@media (max-width: 700px) { .sl-row { grid-template-columns: 30px 1fr; } .sl-row p { grid-column: 2; } }
+/* The .sl-row numbered process list is gone. Both places that used it
+   render PROCESS as a Timeline now. */
 
 /* --- carousel dot rail (the lightbox's frame picker) ---
    Each dot is a 26px-tall tap target; the 2px bar centred in it is the
@@ -1351,7 +1462,7 @@ export const CSS = `
   padding: 30px 32px 32px; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
 @media (max-width: 560px) { .cmodal { padding: 14px; } .cmodal-panel { padding: 24px 20px 26px; } }
 .cmodal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
-.cmodal-head h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.1;
+.cmodal-head h2 { font-weight: 300; letter-spacing: -0.008em; line-height: 1.18;
   font-size: clamp(24px, 3.4vw, 32px); text-wrap: balance; }
 .cmodal-sub { margin-top: 14px; color: var(--dim); font-size: 15px; line-height: 1.6; max-width: 48ch; }
 .cmodal-x { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center;
@@ -1369,7 +1480,7 @@ export const CSS = `
 .back:hover .arrow { transform: translateX(-5px); }
 .detail-head { display: flex; justify-content: space-between; align-items: flex-end;
   gap: 28px; flex-wrap: wrap; margin-bottom: 40px; }
-.detail-head h1 { font-weight: 300; letter-spacing: -0.03em; line-height: 1;
+.detail-head h1 { font-weight: 300; letter-spacing: -0.01em; line-height: 1.08;
   font-size: clamp(36px, 6.5vw, 84px); text-wrap: balance; }
 .detail-fig { position: relative; overflow: hidden; border-radius: 4px; border: 1px solid var(--rule);
   aspect-ratio: 3/2; }
@@ -1445,7 +1556,7 @@ export const CSS = `
      (it's a short sentence, so it becomes a couple of full-width lines). */
   .about-lead { max-width: none; } }
 .about-kicker { margin-bottom: 22px; }
-.about-hero h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .98;
+.about-hero h1 { font-weight: 300; letter-spacing: -0.012em; line-height: 1.06;
   font-size: clamp(44px, 8vw, 104px); text-wrap: balance; }
 .about-lead { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.6vw, 30px);
   line-height: 1.35; margin-top: 28px; max-width: 22ch; }
@@ -1461,13 +1572,9 @@ export const CSS = `
 .about-portrait img { will-change: transform; }
 
 /* --- section header: numbered label + a rule that draws in --- */
-.shead { display: flex; align-items: center; gap: 20px; margin-bottom: 36px; }
-.shead-n { flex: none; color: var(--accent); font-variant-numeric: tabular-nums; }
-/* colour/weight come from the "headings lead" block near .mono */
-.shead-label { flex: none; white-space: nowrap; }
-.shead-rule { flex: 1 1 auto; height: 1px; background: var(--rule);
-  transform: scaleX(0); transform-origin: left; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
-.shead.in .shead-rule { transform: scaleX(1); }
+/* .shead — a mono label with a rule that drew itself across — is gone
+   with the SectionHead component it styled; its four call sites are
+   CenterHead lockups now. */
 
 /* Globe left, bio right. The globe column simply isn't rendered when
    heavy visuals are off — hence the minmax on the *text* column, so it
@@ -1496,22 +1603,10 @@ export const CSS = `
   .about-body-text { order: 1; }
   .about-body-viz { order: 2; }
 }
-.approach { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
-  background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
-/* panels are plain <div> on the about page and <a> on the home page,
-   where each one is a door into that practice */
-.approach div, .approach a { position: relative; background: var(--bg); padding: 34px 26px 30px;
-  display: block; transition: background-color .4s ease; }
-.approach div::before, .approach a::before { content: ""; position: absolute; left: 0; right: 0; top: 0;
-  height: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left;
-  transition: transform .45s cubic-bezier(.2,.8,.2,1); }
-.approach div:hover::before, .approach a:hover::before { transform: scaleX(1); }
-.approach a:hover { background: var(--panel); }
-.approach a:hover h3 { color: var(--accent); }
-.approach-n { display: block; color: var(--accent); opacity: .85; margin-bottom: 18px; }
-.approach h3 { transition: color .3s ease; }
-.approach h3 { font-weight: 400; letter-spacing: -0.02em; font-size: 19px; margin-bottom: 12px; }
-.approach p { color: var(--dim); font-size: 14.5px; line-height: 1.6; }
+/* .approach is gone. Its three panels are a Timeline now
+   — the same numbered card the home page and both process sections
+   use — so the site has one card idiom rather than a welded row of
+   panels on /about and cards everywhere else. */
 
 /* --- timeline: a real spine with accent dot markers --- */
 .timeline { position: relative; margin-top: 4vh; }
@@ -1542,32 +1637,89 @@ export const CSS = `
   margin-right: calc(50% - 50vw); padding: 11vh 0;
   background: var(--panel);
   border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-/* the approach panels sit on the band, so they take its tone, not the page's */
-.invert-band .approach div, .invert-band .approach a { background: var(--panel); }
 
-/* --- "What you get" — four cards, two by two ---
-   The pairs used to stagger (the even card dropped 44px), which was the
-   one thing on the page that made a full row look like an accident. In
-   the centred system the header is the only thing that leads, so the
-   cards sit level and the four fill their two rows exactly.
-   Number-led: an oversized outlined index as a graphic element, which
-   fills to the accent as the card lifts. */
-.get-card { position: relative; border: 1px solid var(--rule); border-radius: 7px;
-  padding: 36px 30px 32px; background: var(--panel); overflow: hidden; text-align: center;
-  transition: transform .45s cubic-bezier(.2,.8,.2,1), border-color .4s ease, box-shadow .45s ease; }
-.get-card:hover { transform: translateY(-5px); border-color: var(--accent);
-  box-shadow: 0 22px 44px -28px rgba(0, 0, 0, .75); }
-/* Inter 600, not the personal version's Anton — this site has one
-   typeface family and an outlined 300 would read as a hairline smudge. */
-.get-num { display: block; font-weight: 600; font-size: 62px; line-height: 1;
-  letter-spacing: -0.04em; color: transparent;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--ink) 26%, transparent);
-  margin-bottom: 16px; transition: -webkit-text-stroke-color .4s ease; }
-.get-card:hover .get-num { -webkit-text-stroke-color: var(--accent); }
-.get-card h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(20px, 2.4vw, 28px);
-  margin-bottom: 10px; }
-.get-card p { color: var(--dim); font-size: 14.5px; line-height: 1.6;
-  max-width: 40ch; margin-inline: auto; }
+/* ==================================================================
+   THE TIMELINE — a rail down the middle, steps alternating off it
+
+   Replaced the numbered card grid everywhere it was used. Four boxes
+   say "four separate things"; these are one sequence, and a line you
+   travel down says so. There is no box, no border and no panel here on
+   purpose — the type is the whole design, which is also what keeps the
+   copy legible at this measure.
+
+   Lit state is driven from Timeline in ui.jsx: exactly one step carries
+   data-on="1" at a time, and the rail's fill is --prog.
+   ================================================================== */
+.tline { position: relative; list-style: none; margin: 0; padding: 0;
+  --tline-gap: clamp(34px, 5vw, 80px); }
+/* the rail sits on the column's centre line and runs the full height —
+   a border on the list would stop at the last item's box */
+.tline-rail { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+  background: var(--rule); transform: translateX(-50%); }
+.tline-rail i { display: block; width: 100%; background: var(--accent);
+  transition: height .25s linear; }
+
+.tline-step { position: relative; display: grid;
+  grid-template-columns: 1fr 1fr; column-gap: var(--tline-gap);
+  padding-block: clamp(30px, 6vh, 74px); }
+/* Odd steps sit right of the rail and read left-to-right; even ones sit
+   left and are set ragged-left, so both columns hug the line and the
+   eye comes back to it between steps instead of tracking to the margin. */
+.tline-step[data-side="right"] .tline-body { grid-column: 2; text-align: left; }
+.tline-step[data-side="left"] .tline-body { grid-column: 1; text-align: right; }
+.tline-body { max-width: 46ch; }
+.tline-step[data-side="left"] .tline-body { margin-left: auto; }
+
+/* the marker where the step meets the rail, on the step's first line */
+.tline-dot { position: absolute; left: 50%; top: clamp(38px, 6vh, 82px);
+  width: 9px; height: 9px; border-radius: 50%;
+  transform: translate(-50%, -50%) scale(.7);
+  background: var(--bg); border: 1px solid var(--rule);
+  transition: background-color .5s ease, border-color .5s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
+
+/* THE ONE THAT IS LIT. Everything else sits back — dimmed and a shade
+   smaller, so the page is reading one step at a time rather than four
+   at once. transform-origin follows the side so a step shrinks toward
+   the rail it hangs off rather than drifting away from it. */
+.tline-step { opacity: .34; transition: opacity .55s ease, transform .55s cubic-bezier(.2,.8,.2,1); }
+.tline-step[data-side="right"] { transform-origin: left center; }
+.tline-step[data-side="left"] { transform-origin: right center; }
+.tline-step[data-on="1"] { opacity: 1; }
+.tline-step[data-on="0"] { transform: scale(.94); }
+.tline-step[data-on="1"] .tline-dot { background: var(--accent);
+  border-color: var(--accent); transform: translate(-50%, -50%) scale(1.15); }
+
+.tline-n { display: block; color: var(--dim); margin-bottom: 14px; }
+.tline-step[data-on="1"] .tline-n { color: var(--accent); }
+.tline-body h3 { font-weight: 400; letter-spacing: -0.02em;
+  font-size: clamp(21px, 2.6vw, 30px); margin-bottom: 12px; line-height: 1.2; }
+.tline-body p { color: var(--dim); font-size: clamp(15px, 1.5vw, 16.5px);
+  line-height: 1.72; }
+
+/* Reduced motion: everything lit, rail drawn full, nothing scaled. */
+.tline[data-still] .tline-step { opacity: 1; transform: none; }
+.tline[data-still] .tline-dot { background: var(--accent); border-color: var(--accent); }
+
+/* Below the two-column measure the rail moves to the left edge and every
+   step hangs off the same side — alternating sides in a 350px column
+   gives each one about 150px to say its piece in. */
+@media (max-width: 760px) {
+  .tline { --tline-gap: 26px; }
+  .tline-rail { left: 3px; }
+  .tline-step { grid-template-columns: 1fr; padding-left: 30px; }
+  .tline-step[data-side="right"] .tline-body,
+  .tline-step[data-side="left"] .tline-body {
+    grid-column: 1; text-align: left; margin-left: 0; }
+  .tline-dot { left: 3px; }
+}
+
+/* The numbered card (.get-card / .get-num) is gone, and with it the
+   cursor-tracked pool of light that sat on it. Every place it was
+   used — the home page's "What you get", both process sections and
+   /about's "How I work" — renders a Timeline instead: four boxes say
+   "four separate things", and these are all one sequence. The lit /
+   dimmed step does the job the hover depth was doing, on scroll
+   rather than on pointer. See THE TIMELINE above. */
 
 /* studio tagline — a large, quiet, centred statement between sections */
 .statement { padding: var(--sec-y) 0; border-top: 1px solid var(--rule); text-align: center; }
@@ -1738,7 +1890,7 @@ export const CSS = `
    class, so the phone backdrop stayed displayed on a desktop — and being
    a static-flow child of .phero-fr it took the whole banner and pushed
    the real frame out below it, leaving a 640px thumbnail stretched
-   across the hero. Same trap as .band p.band-lead and .pf button.mono. */
+   across the hero. Same trap as .pf button.mono. */
 .pf img.phero-bg { display: none; }
 .phero-fr::after { content: ""; position: absolute; inset: 0;
   background: linear-gradient(180deg,
@@ -1749,7 +1901,7 @@ export const CSS = `
 .phero-in { position: relative; z-index: 2; height: 100%; display: flex;
   flex-direction: column; justify-content: flex-end; gap: 26px; padding: 8vh 28px 40px; }
 /* caption + rail sit at the bottom of the frame */
-.phero-cap h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
+.phero-cap h1 { font-weight: 300; letter-spacing: -0.012em; line-height: 1.04;
   font-size: clamp(44px, 9vw, 120px); text-wrap: balance; }
 .phero-cap .sub { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 18px; }
 .phero-open { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px;
@@ -1795,23 +1947,11 @@ export const CSS = `
 /* the bottom padding is the gap down to the frames carousel — 2vh let the
    copy sit almost on top of the first slide */
 .band { padding: 12vh 0 7vh; }
-.band h2 { font-weight: 300; letter-spacing: -0.03em; line-height: 1.02;
-  font-size: clamp(30px, 5vw, 66px); text-wrap: balance; }
-/* --- the Lensofviraj name ---
-   Set plainly, at a size above the band's own h2. It used to be a lockup
-   — the two halves in the display face with the joint dropped into the
-   mono face, shrunk and lifted off the baseline — which made "of" a mark
-   to be read on its own rather than three letters inside a name. */
-.pbrand { font-weight: 300; letter-spacing: -0.045em; line-height: .95;
-  font-size: clamp(38px, 7vw, 86px); }
-.band p { color: var(--dim); font-size: 15px; line-height: 1.72; max-width: 46ch; margin-top: 20px; }
-/* the photography philosophy line — brighter and larger than the note below it.
-   Written as .band p.band-lead, not .band-lead: a bare class (0,1,0) loses
-   to the .band p rule above (0,1,1), so every declaration here was being
-   discarded and the lead rendered as an identical second note — same 15px,
-   same dim grey, same 46ch. Same trap as .pf button.mono near the top. */
-.band p.band-lead { color: var(--ink); font-weight: 300; letter-spacing: -0.02em;
-  font-size: clamp(19px, 2.4vw, 27px); line-height: 1.45; max-width: 30ch; margin-top: 26px; }
+/* .band renders a CenterHead now, so .band h2, .pbrand, .band p and
+   .band p.band-lead are gone with the hand-built lockup they styled.
+   .band p in particular had to go: at (0,1,1) it beat .chead-sub at
+   (0,1,0) and would have taken the centred paragraph's auto margins
+   away, leaving it centred as text but parked left as a block. */
 
 /* --- photo project detail --- */
 /* Shows the opening frame whole. This was aspect-ratio: 16/9 with the
@@ -2022,7 +2162,7 @@ export const CSS = `
 @media (max-width: 900px) { .dz-hero { grid-template-columns: 1fr; gap: 40px; } }
 .dz-hero-copy { min-width: 0; }
 .dz-kicker { margin-bottom: 30px; }
-.dz-hero-copy h1 { font-weight: 300; letter-spacing: -0.04em; line-height: .96;
+.dz-hero-copy h1 { font-weight: 300; letter-spacing: -0.012em; line-height: 1.04;
   font-size: clamp(42px, 6.4vw, 92px); text-wrap: balance; }
 /* The one mono row here that can wrap. At 11px with .16em tracking two
    lines set solid read as a slab of spaced caps rather than a list, so
@@ -2164,8 +2304,8 @@ export const CSS = `
 /* ==================================================================
    PHONE PASS — one inset, one size for secondary copy.
 
-   Every card on this site carries its own padding (32/30 on .get-card,
-   34/26 on .approach, 30/30 on .tcard, 34/32 on .cap, 44/34 on .teaser)
+   Every card on this site carries its own padding (
+   30/30 on .tcard, 34/32 on .cap, 44/34 on .teaser)
    and its own body size (14 → 16px). At 1180px none of that shows: each
    block sits in its own room, and the variation reads as rhythm.
 
@@ -2190,8 +2330,7 @@ export const CSS = `
 
   /* one inset for every bordered text block, so all boxed copy starts on
      the same vertical line down the page */
-  .get-card, .tcard, .metric, .cap, .approach div, .approach a,
-  .teaser a, .disc { padding: 22px; }
+  .tcard, .metric, .cap, .teaser a, .disc { padding: 22px; }
   /* the teaser leant on 240px of height to hold its shape at desktop
      padding; at this inset that is just a hole under the text */
   .teaser a { min-height: 0; gap: 12px; }
@@ -2202,12 +2341,11 @@ export const CSS = `
      pushing copy 50px past every other left edge on the page. */
   .tl-row { padding-left: 34px; grid-template-columns: 52px 1fr; gap: 14px; }
   .tl-row:hover { padding-left: 40px; }
-  .sl-row { grid-template-columns: 24px 1fr; gap: 14px; }
 
   /* one size for supporting copy. These ranged 14 / 14.5 / 15px, a
      difference too small to read as hierarchy and large enough to look
      like a mistake once the cards are stacked in one column. */
-  .get-card p, .approach p, .sl-row p, .cap p, .band p,
+  .cap p, .band p,
   .dz-card-cap p, .colophon dd { font-size: 15px; }
 }
 
@@ -2476,10 +2614,19 @@ export const CSS = `
      mask stays open so all five frames show (the wipe's radius keeps its
      markup default, which clears the frame), and the word — which only
      ever arrives by zooming — is dropped rather than parked on top of
-     them. It is still in the standfirst above and on /photography. */
-  .lov-stage { position: static; }
+     them. It is still on /photography. */
+  .lov-stage { position: static; height: auto; }
+  .lov-svg { height: 70svh; transform: none !important; }
   .lov-canvas { opacity: 1; }
   .lov-ink { opacity: 0; }
+  /* The sentence stops being an overlay on a sticky frame and becomes an
+     ordinary block under the pictures: the driver that writes --copy-o
+     never runs here, so left as an absolutely-placed layer at opacity 0
+     it would simply never appear. Home.jsx gives it back its kicker in
+     the same breath, since the word it would otherwise inherit from the
+     collage is the thing this block just dropped. */
+  .lov-copy { position: static; opacity: 1; transform: none;
+    padding-block: clamp(44px, 8vh, 90px); }
   /* the hero light holds still — the pools stay where they start, so the
      glow is there but nothing moves */
   .tick-btn[aria-current="true"] i { transform: scaleX(1) !important; }
