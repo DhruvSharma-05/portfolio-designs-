@@ -14,15 +14,31 @@
    Runs automatically via the "prebuild" npm script, or manually with
    `npm run sync`. If credentials are missing it warns and exits 0 so
    the build still succeeds on placeholder images.
+
+   `--cached` (what "predev" passes) returns immediately when a manifest
+   with photos in it is already on disk, so starting the dev server does
+   not wait on Contentful. The per-image cache below still saves the
+   re-encoding, but it cannot save the round trip: every start was
+   fetching the whole entry list and stat-ing every asset before it could
+   decide there was nothing to do. `npm run sync` and `npm run build`
+   never pass the flag, so a real pull is always one command away and a
+   deploy is always fresh.
    ================================================================== */
 
 import { readFile, writeFile, mkdir, rm, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import sharp from "sharp";
-import exifr from "exifr";
 import "dotenv/config";
+
+/* sharp and exifr are loaded on first use, not at the top of the file.
+   sharp is a native addon and the pair of them cost the best part of two
+   seconds to pull in — which the --cached path above pays on every `npm
+   run dev` for two modules it then never calls. A real sync loads them
+   once, on the first image, and never notices. */
+let _sharp, _exifr;
+const sharp = async (...a) => ((_sharp ??= (await import("sharp")).default))(...a);
+const exifr = async () => (_exifr ??= (await import("exifr")).default);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -53,6 +69,54 @@ const EMPTY_MANIFEST = {
   projectPhotos: [], photoProjects: [], webProjects: [],
 };
 
+/* Has a previous run actually put photos on disk? `webProjects` is not
+   counted: it is read-merged from whatever is already in the manifest
+   and is present even when no photo has ever been synced. */
+const manifestHasPhotos = (m) =>
+  Boolean(m?.work?.length || m?.gallery?.length || m?.portrait
+    || m?.projectPhotos?.length);
+
+/* Every /photos/… path the manifest mentions, srcset strings unpicked
+   into their individual URLs. Walks the whole object rather than reading
+   known keys, so a new manifest section can't quietly escape the check
+   below by not being on a list. */
+function manifestPaths(m) {
+  const out = new Set();
+  const add = (s) => {
+    for (const part of String(s).split(",")) {
+      const url = part.trim().split(/\s+/)[0];      // drop the "640w" descriptor
+      if (url.startsWith("/photos/")) out.add(url);
+    }
+  };
+  const walk = (v) => {
+    if (v == null) return;
+    if (typeof v === "string") { if (v.includes("/photos/")) add(v); return; }
+    if (Array.isArray(v)) { v.forEach(walk); return; }
+    if (typeof v === "object") Object.values(v).forEach(walk);
+  };
+  walk(m);
+  return [...out];
+}
+
+/* THE MANIFEST IS TRACKED BY GIT AND THE IMAGES IT POINTS AT ARE NOT
+   (public/photos/* is in .gitignore). So the index travels between
+   branches and the files never do: switching branch, pulling, stashing
+   or merging swaps this file for another branch's copy while the images
+   on disk stay exactly as the last sync left them, and the two stop
+   agreeing. A manifest full of photos is therefore NOT evidence that
+   the photos exist.
+
+   Checking the files themselves is the difference between `npm run dev`
+   coming up with silently broken images — and no clue that the fix is
+   `npm run sync` — and it just repairing itself. 129 existsSync calls
+   cost about a millisecond, which is nothing against the several
+   minutes the alternative costs a person who has to work out why. */
+function missingFromDisk(m) {
+  return manifestPaths(m).filter(
+    (p) => !existsSync(path.join(ROOT, "public", p.replace(/^\//, ""))),
+  );
+}
+
 /* -------------------------------------------------------------- utils */
 
 const slug = (s) =>
@@ -69,7 +133,7 @@ const slug = (s) =>
 async function formatExif(buffer) {
   let x;
   try {
-    x = await exifr.parse(buffer, {
+    x = await (await exifr()).parse(buffer, {
       pick: ["FocalLength", "FNumber", "ExposureTime", "ISO"],
     });
   } catch {
@@ -152,7 +216,7 @@ async function renderVariants(buffer, role, seed) {
   for (const width of SIZES) {
     if (atNative) break;
     const file = `${seed}-${width}.webp`;
-    const info = await sharp(buffer)
+    const info = await (await sharp(buffer))
       .rotate() // honor EXIF orientation
       .resize({ width, withoutEnlargement: true })
       .webp({ quality: 82 })
@@ -178,6 +242,21 @@ async function main() {
   const existing = existsSync(MANIFEST)
     ? JSON.parse(await readFile(MANIFEST, "utf8"))
     : EMPTY_MANIFEST;
+
+  /* --cached: the dev server's start-up path. Skip the pull only if the
+     manifest has photos in it AND every file it names is actually on
+     disk — see missingFromDisk for why the second half is not paranoia.
+     An empty manifest still syncs: a first checkout has to fetch once or
+     the site comes up with no pictures at all. */
+  if (process.argv.includes("--cached") && manifestHasPhotos(existing)) {
+    const gone = missingFromDisk(existing);
+    if (!gone.length) {
+      log(`using the cached manifest from ${existing.generatedAt || "an earlier run"} — 'npm run sync' to pull again`);
+      return;
+    }
+    warn(`${gone.length} of the manifest's images are missing from public/photos — e.g. ${gone[0]}`);
+    warn("the manifest is tracked by git and the images are not, so a branch switch or pull leaves the two disagreeing. Re-syncing.");
+  }
 
   const spaceId = process.env.CONTENTFUL_SPACE_ID;
   const token = process.env.CONTENTFUL_ACCESS_TOKEN;

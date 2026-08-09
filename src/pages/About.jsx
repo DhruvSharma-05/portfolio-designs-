@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import { P, img, srcSet, ABOUT, hasPhoto, prefersReduced, heavyVisualsAllowed } from "../data.js";
-import { Reveal, TLink, SectionHead } from "../ui.jsx";
+import { Reveal, CenterHead, Colophon } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -96,7 +96,12 @@ export default function About() {
 
       <section className="invert-band">
         <div className="wrap">
-          <SectionHead n="01">How I work</SectionHead>
+          <CenterHead small title={<>How I <span className="serif">work</span>.</>} />
+          {/* the original welded row of panels, back at the client's
+              request — these are three standing positions, not three
+              steps in a sequence, so a rail that lights one at a time
+              said "then" where the copy means "and". Everything actually
+              numbered on the site is still a Timeline. */}
           <Reveal className="approach">
             {ABOUT.approach.map((a, i) => (
               <div key={a.k}>
@@ -110,7 +115,7 @@ export default function About() {
       </section>
 
       <section className="timeline">
-        <SectionHead n="02">The short version</SectionHead>
+        <CenterHead small title={<>The <span className="serif">short</span> version.</>} />
         {ABOUT.timeline.map((t, i) => (
           <Reveal className="tl-row" key={t.y} delay={i * 0.05}>
             <b>{t.y}</b>
@@ -130,35 +135,7 @@ export default function About() {
           </div>
         </Reveal>
 
-        <Reveal as="dl" className="colophon" style={{ marginTop: 56 }}>
-          <div>
-            <dt className="mono">Contact</dt>
-            <dd>
-              <a href={`mailto:${P.email}`}>{P.email}</a><br />
-              <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
-            </dd>
-          </div>
-          <div>
-            <dt className="mono">Based in</dt>
-            <dd>{P.city} · {P.area}<br />{P.region}</dd>
-          </div>
-          <div>
-            <dt className="mono">Elsewhere</dt>
-            <dd>
-              {P.socials.map((s) => (
-                <span key={s.href} style={{ display: "block" }}>
-                  <a href={s.href} target="_blank" rel="noreferrer">
-                    {s.k} · {s.v}
-                  </a>
-                </span>
-              ))}
-            </dd>
-          </div>
-        </Reveal>
-
-        <div style={{ marginTop: 44 }}>
-          <TLink to="/" className="mono back"><span className="arrow">←</span> Back to home</TLink>
-        </div>
+        <Colophon back />
       </section>
     </motion.main>
   );

@@ -9,7 +9,7 @@ import {
   P, img, srcSet, ratio, isLandscape, FEATURED, PHOTO_PROJECTS, PHOTO_POOL, projectCover,
   prefersReduced, heavyVisualsAllowed,
 } from "../data.js";
-import { Reveal, TLink, SectionHead, useSwipe } from "../ui.jsx";
+import { Reveal, TLink, CenterHead, Timeline, Colophon, useSwipe } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -154,25 +154,19 @@ export default function Photography() {
       </header>
       )}
 
-      {/* ---------- the practice, named ---------- */}
+      {/* ---------- the practice, named ----------
+          The page's own lockup, in the home page's shape: the practice
+          name in the italic, the line it stands for under it, the
+          explanation in Inter. It used to be left-aligned under a mono
+          "Photography by Viraj Mehta" — an eyebrow naming the page you
+          are already on, on a route called /photography, under a nav
+          item called Photography. The italic kicker replaces it. */}
       <section className="wrap band">
-        <Reveal>
-          <div className="mono" style={{ marginBottom: 20 }}>
-            Photography by {P.photographer}
-          </div>
-          {/* the practice's name, plain — one word in one face. It used to
-              be a lockup with the joint dropped into the mono face, which
-              made "of" a separate mark to read rather than part of a name */}
-          <h2 className="pbrand">{P.photoBrand}</h2>
-          <p className="band-lead">
-            Every photograph begins long before I press the shutter. Understanding
-            people, light, and emotion is just as important as the camera itself.
-          </p>
-          <p>
-            The photography half of {P.name}. Each set below is a single body of
-            work, shot, selected and graded as one. Open any of them for the full edit.
-          </p>
-        </Reveal>
+        <CenterHead
+          kicker={P.photoBrand}
+          title="Every photograph begins long before I press the shutter."
+          sub={`Understanding people, light, and emotion is just as important as the camera itself — the photography half of ${P.name}.`}
+        />
       </section>
 
       {/* ---------- frames carousel ---------- */}
@@ -189,7 +183,11 @@ export default function Photography() {
            empty stack is worse than not showing the section at all. */}
       {PHOTO_PROJECTS.length > 0 && (
       <section className="wrap" style={{ paddingTop: "11vh" }}>
-        <SectionHead>Projects</SectionHead>
+        {/* "Open any of them for the full edit" moved down here from the
+            band above — it belongs over the thing it describes */}
+        <CenterHead small
+          title={<>The <span className="serif">collections</span>.</>}
+          sub="Each set is a single body of work, shot, selected and graded as one. Open any of them for the full edit." />
         <div className="stack">
           {PHOTO_PROJECTS.map((p, n) => {
             /* no inline aspect-ratio: every .shot uses the one fixed 3/2
@@ -235,21 +233,14 @@ export default function Photography() {
       </section>
       )}
 
-      {/* ---------- process ---------- */}
-      <section className="sec">
-        <div className="wrap sec-grid">
-          <div className="sec-label mono">How a project goes</div>
-          {/* no reveal on these — the rows just sit there, and the only
-              motion is the hover lift */}
-          <div>
-            {PROCESS.map((s, i) => (
-              <div className="sl-row" key={s.k}>
-                <span className="mono">{String(i + 1).padStart(2, "0")}</span>
-                <h3>{s.k}</h3>
-                <p>{s.v}</p>
-              </div>
-            ))}
-          </div>
+      {/* ---------- process ----------
+          Same centred header and four-card grid as /design's, which is
+          the home page's "What you get" shape: four items fill two rows
+          of .cgrid-2 exactly. */}
+      <section className="csec">
+        <div className="wrap">
+          <CenterHead title={<>How a shoot <span className="serif">goes</span>.</>} />
+          <Timeline items={PROCESS} />
         </div>
       </section>
 
@@ -264,9 +255,7 @@ export default function Photography() {
               </button>
             </div>
           </Reveal>
-          <div style={{ marginTop: 44 }}>
-            <TLink to="/" className="mono back"><span className="arrow">←</span> Back to home</TLink>
-          </div>
+          <Colophon back />
         </div>
       </section>
     </motion.div>

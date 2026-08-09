@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "npm run sync",
+    "predev": "node scripts/sync-contentful.mjs --cached",
     "dev": "vite",
     "dev:api": "npx vercel dev --listen 3001",
     "sync": "node scripts/sync-contentful.mjs",
@@ -17,6 +17,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/fraunces": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/inter": "^5.3.0",
     "@gsap/react": "^2.1.2",

@@ -114,28 +114,96 @@ export function FigmaFrame({ w, eager = false }) {
   );
 }
 
-/* ---------------- section header ----------------
-   A numbered label with a rule that draws itself across when the header
-   scrolls into view. Gives every section the same strong, quiet anchor
-   so the page reads as a rhythm instead of a flat stack of text. */
-export function SectionHead({ n, children }) {
+/* ---------------- centred section header ----------------
+   The one header shape every major block on the home page uses:
+   headline, a line or two of description, an optional call to action —
+   see the CENTRED SECTION SYSTEM block in data.js.
+
+   `kicker` is the section's own word — Photography, Design — set in the
+   accent face's italic ABOVE the headline. It is not the mono eyebrow
+   that used to sit there and was removed: that one was an 11px caption
+   restating the heading below it in a different typeface. This is the
+   display face carrying the lockup's first line, and the headline under
+   it drops its own italic word in exchange, so there is still exactly
+   one italic per header. Sections that have nothing to name omit it.
+
+   `title` takes a node rather than a string so a section can put ONE
+   WORD in <span className="serif">. One, literally — the italic is
+   there to catch the eye on the word the headline turns on, and an
+   italic phrase ("as one", "handed over", "by them") is just a second
+   voice reading half the line. Pick the word the sentence would lose
+   most by dropping, and prefer the opening verb.
+
+   `small` steps the headline down a size, for a section where the block
+   underneath is the loud part.
+
+   Under the headline are two optional tiers, and the point of them is
+   that a section takes only the ones it has something to put in:
+
+     lead  the one sentence, at full ink and the body weight
+     sub   the longer explanation, a step lighter and dimmer
+
+   So a section that needs the whole ladder passes both; one with a
+   single explanation passes `sub` alone; and one whose headline says
+   everything — the testimonials — passes neither and gets a headline
+   with nothing under it. That is the shape, not an omission to fix.
+   `cta` is optional on the same terms.
+
+   The heading level is a prop because this is used for both a section
+   inside the page (h2) and, potentially, a page's own opening (h1) —
+   the ring of headings has to stay honest for a screen reader even
+   though every one of these looks identical.
+
+   THE HEADER REVEALS ITSELF, so it is not wrapped in a <Reveal>. A
+   Reveal fades the whole block as one object, which is the wrong motion
+   for a lockup: the kicker, the headline and the description arrive in
+   that order when you read them and should arrive in that order when
+   they appear. The display tier rises out of a mask — the letters are
+   clipped and slide up into place, which is the one reveal that suits
+   type this size — and the copy under it follows with a plain fade a
+   fifth of a second later. Everything is one timeline off one
+   ScrollTrigger, so the parts can never drift.
+
+   `still` opts out entirely, for a header whose visibility is already
+   being driven by something else: the photography lockup lives inside
+   the collage's sticky frame and is faded in by that run's scroll
+   progress, and a second animation fighting it would flicker. */
+export function CenterHead({ kicker, title, lead, sub, cta, small, still, as: Tag = "h2", id }) {
   const ref = useRef(null);
-  useEffect(() => {
+
+  useGSAP(() => {
+    if (still || prefersReduced()) return;
     const el = ref.current;
-    if (!el) return;
-    if (prefersReduced()) { el.classList.add("in"); return; }
-    const io = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { el.classList.add("in"); io.disconnect(); } },
-      { threshold: 0.6 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+    const rise = el.querySelectorAll(".chead-line > span");
+    const fade = el.querySelectorAll(".chead-lead, .chead-sub, .chead-cta");
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: el, start: "top 86%", once: true },
+    });
+    /* 135%, not 100%: .chead-line carries padding below the text so
+       descenders aren't clipped at rest, and overflow clips at the
+       PADDING edge — at 100% the tail of a "g" would still be showing
+       before it moved. */
+    if (rise.length) {
+      tl.from(rise, { yPercent: 135, duration: 1.05, ease: "power3.out",
+        stagger: 0.1, clearProps: "transform" }, 0);
+    }
+    if (fade.length) {
+      tl.from(fade, { opacity: 0, y: 14, duration: 0.8, ease: "power3.out",
+        stagger: 0.08, clearProps: "transform,opacity" }, 0.22);
+    }
+  }, { scope: ref, dependencies: [still] });
+
   return (
-    <div className="shead" ref={ref}>
-      {n && <span className="shead-n mono">{n}</span>}
-      <span className="shead-label mono">{children}</span>
-      <span className="shead-rule" aria-hidden="true" />
+    <div className="chead" ref={ref}>
+      {kicker && (
+        <p className="chead-kicker chead-line"><span>{kicker}</span></p>
+      )}
+      <Tag className={`chead-title${small ? " chead-title-sm" : ""}`} id={id}>
+        <span className="chead-line"><span>{title}</span></span>
+      </Tag>
+      {lead && <p className="chead-lead">{lead}</p>}
+      {sub && <p className="chead-sub">{sub}</p>}
+      {cta && <div className="chead-cta">{cta}</div>}
     </div>
   );
 }
@@ -354,15 +422,171 @@ export function useSwipe(onLeft, onRight, threshold = 40) {
 /* ---------------- shared animated primitives ----------------
    Reveal and Counter run inside useGSAP (a scoped layout effect); under
    reduced motion they skip the animation and render final state. */
-export function Reveal({ children, className = "", delay = 0, y = 18, as: Tag = "div", ...rest }) {
+/* `sel` + `stagger` animate the matching descendants one after another
+   instead of the block as a whole — for something already built out of
+   lines, like the studio tagline's .st-line spans, where moving the
+   whole paragraph as one object throws away the shape it already has. */
+/* ---------------- the footer ----------------
+   The three standing facts — how to reach him, where he is, where else
+   he is — then the rule and the copyright line. It closes every page,
+   which is the point: /design and /photography used to stop at the
+   contact button, so two of the five routes simply had no footer and a
+   visitor who landed on one from a search had nowhere to find an email.
+
+   `back` adds the way home on the same row as the copyright. The home
+   page passes nothing, because it is home. */
+export function Colophon({ back = false }) {
+  return (
+    <>
+      <Reveal as="dl" className="colophon">
+        <div>
+          <dt className="mono">Contact</dt>
+          <dd>
+            <a href={`mailto:${P.email}`}>{P.email}</a><br />
+            <a href={`tel:${P.phone.replace(/[^+\d]/g, "")}`}>{P.phone}</a>
+          </dd>
+        </div>
+        <div>
+          <dt className="mono">Based in</dt>
+          <dd>{P.city} · {P.area}<br />{P.region}</dd>
+        </div>
+        <div>
+          <dt className="mono">Elsewhere</dt>
+          <dd>
+            {P.socials.map((s) => (
+              <span key={s.href} style={{ display: "block" }}>
+                <a href={s.href} target="_blank" rel="noreferrer">
+                  {s.k} · {s.v}
+                </a>
+              </span>
+            ))}
+          </dd>
+        </div>
+      </Reveal>
+
+      <hr className="rule" style={{ marginTop: 44 }} />
+      <div className="colophon-foot">
+        <span className="mono">© {P.name}</span>
+        {back && (
+          <TLink to="/" className="mono back">
+            <span className="arrow">←</span> Back to home
+          </TLink>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* ---------------- the scrolling timeline ----------------
+   A rail down the middle of the column with the steps hung off it,
+   alternating right and left, and exactly one of them lit at a time —
+   the one the middle of the screen is currently inside. The rest sit
+   back, dimmed and a shade smaller, so the page reads as one thing at a
+   time rather than four competing for the same attention.
+
+   It replaced a grid of bordered cards. Four numbered steps in four
+   boxes is a layout that says "these are four separate things"; they
+   are one sequence, and a line you travel down says that instead. No
+   box, no border, no panel — just the type, which is also what makes
+   the copy legible at this width.
+
+   `items` is [{ k, v }] — the shape INTRO.offer, both PROCESS lists and
+   ABOUT.approach already share.
+
+   One scroll handler, rAF-throttled, drives both the rail's fill and
+   which step is lit. An IntersectionObserver per step would be the
+   obvious alternative and is worse here: the steps are tall and the
+   band that decides "current" is a line, not a box, so the observer
+   would need a -50%/-50% rootMargin and would still go quiet whenever
+   the line sat in the gap between two of them. */
+export function Timeline({ items, className = "" }) {
+  const root = useRef(null);
+  const [at, setAt] = useState(0);
+
+  useEffect(() => {
+    const r = root.current;
+    if (!r || !items.length) return;
+    /* Under reduced motion nothing dims and nothing moves: every step
+       is lit and the rail is drawn full. The list still reads in order,
+       it just doesn't animate — which is the point of the preference. */
+    if (prefersReduced()) {
+      r.dataset.still = "on";
+      r.style.setProperty("--prog", "100%");
+      return;
+    }
+    let raf = 0;
+    const read = () => {
+      raf = 0;
+      const box = r.getBoundingClientRect();
+      const mid = window.innerHeight * 0.5;
+      /* how far the middle of the screen has travelled through the list,
+         as a fraction — this is the rail's fill */
+      const p = Math.min(Math.max((mid - box.top) / (box.height || 1), 0), 1);
+      r.style.setProperty("--prog", `${(p * 100).toFixed(2)}%`);
+      /* the lit step is the LAST one whose top the middle has passed,
+         so the first is lit on arrival and the change happens as each
+         heading crosses the centre rather than when it leaves */
+      const steps = r.querySelectorAll(".tline-step");
+      let idx = 0;
+      steps.forEach((el, i) => { if (el.getBoundingClientRect().top <= mid) idx = i; });
+      setAt(idx);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(read); };
+    read();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, [items.length]);
+
+  if (!items.length) return null;
+
+  return (
+    <ol className={`tline ${className}`} ref={root}>
+      {/* the rail is one element with a fill inside it, not a border on
+          the list: a border would stop at the last item's box and the
+          line has to run the whole height */}
+      <div className="tline-rail" aria-hidden="true"><i style={{ height: "var(--prog, 0%)" }} /></div>
+      {items.map((s, i) => (
+        <li className="tline-step" key={s.k}
+          data-side={i % 2 === 0 ? "right" : "left"}
+          data-on={i === at ? "1" : "0"}>
+          <span className="tline-dot" aria-hidden="true" />
+          <div className="tline-body">
+            <span className="tline-n mono">{String(i + 1).padStart(2, "0")}</span>
+            <h3>{s.k}</h3>
+            <p>{s.v}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export function Reveal({ children, className = "", delay = 0, y = 18,
+  sel, stagger = 0, as: Tag = "div", ...rest }) {
   const ref = useRef(null);
   useGSAP(() => {
     if (prefersReduced()) return;
-    gsap.from(ref.current, {
+    const targets = sel ? ref.current.querySelectorAll(sel) : ref.current;
+    if (sel && !targets.length) return;
+    gsap.from(targets, {
       opacity: 0, y, duration: 0.9, delay, ease: "power3.out",
+      ...(stagger ? { stagger } : {}),
+      /* GSAP leaves its inline transform behind when a tween finishes —
+         `transform: translate(0px, 0px)` — and an inline declaration
+         beats every rule in the stylesheet. That silently killed the
+         hover lift on every card that was also a
+         Reveal and hoverable: the card's :hover transform was there the
+         whole time and could never win. clearProps hands the element
+         back to CSS the moment the reveal is over. */
+      clearProps: "transform,opacity",
       scrollTrigger: { trigger: ref.current, start: "top 88%", once: true },
     });
-  }, { scope: ref });
+  }, { scope: ref, dependencies: [sel, stagger] });
   return <Tag ref={ref} className={`rv ${className}`} {...rest}>{children}</Tag>;
 }
 

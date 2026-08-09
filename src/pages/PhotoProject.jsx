@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { PHOTO_PROJECTS, img, srcSet, ratio, prefersReduced } from "../data.js";
-import { Reveal, TLink, Lightbox } from "../ui.jsx";
+import { Reveal, TLink, CenterHead, Lightbox } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
@@ -82,14 +82,21 @@ export default function PhotoProject() {
         </div>
 
         {p.note && (
-          <p className="detail-note" style={{ marginTop: "6vh", color: "var(--dim)", fontSize: 16 }}>
-            {p.note}
-          </p>
+          <Reveal>
+            <p className="detail-note" style={{ marginTop: "6vh", color: "var(--dim)", fontSize: 16 }}>
+              {p.note}
+            </p>
+          </Reveal>
         )}
 
-        {/* ---------- grid ---------- */}
-        <section className="sec">
-          <div className="mono" style={{ marginBottom: 24 }}>Full set · click any frame</div>
+        {/* ---------- grid ----------
+            was a bare mono row, the last label on the site standing in
+            for a heading; it takes the centred lockup like everything
+            else now, with the instruction as its description */}
+        <section className="csec">
+          <CenterHead small
+            title={<>The <span className="serif">full</span> set.</>}
+            sub="Click any frame to open it." />
           <div className="pgrid">
             {p.photos.map((s, n) => (
               <figure key={s + n} onClick={() => setLb(n)}

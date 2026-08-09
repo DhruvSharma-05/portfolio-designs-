@@ -17,6 +17,7 @@ import PhotoProject from "./pages/PhotoProject.jsx";
 import Design from "./pages/Design.jsx";
 import DesignProject from "./pages/DesignProject.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import Loader from "./Loader.jsx";
 
 /* Client delivery (see CLIENT-DELIVERY-POA.md). Both are code-split so
    none of the admin tooling or the delivery page ships to a normal
@@ -180,6 +181,11 @@ export default function App() {
         <style>{CSS}</style>
 
         <a className="skip" href="#main">Skip to content</a>
+
+        {/* First paint only, and only while the first screen's fonts and
+            collage frames are still arriving — see Loader.jsx. It sits
+            inside .pf so it inherits the palette, and above the iris. */}
+        {!isAdmin && <Loader />}
 
         {/* aperture transition overlay */}
         <div className="iris" aria-hidden="true">
