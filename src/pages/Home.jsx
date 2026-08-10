@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
-  P, img, srcSet, projectCover, INTRO, TESTIMONIALS, TAGLINE, COLLAGE,
+  P, img, srcSet, collageSrc, projectCover, INTRO, TESTIMONIALS, TAGLINE, COLLAGE,
   PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, ROLES,
   gridCols,
 } from "../data.js";
@@ -488,7 +488,7 @@ export default function Home() {
                 <rect className="lov-bed" fill="var(--rule)" />
                 {shown && COLLAGE.map((f, i) => (
                   <image key={f.seed} className={`lov-tile lov-t${i + 1}`}
-                    href={img(f.seed, 2000, 1250)} preserveAspectRatio="xMidYMid slice" />
+                    href={collageSrc(f.seed)} preserveAspectRatio="xMidYMid slice" />
                 ))}
               </g>
               {/* the same word, same size, same place — flat ink, faded in as

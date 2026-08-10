@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { P, COLLAGE, img, prefersReduced } from "./data.js";
+import { P, COLLAGE, collageSrc, prefersReduced } from "./data.js";
 
 /* ==================================================================
    LOADER — the pause that buys the first screen its animation.
@@ -47,7 +47,7 @@ function collageSources() {
   const narrow = typeof window !== "undefined"
     && window.matchMedia("(max-width: 720px)").matches;
   return COLLAGE.slice(0, narrow ? 4 : 5)
-    .map((f) => img(f.seed, 2000, 1250))
+    .map((f) => collageSrc(f.seed))
     .filter(Boolean);
 }
 
