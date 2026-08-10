@@ -37,9 +37,9 @@ src/
   ErrorBoundary.jsx app-level error boundary (render errors + failed lazy chunks)
   context.js        AppContext (theme + go())
   data.js           placeholder content + the full CSS + prefersReduced()/heavyVisualsAllowed()
-  ui.jsx            TLink (transition link), Logo, Reveal, Metrics/Counter
-  HeroCanvas.jsx    code-split R3F particle hero
+  ui.jsx            TLink (transition link), Logo, Reveal, ContactModal, Lightbox
   DistortImage.jsx  code-split WebGL hover-ripple photo (img fallback underneath)
+  ParticleSphere.jsx code-split R3F particle sphere (About page)
   pages/Home.jsx        long-scroll home + categorised gallery + horizontal strip
   pages/WorkDetail.jsx  /work/:seed project page (prev/next)
   pages/Photography.jsx /photography — featured slideshow + project stack
@@ -306,11 +306,11 @@ All content lives in `src/data.js`:
 | `P` | name, role, email, city |
 | `FRAMES` | work-card copy — comes entirely from Contentful (see **Photos from Contentful**); empty until photos are synced, no fallback array |
 | `ABOUT` | About-page bio, approach, timeline (portrait image comes from Contentful) |
-| `METRICS`, `QUOTES`, `SHOTLIST` | numbers, testimonials, services |
+| `TESTIMONIALS` | client quotes — currently placeholder, must be real words or deleted before launch |
 | Photos | pulled from Contentful at build time — see **Photos from Contentful**. Without credentials or photos, the dependent sections render empty rather than falling back to placeholders |
 | `THEME` | the single fixed accent/base palette (no switcher — see above) |
 | `index.html` | `<title>`, description, and OG/Twitter tags (marked `TODO(client)`) |
 | `public/favicon.svg`, `public/og.svg` | the lens mark + social card (export `og.svg` to a 1200×630 PNG for Facebook/Twitter) |
 
-The 3D hero lives in `src/HeroCanvas.jsx` — particle count, size, and drift
-speed are all tunable constants at the top of the file.
+The About page's particle sphere lives in `src/ParticleSphere.jsx` — particle
+count, size, and drift speed are all tunable constants at the top of the file.

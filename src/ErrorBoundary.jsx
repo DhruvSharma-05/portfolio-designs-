@@ -4,7 +4,7 @@ import { Component } from "react";
    APP-LEVEL ERROR BOUNDARY — the last line of defence.
 
    Wraps the routed content in App.jsx. Catches render-time errors from
-   any page, INCLUDING a lazy chunk (e.g. HeroCanvas) that fails to
+   any page, INCLUDING a lazy chunk (e.g. DistortImage) that fails to
    load — a rejected React.lazy() import throws during render, which a
    boundary above its <Suspense> catches just like any other render
    error. A hard reload is the recovery

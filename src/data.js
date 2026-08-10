@@ -416,13 +416,6 @@ export const figmaEmbed = (url) =>
    them (was gated on the removed admin/manifest publishing flow). */
 export const hasPhoto = (s) => PHOTOS.has(s);
 
-export const METRICS = [
-  { v: 68, s: "", k: "Projects delivered" },
-  { v: 92, s: "%", k: "Clients who returned" },
-  { v: 10, s: "+", k: "Years behind a lens" },
-  { v: 4, s: "wks", k: "Shoot to final delivery" },
-];
-
 /* Viraj's real bio — condensed from his own words. */
 export const ABOUT = {
   portrait: manifest.portrait?.seed,
@@ -1374,20 +1367,6 @@ export const CSS = `
    they made. Both sections that used them — the two "How a project
    goes" blocks — are a centred header over a .cgrid now, same as the
    home page. .sec survives as a plain ruled section shell. */
-
-/* --- metrics --- */
-.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; position: relative; }
-.metrics::after { content: ""; position: absolute; left: 0; top: 0; height: 2px; width: 100%;
-  background: var(--accent); transform: scaleX(0); transform-origin: left; z-index: 2;
-  transition: transform 1.1s cubic-bezier(.76,0,.24,1); }
-.metrics.in::after { transform: scaleX(1); }
-.metric { background: var(--bg); padding: 30px 24px; }
-.metric b { display: block; font-weight: 300; letter-spacing: -0.03em;
-  font-size: clamp(36px, 4.4vw, 60px); line-height: 1; font-variant-numeric: tabular-nums; }
-.metric span { display: block; margin-top: 12px; }
-/* the % / wks rides in as the number lands, so it needs its own box */
-.metric b .suf { display: inline-block; margin-top: 0; will-change: transform, opacity; }
 
 /* The .sl-row numbered process list is gone. Both places that used it
    render PROCESS as a Timeline now. */
@@ -2389,7 +2368,7 @@ export const CSS = `
 
   /* one inset for every bordered text block, so all boxed copy starts on
      the same vertical line down the page */
-  .tcard, .metric, .cap, .approach div, .approach a,
+  .tcard, .cap, .approach div, .approach a,
   .teaser a, .disc { padding: 22px; }
   /* the teaser leant on 240px of height to hold its shape at desktop
      padding; at this inset that is just a hole under the text */
@@ -2664,7 +2643,7 @@ export const CSS = `
   .mast-scroll { opacity: 1 !important; translate: -50% 0 !important; }
   .logo-mark path { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; }
   .logo-word b { opacity: 1 !important; transform: none !important; }
-  .intro-sec .drawline, .metrics::after { transform: scaleX(1) !important; }
+  .intro-sec .drawline { transform: scaleX(1) !important; }
   /* no typing, so the roles are listed at once — at headline size three
      of them on one line would fill the hero, so the line steps down */
   .mast-roles { font-size: clamp(18px, 2.6vw, 30px); }
