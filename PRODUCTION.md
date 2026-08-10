@@ -24,11 +24,11 @@ Done:
 1. **Responsive images.** Every real `<img src={img(...)}>` call site now also
    ships `srcSet`/`sizes` (`src/data.js`'s `srcSet(seed)` sits next to `img()`),
    so phones fetch the `sm` WebP variant instead of always the desktop size.
-2. **Three.js chunk gated before fetch, not after.** `HeroCanvas` and
-   `DistortImage` were already code-split, but were fetched for every visitor
+2. **Three.js chunk gated before fetch, not after.** `DistortImage` and
+   `ParticleSphere` were already code-split, but were fetched for every visitor
    regardless of device and only decided *after* loading whether to render.
    `heavyVisualsAllowed()` (`src/data.js`, next to `prefersReduced`) is now
-   checked at the call site in `Home.jsx`/`Photography.jsx` *before* the lazy
+   checked at the call site in `Photography.jsx`/`About.jsx` *before* the lazy
    `import()` runs — touch devices, `prefers-reduced-motion`, and viewports
    under 768px never request the chunk (881 KB / 234 KB gzip, the largest in
    the app) at all.
@@ -77,7 +77,10 @@ Not done / narrower than it looks:
 
 ### 🔴 Launch blockers
 - **Placeholder content** throughout `src/data.js`: `email: hello@yourstudio.com`,
-  `city: "Your City"`, placeholder `QUOTES`/`METRICS`, lorem-ish notes/bios.
+  `city: "Your City"`, placeholder `TESTIMONIALS`, lorem-ish notes/bios.
+  (`METRICS` — the invented "68 projects delivered" / "92% clients who
+  returned" figures — was deleted along with its unmounted `Metrics`
+  counter component rather than being given real numbers.)
 - **No real contact method** — everything is a `mailto:` link. Add a booking/
   enquiry form (Formspree or a Vercel serverless endpoint).
 - **Social preview broken** — `public/og.svg` is SVG; social platforms need a
