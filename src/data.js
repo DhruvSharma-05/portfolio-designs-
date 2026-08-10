@@ -1461,6 +1461,59 @@ export const CSS = `
 .colophon dd { margin: 8px 0 0; font-size: 14px; line-height: 1.72; color: var(--dim);
   overflow-wrap: anywhere; }
 
+/* THE WAY BACK IS A CONTROL, NOT A CAPTION.
+   It shared .mono with the © line beside it — same face, same 11px, same
+   uppercase, same .16em — so the only thing separating the one thing you
+   can press in this row from a legal notice was --ink against --dim. It
+   read as the second half of the copyright. It also had no hover colour
+   at all (.back:hover is only defined under .client-foot), so nothing
+   confirmed it was a link, and it was a 118×14px target: a third of the
+   44px minimum, on a link that is the only way home from the two pages a
+   visitor is most likely to land on cold.
+
+   So it takes the mono CONTROL rung — the 500 weight and the pill the
+   four-faces table gives .extlink and .nav — but the QUIET version of
+   it: --rule border and --ink text at rest, accent only on hover. Every
+   page that renders <Colophon back /> has an accent-filled .extlink
+   ("Contact me", "Book a session") a few hundred pixels above this row,
+   and that is the section's one primary action; a second filled pill
+   under it would argue with it. Bordered-neutral is the same shape at
+   lower volume, which is what a secondary control is. Precedent for the
+   pair is already here: .pill and .client-alt both go accent-on-hover
+   without filling, .extlink fills.
+
+   margin-bottom: 0 is a fix, not a preference. .back's 40px is the gap
+   down to the headline on /design/:slug and /photography/:slug, where
+   the link sits at the TOP of a page; inherited into this flex row it
+   pushed the pill ~26px above the copyright it is supposed to sit level
+   with. Scoped to .colophon-foot so the detail pages keep theirs. */
+/* The border is --dim, NOT --rule, and that is the difference between a
+   pill and no pill. --rule (#1E1E22) sits at 1.19:1 against this
+   background — the admin block further down says so in as many words,
+   and it is why nothing down there had structure until it defined its
+   own --a-edge. A 1.19:1 hairline around this link would have made it a
+   control that only exists on hover. --dim (#82828B) measures 5.2:1,
+   comfortably past the 3:1 WCAG 1.4.11 wants for the visual boundary of
+   a UI component, and it is the grey already sitting next to it in the
+   © line, so the pill reads as quiet rather than as a new colour. */
+.colophon-foot .back { margin-bottom: 0; min-height: 44px; padding: 12px 22px;
+  border: 1px solid var(--dim); border-radius: 100px;
+  color: var(--ink); font-weight: 500;
+  transition: border-color .3s ease, color .3s ease; }
+.colophon-foot .back:hover { border-color: var(--accent); color: var(--accent); }
+/* Below 560 the row stacks and the pill takes the full column, the way
+   .client-alt does — 167px of copyright plus a 164px pill and their gap
+   is 347 of the 350px available at 390px wide, so side by side it sat
+   hard against the page edge, and one notch narrower it wrapped anyway.
+   column-reverse puts the control above the footnote. align-items:
+   stretch is what lets both centre themselves: .end is text-align:
+   centre at every width, so a full-width © centres with the headline and
+   the primary CTA above it instead of hanging off the left. */
+@media (max-width: 560px) {
+  .colophon-foot { flex-direction: column-reverse; align-items: stretch; gap: 20px; }
+  .colophon-foot .back { justify-content: center; }
+}
+
 /* --- contact form --- */
 .contact-form { max-width: 620px; margin-top: 30px; display: flex; flex-direction: column; gap: 18px; }
 .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
@@ -2027,7 +2080,29 @@ export const CSS = `
    .band p.band-lead are gone with the hand-built lockup they styled.
    .band p in particular had to go: at (0,1,1) it beat .chead-sub at
    (0,1,0) and would have taken the centred paragraph's auto margins
-   away, leaving it centred as text but parked left as a block. */
+   away, leaving it centred as text but parked left as a block. The last
+   surviving .band p — a font-size in the 560px block — was still
+   winning over .chead-kicker the same way, and it is gone too: it shrank
+   the italic to 15px, which is the body copy's size, so on every phone
+   the practice's name, the headline and the explanation were three lines
+   of near-identical type with no ladder between them at all. */
+
+/* This lockup is a step down from the site's --kicker-fs, and the reason
+   is its title: every other kicker'd header on the site pairs its word
+   with a SHORT line ("Prototyped, not mocked up."), and this one carries
+   a full sentence. At the standard 130px the italic came out twice the
+   size of its own headline and the sentence broke to three lines of
+   67px — a 430px slab of Fraunces in which nothing led. 92px puts the
+   headline on two lines at every width down to 560 and keeps the brand
+   name from out-shouting the line it introduces.
+
+   The floor stays 56px, so from ~850px down this lockup is exactly the
+   one Design wears on the home page (56/29) — the mobile proportion is
+   the desktop proportion, which is the whole point of sizing the roman
+   and the gap off the italic rather than in pixels. Only the ceiling and
+   the slope move. --italic-ratio is untouched: that number is what makes
+   every lockup on the site read as the same lockup. */
+.band .chead { --kicker-fs: clamp(56px, 6.6vw, 92px); }
 
 /* --- photo project detail --- */
 /* Shows the opening frame whole. This was aspect-ratio: 16/9 with the
@@ -2421,8 +2496,13 @@ export const CSS = `
 
   /* one size for supporting copy. These ranged 14 / 14.5 / 15px, a
      difference too small to read as hierarchy and large enough to look
-     like a mistake once the cards are stacked in one column. */
-  .approach p, .cap p, .band p,
+     like a mistake once the cards are stacked in one column.
+
+     .band p is NOT in this list and must not be added back: .band's only
+     paragraphs are CenterHead's own tiers, which are sized by the header
+     system, and at (0,1,1) this rule beat .chead-kicker's (0,1,0) and
+     dropped the display italic to body size. See .band. */
+  .approach p, .cap p,
   .dz-card-cap p, .colophon dd { font-size: 15px; }
 }
 
