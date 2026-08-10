@@ -60,7 +60,8 @@ api/
     Vercel serverless functions backing /admin and /client
   _lib/   drive.js, auth.js, delivery.js, ratelimit.js, mail.js — shared helpers
 public/
-  favicon.svg  og.svg  _redirects   (Netlify SPA fallback)
+  favicon.svg  favicon-32.png  apple-touch-icon.png   (the C& monogram)
+  og.svg  _redirects                                  (Netlify SPA fallback)
   photos/                           (generated: optimized WebP, git-ignored)
 vercel.json                         (Vercel SPA fallback + cache/function config)
 ```
@@ -310,7 +311,7 @@ All content lives in `src/data.js`:
 | Photos | pulled from Contentful at build time — see **Photos from Contentful**. Without credentials or photos, the dependent sections render empty rather than falling back to placeholders |
 | `THEME` | the single fixed accent/base palette (no switcher — see above) |
 | `index.html` | `<title>`, description, and OG/Twitter tags (marked `TODO(client)`) |
-| `public/favicon.svg`, `public/og.svg` | the lens mark + social card (export `og.svg` to a 1200×630 PNG for Facebook/Twitter) |
+| `public/favicon.svg`, `public/og.svg` | the C& monogram (same path as `LOGO_PATH` in `src/ui.jsx` — change both together) + social card (export `og.svg` to a 1200×630 PNG for Facebook/Twitter) |
 
 The About page's particle sphere lives in `src/ParticleSphere.jsx` — particle
 count, size, and drift speed are all tunable constants at the top of the file.

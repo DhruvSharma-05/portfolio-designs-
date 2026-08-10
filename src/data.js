@@ -135,6 +135,44 @@ export const srcSet = (s) => {
   return p.srcset || `${p.sm} 640w, ${p.lg} ${p.w || 2000}w`;
 };
 
+/* pickSrc(seed, cssW): the narrowest variant that still covers a slot
+   cssW CSS pixels wide. An <img> gets this for free by handing srcSet()
+   to the browser; SVG <image> takes no srcset at all, so anything drawn
+   that way has to choose here — and img()'s two tiers mean "not a
+   thumbnail" resolves to the ~2600px file, which is how phones came to
+   download the desktop's photographs.
+
+   DPR is capped at 2 deliberately: a 3× phone would ask for 1170px on a
+   full-width tile and land on the top tier, which is three times the
+   bytes for a difference that doesn't survive being looked at on a
+   phone. */
+const pickSrc = (s, cssW) => {
+  const p = PHOTOS.get(s);
+  if (!p) return undefined;
+  if (!p.srcset) return cssW <= 640 ? p.sm : p.lg;
+  const dpr = typeof window === "undefined"
+    ? 1
+    : Math.min(window.devicePixelRatio || 1, 2);
+  const need = cssW * dpr;
+  const tiers = p.srcset
+    .split(",")
+    .map((part) => {
+      const [url, d] = part.trim().split(/\s+/);
+      return { url, w: parseInt(d, 10) || 0 };
+    })
+    .sort((a, b) => a.w - b.w);
+  return (tiers.find((t) => t.w >= need) || tiers[tiers.length - 1]).url;
+};
+
+/* The collage tile is at most the full stage wide, and the stage is the
+   viewport — so that is what both the tile and the loader preloading it
+   ask for. ⚠ It is ONE function on purpose: the loader exists to have
+   the frame decoded before the zoom starts, and if it and the tile
+   compute their URL separately the loader spends the whole hold warming
+   a file the page never requests. Add a caller, don't inline the width. */
+export const collageSrc = (seed) =>
+  pickSrc(seed, typeof window === "undefined" ? 1600 : window.innerWidth);
+
 /* ratio(seed, fw, fh): CSS aspect-ratio for a seed — the synced photo's
    real dimensions when the manifest has them, the caller's requested box
    shape otherwise (a layout fallback, not a stand-in photo). Lets
