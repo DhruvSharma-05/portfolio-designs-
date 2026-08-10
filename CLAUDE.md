@@ -377,7 +377,22 @@ rather than restyling them — if a new block doesn't fit `CenterHead` +
 
 `.band p` had to go with the last of those: at (0,1,1) it beat
 `.chead-sub` at (0,1,0) and would have stripped the centred paragraph's
-auto margins, leaving it centred as text but parked left as a block.
+auto margins, leaving it centred as text but parked left as a block. **One
+`.band p` survived in the 560px block and was the same bug** — a
+`font-size: 15px` beating `.chead-kicker`, so on every phone "Lensofviraj"
+was set at body size and the header's three tiers had no ladder between
+them at all. `.band`'s only paragraphs are `CenterHead`'s own tiers; never
+size them from outside the header system.
+
+**/photography's band is the one lockup a step below `--kicker-fs`**
+(`clamp(56px, 6.6vw, 92px)` on `.band .chead`), because it is the one
+whose `title` is a full sentence rather than a short line. At the standard
+130px the italic came out twice the size of its own headline and the
+sentence broke to three lines of 67px — a slab of Fraunces in which
+nothing led. The **floor stays 56px**, so from ~850px down it is exactly
+the lockup Design wears (56/29) and the mobile proportion is the desktop
+proportion. `--italic-ratio` is untouched — that number is what makes
+every lockup on the site read as the same lockup.
 
 **The timeline on /about keeps its left-aligned dot rail on purpose** — a
 chronology reads down a spine, and centring it would cost the thing that
@@ -401,6 +416,38 @@ renders `<Colophon />`; About, Design and Photography render
 - It goes **inside the existing `.end` section**, after the headline and
   CTA — not in a section of its own, which would add another hairline
   rule for nothing.
+- **The way back is a control, not a caption.** It shared `.mono` with the
+  © line next to it — same face, same 11px, same uppercase, same tracking
+  — so the only thing separating the one pressable item in that row from a
+  legal notice was `--ink` against `--dim`, it had no hover colour at all
+  (`.back:hover` is defined only under `.client-foot`), and it was a
+  **118×14px** target. It now takes the mono **control** rung: the 500
+  weight and the pill, `min-height: 44px`, scoped to `.colophon-foot`.
+  - **Bordered-neutral, not filled.** Every page rendering `<Colophon
+    back />` has an accent-filled `.extlink` ("Contact me", "Book a
+    session") a few hundred pixels above this row, and that is the
+    section's one primary action. A second filled pill would argue with
+    it; same shape at lower volume is what a secondary control is.
+    `.pill` and `.client-alt` already pair that rest state with
+    accent-on-hover.
+  - ⚠ **The border is `--dim`, never `--rule`.** `--rule` is 1.19:1
+    against the background — the admin block says so itself, and it is
+    why `/admin` had to define `--a-edge`. A `--rule` hairline makes a
+    control that only exists on hover. `--dim` measures **5.20:1**, past
+    the 3:1 WCAG 1.4.11 asks for a component boundary, and it is the grey
+    already beside it in the © line. Link text lands at 16.75:1 and now
+    separates from the © by 3.22:1.
+  - `margin-bottom: 0` is a **fix**: `.back`'s 40px is the gap down to
+    the headline on `/design/:slug` and `/photography/:slug`, where the
+    link sits at the *top* of a page. Inherited into this flex row it
+    floated the link ~26px above the copyright it should sit level with.
+    The detail pages keep theirs — check both if you touch `.back`.
+  - Below 560px the row is `column-reverse` and the pill takes the full
+    column, as `.client-alt` does: 167px of © plus a 164px pill and their
+    gap is 347 of the 350px available at 390px, so side by side it sat
+    hard against the page edge and wrapped one notch narrower anyway.
+    `align-items: stretch` is what lets both centre — `.end` is
+    `text-align: center` at every width.
 
 ### The loader
 
