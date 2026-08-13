@@ -163,7 +163,7 @@ export default function Photography() {
           item called Photography. The italic kicker replaces it. */}
       <section className="wrap band">
         <CenterHead
-          kicker={P.photoBrand}
+          kicker="lensofviraj"
           title="Every photograph begins long before I press the shutter."
           sub={`Understanding people, light, and emotion is just as important as the camera itself — the photography half of ${P.name}.`}
         />

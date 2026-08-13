@@ -721,90 +721,20 @@ export const CSS = `
 .mast-stage { position: relative; flex: 1; min-width: 0;
   display: flex; align-items: center; }
 
-/* Light moving behind the name. Three pools of the accent, each wandering
-   its own four-corner circuit and breathing in and out. The periods are
-   coprime-ish (19/23/29s) so the set never repeats a pose, which is what
-   keeps it reading as light rather than a loop.
-
-   Each path is a closed loop — the last keyframe is the first — so it
-   runs infinite rather than alternate: alternate replays the same route
-   backwards, which is exactly the tell that gives away a loop. Linear
-   timing for the same reason; ease-in-out would pause the pool at every
-   waypoint and turn a wander into four separate slides.
-   (No backticks anywhere in here — this stylesheet is a template
-   literal, and one closes it.)
-
-   The softness is in the gradient itself, not a blur() filter: a
-   full-bleed blur repaints the whole hero every frame, a radial-gradient
-   is free. Only transform and opacity animate, so this stays on the
-   compositor. */
-.mast-light { position: absolute; inset: 0; z-index: 0;
+/* The gallery tunnel behind the name — GalleryTunnel.jsx, a three.js
+   corridor of the site's own tones plus real synced photographs,
+   drifting toward the camera forever. Replaces the old cursor-lit pools:
+   one ambient background system, not two competing for the same job.
+   Gated behind heavyVisualsAllowed() (Home.jsx) the same as About's
+   particle globe, so a phone never fetches the three.js chunk for an
+   effect it wouldn't render smoothly anyway. */
+.mast-tunnel { position: absolute; inset: 0; z-index: 0;
   overflow: hidden; pointer-events: none; }
-.mast-light i { position: absolute; display: block;
-  width: 78vmax; height: 78vmax; border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%,
-    color-mix(in srgb, var(--accent) 10%, transparent) 0%,
-    color-mix(in srgb, var(--accent) 4.5%, transparent) 32%,
-    color-mix(in srgb, var(--accent) 1.5%, transparent) 56%,
-    transparent 72%);
-  /* --near (0…1) is how close the cursor's pool is — Home.jsx writes it
-     every frame. Base × 1.38 at the closest approach, and the bases are
-     set so that lands just under 1: opacity clamps there, and a pool that
-     hits the ceiling early spends the rest of the cursor's approach doing
-     nothing visible, which is the one thing this effect can't afford. */
-  opacity: calc(var(--o) * (1 + var(--near, 0) * .38));
-  will-change: transform, opacity; }
-.mast-light i:nth-child(1) { --o: .72; top: -34%; left: -18%;
-  animation: lightWanderA 19s linear infinite; }
-.mast-light i:nth-child(2) { --o: .6; top: -6%; right: -26%;
-  animation: lightWanderB 23s linear infinite; }
-.mast-light i:nth-child(3) { --o: .5; bottom: -46%; left: 22%;
-  animation: lightWanderC 29s linear infinite; }
-@keyframes lightWanderA {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  25%  { transform: translate3d(20vw, 13vh, 0) scale(1.16); }
-  50%  { transform: translate3d(31vw, -7vh, 0) scale(.92); }
-  75%  { transform: translate3d(11vw, 17vh, 0) scale(1.2); }
-  100% { transform: translate3d(0, 0, 0) scale(1); }
-}
-@keyframes lightWanderB {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  25%  { transform: translate3d(-17vw, 19vh, 0) scale(.86); }
-  50%  { transform: translate3d(-27vw, 4vh, 0) scale(1.14); }
-  75%  { transform: translate3d(-9vw, 22vh, 0) scale(.94); }
-  100% { transform: translate3d(0, 0, 0) scale(1); }
-}
-@keyframes lightWanderC {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  25%  { transform: translate3d(15vw, -16vh, 0) scale(1.12); }
-  50%  { transform: translate3d(-6vw, -24vh, 0) scale(.9); }
-  75%  { transform: translate3d(-19vw, -9vh, 0) scale(1.18); }
-  100% { transform: translate3d(0, 0, 0) scale(1); }
-}
-/* the cursor's pool — smaller and dimmer than the drifting three, so it
-   reads as a hand held near the surface, not a torch. Home.jsx writes the
-   transform; the trailing lag is in there, this only says what it looks
-   like. Placed from its own centre (the negative margins) so the
-   transform is a plain cursor position with no offset maths. */
-/* z-index over the vignette above, which otherwise ate the spotlight in
-   the outer third of the frame — the corner settle is there to hold the
-   three drifting pools in, not to fight the cursor.
-
-   Kept under the threshold of noticing: this pool alone is barely a
-   lift off the black. Most of what a visitor actually sees when they
-   move the mouse is the ambient pool it passes brightening — the --near
-   handoff above — which is why this one can afford to be this faint. */
-.mast-spot { position: absolute; top: 0; left: 0; z-index: 1;
-  width: 44vmax; height: 44vmax; margin: -22vmax 0 0 -22vmax; border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%,
-    color-mix(in srgb, var(--accent) 4%, transparent) 0%,
-    color-mix(in srgb, var(--accent) 1.8%, transparent) 34%,
-    transparent 66%);
-  opacity: 0; transition: opacity .55s ease; will-change: transform; }
-.mast-light[data-spot="on"] .mast-spot { opacity: 1; }
-/* the pools are brightest in the middle of the frame, where the copy is —
-   this settles the corners so the hero still ends in the page's black */
-.mast-light::after { content: ""; position: absolute; inset: 0;
+.mast-tunnel canvas { display: block; }
+/* the tunnel is brightest in the middle of the frame, where the copy is —
+   this settles the corners so the hero still ends in the page's black,
+   same fix the old light layer used */
+.mast-tunnel::after { content: ""; position: absolute; inset: 0;
   background: radial-gradient(ellipse 82% 72% at 50% 46%,
     transparent 0%, color-mix(in srgb, var(--bg) 72%, transparent) 78%, var(--bg) 100%); }
 
@@ -900,7 +830,7 @@ export const CSS = `
    and both are needed — the hero's last stretch fades to the page colour,
    and the section under it opens with the faintest continuation of the
    same light, so the glow crosses the boundary instead of stopping at it.
-   Between .mast-light (z 0) and .mast .wrap (z 3), so it dissolves the
+   Between .mast-tunnel (z 0) and .mast .wrap (z 3), so it dissolves the
    light without touching the copy. */
 .mast::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
   height: 26vh; z-index: 2; pointer-events: none;
@@ -1319,78 +1249,17 @@ export const CSS = `
    still reads as one column with a wider band of work under it. */
 .wrap-wide { max-width: 1340px; }
 
-/* ==================================================================
-   DESIGN SHOWCASE — one prototype at a time, names as the switch
+/* The caption under a design card: title, intro line, tool badge, all
+   centred under the browser-chrome preview above them. */
+.wcard-cap { display: flex; flex-direction: column; align-items: center;
+  gap: 14px; padding: 22px 4px 0; text-align: center; }
+.wcard-cap h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(20px, 2.4vw, 27px); }
+.wcard:hover .wcard-cap h3 { color: var(--accent); }
+.wcard-cap p { color: var(--dim); font-size: 14.5px; line-height: 1.6;
+  max-width: 38ch; margin-inline: auto; }
+.tool-badge { flex: 0 0 auto; border: 1px solid var(--rule); border-radius: 100px;
+  padding: 5px 12px; }
 
-   This replaced a three-up grid of project cards, and the reason was
-   the copy rather than the layout: intro, tag, role and tool are the
-   same placeholder string on every project and year is empty, so three
-   cards side by side differed only in their title and read as one card
-   printed three times. "Figma" alone appeared nine times in that row.
-
-   One project on screen fixes it without a word being invented — there
-   is nothing left to repeat — and hands the whole column to a single
-   prototype instead of splitting it three ways. The names above the
-   stage are the switch, standing where the section's call to action
-   used to be; the call to action moves below the work, which is also
-   where it belongs, after you have seen something.
-   ================================================================== */
-.dshow-tabs { display: flex; flex-wrap: wrap; justify-content: center;
-  gap: clamp(18px, 3vw, 44px); margin-bottom: clamp(30px, 4vw, 48px); }
-/* The mono control tier, same as .nav and .extlink — this is a control,
-   not a caption, so it takes the 500. .pf-scoped so the border and
-   padding survive the .pf button reset. */
-.pf .dshow-tab { position: relative; padding: 6px 2px; color: var(--dim);
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500;
-  letter-spacing: .16em; text-transform: uppercase;
-  transition: color .3s ease; }
-.pf .dshow-tab:hover { color: var(--ink); }
-.pf .dshow-tab[aria-selected="true"] { color: var(--ink); }
-/* the underline is on a pseudo-element and scaled, not a border toggled
-   on and off: a border would shift the row by a pixel as it appears */
-.dshow-tab::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
-  height: 1px; background: var(--accent); transform: scaleX(0);
-  transition: transform .4s cubic-bezier(.2,.8,.2,1); }
-.dshow-tab[aria-selected="true"]::after { transform: scaleX(1); }
-
-/* The stage. Its height is viewport-relative so the prototype fills the
-   screen rather than a fixed box, and its width comes from the active
-   project's shape — see the data-shape rules below. */
-.dshow-stage { position: relative; margin-inline: auto;
-  height: min(72svh, 760px); }
-/* Panels are stacked and crossfaded rather than swapped, so switching
-   does not collapse the section's height for a frame and bounce the
-   page under the pointer. */
-.dshow-panel { position: absolute; inset: 0; opacity: 0; pointer-events: none;
-  transition: opacity .45s ease; }
-.dshow-panel[data-on="1"] { opacity: 1; pointer-events: auto; }
-/* the frame primitives fill the stage here rather than carrying their
-   own aspect ratio — the stage is the shape */
-.dshow-panel .browser { height: 100%; display: flex; flex-direction: column; }
-.dshow-panel .figbox, .dshow-panel .browser-view, .dshow-panel .browser-ph {
-  aspect-ratio: auto; flex: 1; min-height: 0; }
-.dshow-panel .browser-view img { height: 100%; object-fit: cover; }
-
-/* A phone prototype sits in the middle of its cover with a wide margin
-   of Figma's own black either side, so in a full-width stage it lands as
-   a narrow sliver stranded in a thousand pixels of nothing. Narrowing
-   the stage to roughly a phone's proportions and letting object-fit:
-   cover crop crops that margin away instead of showing it. */
-.dshow[data-shape="phone"] .dshow-stage { max-width: min(100%, 420px); }
-/* The wide covers are the opposite case: the device is the whole frame,
-   so cropping it to fill takes the bottom off the laptop. Contain shows
-   the machine intact, and the small side margins it leaves are the same
-   black the cover itself is shot on — see the background below, which is
-   what stops them reading as bars. */
-.dshow[data-shape="wide"] .dshow-stage { max-width: 100%; }
-.dshow[data-shape="wide"] .browser-view { background: #000; }
-.dshow[data-shape="wide"] .browser-view img { object-fit: contain; }
-.dshow-cta { display: flex; justify-content: center;
-  margin-top: clamp(34px, 4.5vw, 56px); }
-@media (max-width: 640px) {
-  .dshow-stage { height: min(62svh, 560px); }
-  .dshow-tabs { gap: 16px 22px; }
-}
 /* one card: it keeps a card's proportions instead of stretching across
    the whole 1180px column, and stays on the page's axis */
 .cgrid-1 { grid-template-columns: minmax(0, min(520px, 100%)); justify-content: center; }
@@ -2291,22 +2160,14 @@ export const CSS = `
 .figma-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 @media (max-width: 640px) { .figma-embed { height: min(80vh, 700px); } }
 
-/* .wgrid, .wcard-cap and .tool-badge are gone with the three-up design
-   grid they styled. The caption they drew — title, the identical intro
-   line, a "Figma" pill — is exactly the repetition that grid was
-   removed for; the showcase names the project in its tab instead, so
-   there is nothing left for a caption to say. .wcard survives as the
-   link wrapper. */
-
-
 /* ==================================================================
    DESIGN INDEX — /design (magazine-style redesign)
 
    Masthead → one featured build (large split) → a numbered grid of the
    rest. Reuses the shared .browser / .figbox / .pill primitives so the
    card previews stay identical to the home page; only the surrounding
-   layout and captions are new (dz- prefix); Home.jsx keeps .wcard as the
-   showcase link wrapper.
+   layout and captions are new (dz- prefix); Home.jsx keeps .wcard /
+   .wcard-cap / .tool-badge (above) as its own three-up grid's card.
    ================================================================== */
 /* --- hero: headline (left) + featured live preview (right) --- */
 .dz-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
