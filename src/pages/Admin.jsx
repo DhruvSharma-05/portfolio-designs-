@@ -92,7 +92,7 @@ export default function Admin() {
   const [busyDelete, setBusyDelete] = useState(false);
 
   useEffect(() => {
-    document.title = `Admin — ${P.name}`;
+    document.title = `Admin: ${P.name}`;
     openSession().then((d) => setAuthed(d.authed)).catch(() => setAuthed(false));
   }, []);
 
@@ -158,7 +158,7 @@ export default function Admin() {
     const d = content.deliveries[index];
     const who = d.name || d.title || "this client";
     const warn = d.folderId
-      ? `Delete "${who}"?\n\nThis turns off Drive sharing for their folder — the code and the Drive link both stop working. The photos themselves stay in Drive.`
+      ? `Delete "${who}"?\n\nThis turns off Drive sharing for their folder. The code and the Drive link both stop working. The photos themselves stay in Drive.`
       : `Delete "${who}"?`;
     if (!confirm(warn)) return;
 
@@ -173,7 +173,7 @@ export default function Admin() {
     } catch (e) {
       setMsg({
         bad: true,
-        text: `Couldn't turn off sharing for "${who}" (${e.message}) — nothing was deleted, so you can try again.`,
+        text: `Couldn't turn off sharing for "${who}" (${e.message}). Nothing was deleted, so you can try again.`,
       });
     } finally {
       setBusyDelete(false);
@@ -221,14 +221,14 @@ function Shell({ children }) {
     <main id="main" className="admin wrap">
       <header className="admin-top">
         <div>
-          <div className="mono">{P.name} — Admin</div>
+          <div className="mono">{P.name}: Admin</div>
           <h1>Client delivery</h1>
         </div>
         <a className="admin-viewsite" href="/" target="_blank" rel="noreferrer">View site ↗</a>
       </header>
       {isMock() && (
         <p className="admin-msg preview">
-          Preview mode — demo data, nothing is saved.
+          Preview mode: demo data, nothing is saved.
         </p>
       )}
       {children}
@@ -337,7 +337,7 @@ function Dashboard({ content, dirty, msg, onSave, onAdd, onEdit, onRemove, onSig
     <>
       <p className="admin-summary">
         {items.length} client{items.length === 1 ? "" : "s"}
-        {items.length ? ` — ${active} active, ${drafts} draft${drafts === 1 ? "" : "s"}, ${revoked} revoked` : ""}
+        {items.length ? `: ${active} active, ${drafts} draft${drafts === 1 ? "" : "s"}, ${revoked} revoked` : ""}
       </p>
 
       <GuidePanel />
@@ -367,7 +367,7 @@ function DeliveryList({ items, onAdd, onEdit, onRemove, busyDelete }) {
 
       {!items.length && (
         <p className="admin-empty">
-          No clients yet — press “New client” to create the first delivery.
+          No clients yet. Press “New client” to create the first delivery.
         </p>
       )}
 
@@ -416,7 +416,7 @@ function Editor({ delivery, onChange, onBack, onSave, onDelete, msg, busyDelete 
   const link = `${location.origin}/client/${delivery.code}`;
   const message =
     `Hi${delivery.name ? ` ${delivery.name}` : ""}, your photos from ${delivery.title || "the shoot"} are ready.\n\n` +
-    `${link}\n\nCode: ${delivery.code}\n\n— ${P.photographer}`;
+    `${link}\n\nCode: ${delivery.code}\n\n${P.photographer}`;
 
   const call = async (action) => {
     if (!delivery.folderId) { setErr("Pick the Drive folder that holds the finished photos"); return; }
@@ -448,7 +448,7 @@ function Editor({ delivery, onChange, onBack, onSave, onDelete, msg, busyDelete 
       setCopied(what);
       setTimeout(() => setCopied(""), 1800);
     } catch {
-      setErr("Couldn't copy — select the text and copy it by hand");
+      setErr("Couldn't copy. Select the text and copy it by hand");
     }
   };
 
@@ -457,7 +457,7 @@ function Editor({ delivery, onChange, onBack, onSave, onDelete, msg, busyDelete 
     try {
       await api("/api/mail", {
         method: "POST",
-        body: { to: delivery.email, subject: `Your photos — ${delivery.title || "the shoot"}`, text: message },
+        body: { to: delivery.email, subject: `Your photos: ${delivery.title || "the shoot"}`, text: message },
       });
       setMailed(true);
       setTimeout(() => setMailed(false), 2400);
@@ -485,7 +485,7 @@ function Editor({ delivery, onChange, onBack, onSave, onDelete, msg, busyDelete 
             <h2>{delivery.name || delivery.title || "New client"}</h2>
             <span className={`status ${state?.shared ? "status-active" : "status-draft"}`}>
               {state?.shared
-                ? `Shared — ${state.count ?? "?"} photos`
+                ? `Shared: ${state.count ?? "?"} photos`
                 : "Not shared yet"}
             </span>
           </div>
@@ -528,7 +528,7 @@ function Editor({ delivery, onChange, onBack, onSave, onDelete, msg, busyDelete 
               </span>
               <button className="btn small" onClick={() => setPicking(true)}>Choose folder</button>
             </div>
-            <em>Pick the folder holding the finished photos — not a parent folder.</em>
+            <em>Pick the folder holding the finished photos, not a parent folder.</em>
             <details className="admin-folder-manual">
               <summary>Paste a folder ID instead</summary>
               <input value={delivery.folderId} placeholder="1a2b3c…"
@@ -537,7 +537,7 @@ function Editor({ delivery, onChange, onBack, onSave, onDelete, msg, busyDelete 
           </div>
 
           <Field label="Note to the client" wide>
-            <input value={delivery.note} placeholder="Optional — shown above their download button"
+            <input value={delivery.note} placeholder="Optional: shown above their download button"
               onChange={(e) => onChange({ note: e.target.value })} />
           </Field>
         </div>

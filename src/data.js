@@ -65,7 +65,7 @@ export const INTRO = {
   lead: "Engineering taught him how things work. Design and photography taught him how they feel.",
   body: [
     "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling, designing intuitive digital products and capturing moments through photography.",
-    "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws the apps and sites those pictures end up on — every screen prototyped in Figma and handed over ready to build, so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
+    "Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws the apps and sites those pictures end up on. Every screen is prototyped in Figma and handed over ready to build, so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
   ],
   /* the two doors — the practice cards under the home hero. The card
      carries the craft's name and nothing else; the pages themselves do
@@ -464,7 +464,6 @@ export const ABOUT = {
   ],
   approach: [
     { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs: analytical where it helps, intuitive where it matters." },
-    { k: "One pair of hands", v: "Shot and designed by the same person, so nothing gets lost between the pictures and the page." },
     { k: "Technology with emotion", v: "Products people can use without thinking; pictures people feel before they think." },
   ],
   timeline: [

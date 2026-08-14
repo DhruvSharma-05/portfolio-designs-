@@ -17,7 +17,7 @@ export const isMock = () => active;
 export const enableMock = () => { active = true; };
 
 const FOLDERS = [
-  { id: "f-after-hours", name: "After Hours — North Café" },
+  { id: "f-after-hours", name: "After Hours: North Café" },
   { id: "f-sharma", name: "Sharma Wedding" },
   { id: "f-faces", name: "Faces (portrait day)" },
 ];

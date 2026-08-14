@@ -62,13 +62,13 @@ export default function Client() {
 
   /* a link with the code in it opens straight to the photos */
   useEffect(() => {
-    document.title = `Client area — ${P.name}`;
+    document.title = `Client area: ${P.name}`;
     if (urlCode) lookup(urlCode);
   }, [urlCode, lookup]);
 
   return (
     <motion.main id="main" className="client wrap" variants={page} initial="initial" animate="animate">
-      <div className="mono client-kicker">{P.name} — Client area</div>
+      <div className="mono client-kicker">{P.name}: Client area</div>
 
       <AnimatePresence mode="wait">
         {gallery ? (
@@ -77,7 +77,7 @@ export default function Client() {
             transition={{ duration: 0.45, ease: "easeOut" }}>
             {gallery.preview && (
               <p className="client-err mono" style={{ marginBottom: 20 }}>
-                Preview mode — stand-in details, no Drive connected.
+                Preview mode: stand-in details, no Drive connected.
               </p>
             )}
             <div className="mono">Your photos are ready</div>
@@ -104,7 +104,7 @@ export default function Client() {
                   Open in Google Drive <span className="arrow">↗</span>
                 </a>
                 <p className="client-help mono">
-                  The ZIP downloads straight from this page. Prefer Drive? Use the link above —
+                  The ZIP downloads straight from this page. Prefer Drive? Use the link above.
                   no account needed either way.
                 </p>
               </>
@@ -115,7 +115,7 @@ export default function Client() {
                 </a>
                 <p className="client-cap">
                   This shoot ({gallery.zip?.count ?? gallery.count} photos) is too large to zip
-                  here — open it in Google Drive above and use the Download button there to save
+                  here. Open it in Google Drive above and use the Download button there to save
                   everything at once.
                 </p>
               </>

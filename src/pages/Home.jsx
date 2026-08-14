@@ -49,7 +49,7 @@ const COLLAGE_WORD = "Photography";
    collections when there aren't. */
 const PHOTO_COPY = {
   title: "Every frame earns its place.",
-  sub: "Shot on available light, graded for consistency, delivered ready to print or post — nothing leaves the set that wouldn't make the final cut.",
+  sub: "Shot on available light, graded for consistency, and delivered ready to print or post. Nothing leaves the set that wouldn't make the final cut.",
 };
 
 /* ==================================================================
@@ -276,7 +276,7 @@ export default function Home() {
                 {/* the sentence carries its own quote marks — see
                     .mast-quote for why they can't sit on the paragraph */}
                 <span className="mast-quote">Simplicity is the ultimate sophistication.</span>
-                <span className="mast-sub-by mono">— Leonardo da Vinci</span>
+                <span className="mast-sub-by mono">Leonardo da Vinci</span>
               </p>
             </div>
           </div>
@@ -302,9 +302,6 @@ export default function Home() {
       <section className="intro-sec" id="intro" aria-label="Practices">
         <div className="wrap">
           <Reveal>
-            <p className="standfirst">
-              One pair of <span className="serif">hands</span>.
-            </p>
             <div className="drawline" />
           </Reveal>
 
@@ -333,7 +330,7 @@ export default function Home() {
             <CenterHead
               kicker="Design"
               title="Prototyped, not mocked up."
-              sub="Every screen wired and made clickable in Figma before a line of code exists — tested against real flows, specced and ready for a developer to pick up."
+              sub="Every screen is wired and made clickable in Figma before a line of code exists. It is tested against real flows, specced, and ready for a developer to pick up."
               cta={
                 <TLink to="/design" className="extlink">
                   All designs <span className="arrow">→</span>
@@ -417,7 +414,7 @@ export default function Home() {
         <section className="lov" ref={lovSec} aria-label="Frames">
           <div className="lov-stage" ref={lovStage}>
             <svg className="lov-svg" role="img" focusable="false"
-              aria-label={`${COLLAGE_WORD} — selected frames`}>
+              aria-label={`${COLLAGE_WORD}: selected frames`}>
               <defs>
                 {/* The opening is a wipe, not a fade. Fading the surround out
                     dims the whole picture uniformly on the way, and a
@@ -515,7 +512,7 @@ export default function Home() {
         <div className="wrap">
           <CenterHead
             title={<><span className="serif">Finished</span> work, handed over.</>}
-            sub="The same standard on both halves of the job — what leaves here is ready to use, in the sizes and the files you need."
+            sub="The same standard applies to both halves of the job. What leaves here is ready to use, in the sizes and files you need."
           />
           <Timeline items={INTRO.offer} />
         </div>
