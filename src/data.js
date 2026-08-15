@@ -183,13 +183,37 @@ export const ratio = (s, fw = 3, fh = 2) => {
   return p?.w && p?.h ? `${p.w} / ${p.h}` : `${fw} / ${fh}`;
 };
 
-/* Near-black base. Dark, quiet room; the work is the only bright thing. */
+/* Eerie-black base. Dark, quiet room; the work is the only bright thing.
+   It was #0A0A0B, which read as a hole rather than a room. The client
+   asked for #1C1C1C, then for a step back down from it; #161616 is that
+   step — 1.06:1 off #1C1C1C, and 1.09:1 off the original near-black.
+   The rest of the ladder has to move with it either way.
+
+   THE WHOLE PALETTE IS RELATIVE TO bg, so lifting bg alone would have
+   broken it in both directions: the old panel (#111114) is DARKER than
+   this, so every lifted surface would have become a dent, and the old
+   rule (#1E1E22) lands ~1.04:1 against it, so every hairline on the
+   site — the one thing separating the sections — would have vanished.
+
+   These four are the values that keep each step's contrast against the
+   background exactly what it was, so the design reads identically, just
+   on a lighter floor:
+
+     panel  1.053:1  (was 1.050)   the lift under bands and cards
+     rule   1.185:1  (was 1.191)   the section hairline
+     dim    5.22:1   (was 5.20)    body copy, still past AA's 4.5
+     ink   15.32:1   (was 16.75)   left alone; brighter than #ECECEC
+                                   only heads toward pure white
+
+   dim had to move: #82828B on this ground measures 4.9:1 and was down
+   to 4.48:1 at #1C1C1C, which fails AA for body text. Recompute all
+   four if bg changes again — don't eyeball them. */
 const BASE = {
-  bg: "#0A0A0B",
-  panel: "#111114",
+  bg: "#161616",
+  panel: "#1B1B1E",
   ink: "#ECECEC",
-  dim: "#82828B",
-  rule: "#1E1E22",
+  dim: "#898992",
+  rule: "#252529",
   filter: "saturate(0.92) brightness(0.96)",
 };
 
@@ -1356,11 +1380,11 @@ export const CSS = `
    pushed the pill ~26px above the copyright it is supposed to sit level
    with. Scoped to .colophon-foot so the detail pages keep theirs. */
 /* The border is --dim, NOT --rule, and that is the difference between a
-   pill and no pill. --rule (#1E1E22) sits at 1.19:1 against this
+   pill and no pill. --rule (#252529) sits at 1.19:1 against this
    background — the admin block further down says so in as many words,
    and it is why nothing down there had structure until it defined its
    own --a-edge. A 1.19:1 hairline around this link would have made it a
-   control that only exists on hover. --dim (#82828B) measures 5.2:1,
+   control that only exists on hover. --dim (#898992) measures 5.22:1,
    comfortably past the 3:1 WCAG 1.4.11 wants for the visual boundary of
    a UI component, and it is the grey already sitting next to it in the
    © line, so the pill reads as quiet rather than as a new colour. */
@@ -1831,11 +1855,18 @@ export const CSS = `
   radial-gradient(circle at 30% 24%, rgba(255,214,224,1) 0%, rgba(255,214,224,0) 46%),
   radial-gradient(circle at 74% 66%, rgba(236,140,180,1) 0%, rgba(236,140,180,0) 56%),
   radial-gradient(circle at 50% 96%, rgba(255,238,244,1) 0%, rgba(255,238,244,0) 62%); }
-/* The page's own near-black, so the quote reads as ink on a coloured
-   card rather than as a fifth colour. No text-shadow: that was carrying
-   white type over a mid-tone ground, and under dark type on a light one
-   it is just a smudge. */
-.tcard blockquote { color: var(--bg); font-weight: 400; letter-spacing: -0.02em;
+/* Near-black, so the quote reads as ink on a coloured card rather than
+   as a fifth colour. No text-shadow: that was carrying white type over
+   a mid-tone ground, and under dark type on a light one it is just a
+   smudge.
+
+   ⚠ THIS IS A LITERAL, NOT var(--bg), AND MUST STAY ONE. It was the
+   token, which quietly tied a measured contrast decision to the page
+   colour: when bg went from #0A0A0B to #1C1C1C the quotes came with it
+   and the worst card (Rosewood) fell from 4.52:1 to about 4.0 — under
+   AA — for a change that had nothing to do with these cards. The
+   attribution beside it was already hard-coded for the same reason. */
+.tcard blockquote { color: #0A0A0B; font-weight: 400; letter-spacing: -0.02em;
   font-size: clamp(17px, 1.7vw, 21px); line-height: 1.55; }
 .tcard blockquote::before { content: "\\201C"; }
 .tcard blockquote::after { content: "\\201D"; }
@@ -2373,18 +2404,22 @@ export const CSS = `
    badly as the label on all thirty fields of a working tool. All-caps
    also measures ~13% slower to read. So the admin overrides it with
    sentence-case Inter at real sizes, and defines its own line/edge
-   tokens because the site's --rule (#1E1E22) sits at 1.19:1 against
+   tokens because the site's --rule (#252529) sits at 1.19:1 against
    the background — invisible, which is why nothing here had structure.
 
    Every token below is scoped to .admin, so the public site keeps its
    deliberate look untouched.
    ================================================================== */
 .admin {
-  --a-line: #48484F;    /* structural dividers — visible, quiet */
-  --a-edge: #666670;    /* interactive borders — 3.5:1, WCAG 1.4.11 */
-  --a-label: #C4C4CC;   /* field labels — 11.8:1 */
-  --a-hint: #9A9AA4;    /* helper text — 7.1:1 */
-  --a-field: #17171B;   /* input fill */
+  /* Re-solved when bg left #0A0A0B, to the ratios these were originally
+     picked for — a-edge in particular had slid to exactly 3.00:1,
+     sitting on WCAG 1.4.11's floor instead of above it, and a-field had
+     gone from a lift to a dent. */
+  --a-line: #4E4E55;    /* structural dividers — 2.2:1, visible, quiet */
+  --a-edge: #6C6C76;    /* interactive borders — 3.5:1, WCAG 1.4.11 */
+  --a-label: #CDCDD5;   /* field labels — 11.5:1 */
+  --a-hint: #A1A1AB;    /* helper text — 7.1:1 */
+  --a-field: #1F1F23;   /* input fill — a lift, like --panel */
   --a-ok: #4ADE80;      /* active   — 11.4:1 */
   --a-draft: #9A9AA4;   /* draft    — 7.1:1 */
   --a-bad: #FF6B70;     /* revoked  — 7.2:1 */

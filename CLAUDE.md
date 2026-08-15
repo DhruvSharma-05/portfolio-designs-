@@ -267,7 +267,7 @@ pages — is built from the same header and the same kind of grid. The CSS lives
   which is visually indistinguishable and clipped correctly everywhere.
   `.disc::before` carries `border-radius: inherit` for the related
   transform case.
-- **The type on them is the page's near-black, not white**, and that is
+- **The type on them is near-black, not white**, and that is
   load-bearing. White 300-weight text on a pastel mesh measures about
   1.5:1 — it stops being text and becomes texture. Dark type on the same
   gradients measures 4.5–15:1. Verified by rasterising the cards and
@@ -275,6 +275,11 @@ pages — is built from the same header and the same kind of grid. The CSS lives
   Rosewood base. **If you change a gradient, re-measure** — the check is
   a screenshot of the text band with the text hidden, then a contrast
   sweep against `#0A0A0B`.
+  - ⚠ **That colour is a literal, not `var(--bg)`, and must stay one.**
+    It used to be the token, which tied a measured contrast result to
+    the page colour: when the background moved to `#1C1C1C` the quotes
+    followed it and the Rosewood card fell under AA, for a change that
+    had nothing to do with these cards.
 
 > ⚠ **The quotes in `TESTIMONIALS` are placeholder copy — none of them
 > came from a real client.** They must be replaced with real words
@@ -433,7 +438,7 @@ renders `<Colophon />`; About, Design and Photography render
   - ⚠ **The border is `--dim`, never `--rule`.** `--rule` is 1.19:1
     against the background — the admin block says so itself, and it is
     why `/admin` had to define `--a-edge`. A `--rule` hairline makes a
-    control that only exists on hover. `--dim` measures **5.20:1**, past
+    control that only exists on hover. `--dim` measures **5.22:1**, past
     the 3:1 WCAG 1.4.11 asks for a component boundary, and it is the grey
     already beside it in the © line. Link text lands at 16.75:1 and now
     separates from the © by 3.22:1.
