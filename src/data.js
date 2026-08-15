@@ -65,7 +65,7 @@ export const INTRO = {
   lead: "Engineering taught him how things work. Design and photography taught him how they feel.",
   body: [
     "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling, designing intuitive digital products and capturing moments through photography.",
-    "Two practices, one pair of hands. Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws the apps and sites those pictures end up on — every screen prototyped in Figma and handed over ready to build, so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
+    "Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws the apps and sites those pictures end up on. Every screen is prototyped in Figma and handed over ready to build, so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
   ],
   /* the two doors — the practice cards under the home hero. The card
      carries the craft's name and nothing else; the pages themselves do
@@ -183,13 +183,37 @@ export const ratio = (s, fw = 3, fh = 2) => {
   return p?.w && p?.h ? `${p.w} / ${p.h}` : `${fw} / ${fh}`;
 };
 
-/* Near-black base. Dark, quiet room; the work is the only bright thing. */
+/* Eerie-black base. Dark, quiet room; the work is the only bright thing.
+   It was #0A0A0B, which read as a hole rather than a room. The client
+   asked for #1C1C1C, then for a step back down from it; #161616 is that
+   step — 1.06:1 off #1C1C1C, and 1.09:1 off the original near-black.
+   The rest of the ladder has to move with it either way.
+
+   THE WHOLE PALETTE IS RELATIVE TO bg, so lifting bg alone would have
+   broken it in both directions: the old panel (#111114) is DARKER than
+   this, so every lifted surface would have become a dent, and the old
+   rule (#1E1E22) lands ~1.04:1 against it, so every hairline on the
+   site — the one thing separating the sections — would have vanished.
+
+   These four are the values that keep each step's contrast against the
+   background exactly what it was, so the design reads identically, just
+   on a lighter floor:
+
+     panel  1.053:1  (was 1.050)   the lift under bands and cards
+     rule   1.185:1  (was 1.191)   the section hairline
+     dim    5.22:1   (was 5.20)    body copy, still past AA's 4.5
+     ink   15.32:1   (was 16.75)   left alone; brighter than #ECECEC
+                                   only heads toward pure white
+
+   dim had to move: #82828B on this ground measures 4.9:1 and was down
+   to 4.48:1 at #1C1C1C, which fails AA for body text. Recompute all
+   four if bg changes again — don't eyeball them. */
 const BASE = {
-  bg: "#0A0A0B",
-  panel: "#111114",
+  bg: "#161616",
+  panel: "#1B1B1E",
   ink: "#ECECEC",
-  dim: "#82828B",
-  rule: "#1E1E22",
+  dim: "#898992",
+  rule: "#252529",
   filter: "saturate(0.92) brightness(0.96)",
 };
 
@@ -464,7 +488,6 @@ export const ABOUT = {
   ],
   approach: [
     { k: "Logic meets creativity", v: "An engineer's problem-solving applied to design and photographs: analytical where it helps, intuitive where it matters." },
-    { k: "One pair of hands", v: "Shot and designed by the same person, so nothing gets lost between the pictures and the page." },
     { k: "Technology with emotion", v: "Products people can use without thinking; pictures people feel before they think." },
   ],
   timeline: [
@@ -721,90 +744,20 @@ export const CSS = `
 .mast-stage { position: relative; flex: 1; min-width: 0;
   display: flex; align-items: center; }
 
-/* Light moving behind the name. Three pools of the accent, each wandering
-   its own four-corner circuit and breathing in and out. The periods are
-   coprime-ish (19/23/29s) so the set never repeats a pose, which is what
-   keeps it reading as light rather than a loop.
-
-   Each path is a closed loop — the last keyframe is the first — so it
-   runs infinite rather than alternate: alternate replays the same route
-   backwards, which is exactly the tell that gives away a loop. Linear
-   timing for the same reason; ease-in-out would pause the pool at every
-   waypoint and turn a wander into four separate slides.
-   (No backticks anywhere in here — this stylesheet is a template
-   literal, and one closes it.)
-
-   The softness is in the gradient itself, not a blur() filter: a
-   full-bleed blur repaints the whole hero every frame, a radial-gradient
-   is free. Only transform and opacity animate, so this stays on the
-   compositor. */
-.mast-light { position: absolute; inset: 0; z-index: 0;
+/* The gallery tunnel behind the name — GalleryTunnel.jsx, a three.js
+   corridor of the site's own tones plus real synced photographs,
+   drifting toward the camera forever. Replaces the old cursor-lit pools:
+   one ambient background system, not two competing for the same job.
+   Gated behind heavyVisualsAllowed() (Home.jsx) the same as About's
+   particle globe, so a phone never fetches the three.js chunk for an
+   effect it wouldn't render smoothly anyway. */
+.mast-tunnel { position: absolute; inset: 0; z-index: 0;
   overflow: hidden; pointer-events: none; }
-.mast-light i { position: absolute; display: block;
-  width: 78vmax; height: 78vmax; border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%,
-    color-mix(in srgb, var(--accent) 10%, transparent) 0%,
-    color-mix(in srgb, var(--accent) 4.5%, transparent) 32%,
-    color-mix(in srgb, var(--accent) 1.5%, transparent) 56%,
-    transparent 72%);
-  /* --near (0…1) is how close the cursor's pool is — Home.jsx writes it
-     every frame. Base × 1.38 at the closest approach, and the bases are
-     set so that lands just under 1: opacity clamps there, and a pool that
-     hits the ceiling early spends the rest of the cursor's approach doing
-     nothing visible, which is the one thing this effect can't afford. */
-  opacity: calc(var(--o) * (1 + var(--near, 0) * .38));
-  will-change: transform, opacity; }
-.mast-light i:nth-child(1) { --o: .72; top: -34%; left: -18%;
-  animation: lightWanderA 19s linear infinite; }
-.mast-light i:nth-child(2) { --o: .6; top: -6%; right: -26%;
-  animation: lightWanderB 23s linear infinite; }
-.mast-light i:nth-child(3) { --o: .5; bottom: -46%; left: 22%;
-  animation: lightWanderC 29s linear infinite; }
-@keyframes lightWanderA {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  25%  { transform: translate3d(20vw, 13vh, 0) scale(1.16); }
-  50%  { transform: translate3d(31vw, -7vh, 0) scale(.92); }
-  75%  { transform: translate3d(11vw, 17vh, 0) scale(1.2); }
-  100% { transform: translate3d(0, 0, 0) scale(1); }
-}
-@keyframes lightWanderB {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  25%  { transform: translate3d(-17vw, 19vh, 0) scale(.86); }
-  50%  { transform: translate3d(-27vw, 4vh, 0) scale(1.14); }
-  75%  { transform: translate3d(-9vw, 22vh, 0) scale(.94); }
-  100% { transform: translate3d(0, 0, 0) scale(1); }
-}
-@keyframes lightWanderC {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  25%  { transform: translate3d(15vw, -16vh, 0) scale(1.12); }
-  50%  { transform: translate3d(-6vw, -24vh, 0) scale(.9); }
-  75%  { transform: translate3d(-19vw, -9vh, 0) scale(1.18); }
-  100% { transform: translate3d(0, 0, 0) scale(1); }
-}
-/* the cursor's pool — smaller and dimmer than the drifting three, so it
-   reads as a hand held near the surface, not a torch. Home.jsx writes the
-   transform; the trailing lag is in there, this only says what it looks
-   like. Placed from its own centre (the negative margins) so the
-   transform is a plain cursor position with no offset maths. */
-/* z-index over the vignette above, which otherwise ate the spotlight in
-   the outer third of the frame — the corner settle is there to hold the
-   three drifting pools in, not to fight the cursor.
-
-   Kept under the threshold of noticing: this pool alone is barely a
-   lift off the black. Most of what a visitor actually sees when they
-   move the mouse is the ambient pool it passes brightening — the --near
-   handoff above — which is why this one can afford to be this faint. */
-.mast-spot { position: absolute; top: 0; left: 0; z-index: 1;
-  width: 44vmax; height: 44vmax; margin: -22vmax 0 0 -22vmax; border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%,
-    color-mix(in srgb, var(--accent) 4%, transparent) 0%,
-    color-mix(in srgb, var(--accent) 1.8%, transparent) 34%,
-    transparent 66%);
-  opacity: 0; transition: opacity .55s ease; will-change: transform; }
-.mast-light[data-spot="on"] .mast-spot { opacity: 1; }
-/* the pools are brightest in the middle of the frame, where the copy is —
-   this settles the corners so the hero still ends in the page's black */
-.mast-light::after { content: ""; position: absolute; inset: 0;
+.mast-tunnel canvas { display: block; }
+/* the tunnel is brightest in the middle of the frame, where the copy is —
+   this settles the corners so the hero still ends in the page's black,
+   same fix the old light layer used */
+.mast-tunnel::after { content: ""; position: absolute; inset: 0;
   background: radial-gradient(ellipse 82% 72% at 50% 46%,
     transparent 0%, color-mix(in srgb, var(--bg) 72%, transparent) 78%, var(--bg) 100%); }
 
@@ -900,7 +853,7 @@ export const CSS = `
    and both are needed — the hero's last stretch fades to the page colour,
    and the section under it opens with the faintest continuation of the
    same light, so the glow crosses the boundary instead of stopping at it.
-   Between .mast-light (z 0) and .mast .wrap (z 3), so it dissolves the
+   Between .mast-tunnel (z 0) and .mast .wrap (z 3), so it dissolves the
    light without touching the copy. */
 .mast::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
   height: 26vh; z-index: 2; pointer-events: none;
@@ -1319,78 +1272,17 @@ export const CSS = `
    still reads as one column with a wider band of work under it. */
 .wrap-wide { max-width: 1340px; }
 
-/* ==================================================================
-   DESIGN SHOWCASE — one prototype at a time, names as the switch
+/* The caption under a design card: title, intro line, tool badge, all
+   centred under the browser-chrome preview above them. */
+.wcard-cap { display: flex; flex-direction: column; align-items: center;
+  gap: 14px; padding: 22px 4px 0; text-align: center; }
+.wcard-cap h3 { font-weight: 400; letter-spacing: -0.02em; font-size: clamp(20px, 2.4vw, 27px); }
+.wcard:hover .wcard-cap h3 { color: var(--accent); }
+.wcard-cap p { color: var(--dim); font-size: 14.5px; line-height: 1.6;
+  max-width: 38ch; margin-inline: auto; }
+.tool-badge { flex: 0 0 auto; border: 1px solid var(--rule); border-radius: 100px;
+  padding: 5px 12px; }
 
-   This replaced a three-up grid of project cards, and the reason was
-   the copy rather than the layout: intro, tag, role and tool are the
-   same placeholder string on every project and year is empty, so three
-   cards side by side differed only in their title and read as one card
-   printed three times. "Figma" alone appeared nine times in that row.
-
-   One project on screen fixes it without a word being invented — there
-   is nothing left to repeat — and hands the whole column to a single
-   prototype instead of splitting it three ways. The names above the
-   stage are the switch, standing where the section's call to action
-   used to be; the call to action moves below the work, which is also
-   where it belongs, after you have seen something.
-   ================================================================== */
-.dshow-tabs { display: flex; flex-wrap: wrap; justify-content: center;
-  gap: clamp(18px, 3vw, 44px); margin-bottom: clamp(30px, 4vw, 48px); }
-/* The mono control tier, same as .nav and .extlink — this is a control,
-   not a caption, so it takes the 500. .pf-scoped so the border and
-   padding survive the .pf button reset. */
-.pf .dshow-tab { position: relative; padding: 6px 2px; color: var(--dim);
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500;
-  letter-spacing: .16em; text-transform: uppercase;
-  transition: color .3s ease; }
-.pf .dshow-tab:hover { color: var(--ink); }
-.pf .dshow-tab[aria-selected="true"] { color: var(--ink); }
-/* the underline is on a pseudo-element and scaled, not a border toggled
-   on and off: a border would shift the row by a pixel as it appears */
-.dshow-tab::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
-  height: 1px; background: var(--accent); transform: scaleX(0);
-  transition: transform .4s cubic-bezier(.2,.8,.2,1); }
-.dshow-tab[aria-selected="true"]::after { transform: scaleX(1); }
-
-/* The stage. Its height is viewport-relative so the prototype fills the
-   screen rather than a fixed box, and its width comes from the active
-   project's shape — see the data-shape rules below. */
-.dshow-stage { position: relative; margin-inline: auto;
-  height: min(72svh, 760px); }
-/* Panels are stacked and crossfaded rather than swapped, so switching
-   does not collapse the section's height for a frame and bounce the
-   page under the pointer. */
-.dshow-panel { position: absolute; inset: 0; opacity: 0; pointer-events: none;
-  transition: opacity .45s ease; }
-.dshow-panel[data-on="1"] { opacity: 1; pointer-events: auto; }
-/* the frame primitives fill the stage here rather than carrying their
-   own aspect ratio — the stage is the shape */
-.dshow-panel .browser { height: 100%; display: flex; flex-direction: column; }
-.dshow-panel .figbox, .dshow-panel .browser-view, .dshow-panel .browser-ph {
-  aspect-ratio: auto; flex: 1; min-height: 0; }
-.dshow-panel .browser-view img { height: 100%; object-fit: cover; }
-
-/* A phone prototype sits in the middle of its cover with a wide margin
-   of Figma's own black either side, so in a full-width stage it lands as
-   a narrow sliver stranded in a thousand pixels of nothing. Narrowing
-   the stage to roughly a phone's proportions and letting object-fit:
-   cover crop crops that margin away instead of showing it. */
-.dshow[data-shape="phone"] .dshow-stage { max-width: min(100%, 420px); }
-/* The wide covers are the opposite case: the device is the whole frame,
-   so cropping it to fill takes the bottom off the laptop. Contain shows
-   the machine intact, and the small side margins it leaves are the same
-   black the cover itself is shot on — see the background below, which is
-   what stops them reading as bars. */
-.dshow[data-shape="wide"] .dshow-stage { max-width: 100%; }
-.dshow[data-shape="wide"] .browser-view { background: #000; }
-.dshow[data-shape="wide"] .browser-view img { object-fit: contain; }
-.dshow-cta { display: flex; justify-content: center;
-  margin-top: clamp(34px, 4.5vw, 56px); }
-@media (max-width: 640px) {
-  .dshow-stage { height: min(62svh, 560px); }
-  .dshow-tabs { gap: 16px 22px; }
-}
 /* one card: it keeps a card's proportions instead of stretching across
    the whole 1180px column, and stays on the page's axis */
 .cgrid-1 { grid-template-columns: minmax(0, min(520px, 100%)); justify-content: center; }
@@ -1488,11 +1380,11 @@ export const CSS = `
    pushed the pill ~26px above the copyright it is supposed to sit level
    with. Scoped to .colophon-foot so the detail pages keep theirs. */
 /* The border is --dim, NOT --rule, and that is the difference between a
-   pill and no pill. --rule (#1E1E22) sits at 1.19:1 against this
+   pill and no pill. --rule (#252529) sits at 1.19:1 against this
    background — the admin block further down says so in as many words,
    and it is why nothing down there had structure until it defined its
    own --a-edge. A 1.19:1 hairline around this link would have made it a
-   control that only exists on hover. --dim (#82828B) measures 5.2:1,
+   control that only exists on hover. --dim (#898992) measures 5.22:1,
    comfortably past the 3:1 WCAG 1.4.11 wants for the visual boundary of
    a UI component, and it is the grey already sitting next to it in the
    © line, so the pill reads as quiet rather than as a new colour. */
@@ -1963,11 +1855,18 @@ export const CSS = `
   radial-gradient(circle at 30% 24%, rgba(255,214,224,1) 0%, rgba(255,214,224,0) 46%),
   radial-gradient(circle at 74% 66%, rgba(236,140,180,1) 0%, rgba(236,140,180,0) 56%),
   radial-gradient(circle at 50% 96%, rgba(255,238,244,1) 0%, rgba(255,238,244,0) 62%); }
-/* The page's own near-black, so the quote reads as ink on a coloured
-   card rather than as a fifth colour. No text-shadow: that was carrying
-   white type over a mid-tone ground, and under dark type on a light one
-   it is just a smudge. */
-.tcard blockquote { color: var(--bg); font-weight: 400; letter-spacing: -0.02em;
+/* Near-black, so the quote reads as ink on a coloured card rather than
+   as a fifth colour. No text-shadow: that was carrying white type over
+   a mid-tone ground, and under dark type on a light one it is just a
+   smudge.
+
+   ⚠ THIS IS A LITERAL, NOT var(--bg), AND MUST STAY ONE. It was the
+   token, which quietly tied a measured contrast decision to the page
+   colour: when bg went from #0A0A0B to #1C1C1C the quotes came with it
+   and the worst card (Rosewood) fell from 4.52:1 to about 4.0 — under
+   AA — for a change that had nothing to do with these cards. The
+   attribution beside it was already hard-coded for the same reason. */
+.tcard blockquote { color: #0A0A0B; font-weight: 400; letter-spacing: -0.02em;
   font-size: clamp(17px, 1.7vw, 21px); line-height: 1.55; }
 .tcard blockquote::before { content: "\\201C"; }
 .tcard blockquote::after { content: "\\201D"; }
@@ -2291,22 +2190,14 @@ export const CSS = `
 .figma-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 @media (max-width: 640px) { .figma-embed { height: min(80vh, 700px); } }
 
-/* .wgrid, .wcard-cap and .tool-badge are gone with the three-up design
-   grid they styled. The caption they drew — title, the identical intro
-   line, a "Figma" pill — is exactly the repetition that grid was
-   removed for; the showcase names the project in its tab instead, so
-   there is nothing left for a caption to say. .wcard survives as the
-   link wrapper. */
-
-
 /* ==================================================================
    DESIGN INDEX — /design (magazine-style redesign)
 
    Masthead → one featured build (large split) → a numbered grid of the
    rest. Reuses the shared .browser / .figbox / .pill primitives so the
    card previews stay identical to the home page; only the surrounding
-   layout and captions are new (dz- prefix); Home.jsx keeps .wcard as the
-   showcase link wrapper.
+   layout and captions are new (dz- prefix); Home.jsx keeps .wcard /
+   .wcard-cap / .tool-badge (above) as its own three-up grid's card.
    ================================================================== */
 /* --- hero: headline (left) + featured live preview (right) --- */
 .dz-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
@@ -2513,18 +2404,22 @@ export const CSS = `
    badly as the label on all thirty fields of a working tool. All-caps
    also measures ~13% slower to read. So the admin overrides it with
    sentence-case Inter at real sizes, and defines its own line/edge
-   tokens because the site's --rule (#1E1E22) sits at 1.19:1 against
+   tokens because the site's --rule (#252529) sits at 1.19:1 against
    the background — invisible, which is why nothing here had structure.
 
    Every token below is scoped to .admin, so the public site keeps its
    deliberate look untouched.
    ================================================================== */
 .admin {
-  --a-line: #48484F;    /* structural dividers — visible, quiet */
-  --a-edge: #666670;    /* interactive borders — 3.5:1, WCAG 1.4.11 */
-  --a-label: #C4C4CC;   /* field labels — 11.8:1 */
-  --a-hint: #9A9AA4;    /* helper text — 7.1:1 */
-  --a-field: #17171B;   /* input fill */
+  /* Re-solved when bg left #0A0A0B, to the ratios these were originally
+     picked for — a-edge in particular had slid to exactly 3.00:1,
+     sitting on WCAG 1.4.11's floor instead of above it, and a-field had
+     gone from a lift to a dent. */
+  --a-line: #4E4E55;    /* structural dividers — 2.2:1, visible, quiet */
+  --a-edge: #6C6C76;    /* interactive borders — 3.5:1, WCAG 1.4.11 */
+  --a-label: #CDCDD5;   /* field labels — 11.5:1 */
+  --a-hint: #A1A1AB;    /* helper text — 7.1:1 */
+  --a-field: #1F1F23;   /* input fill — a lift, like --panel */
   --a-ok: #4ADE80;      /* active   — 11.4:1 */
   --a-draft: #9A9AA4;   /* draft    — 7.1:1 */
   --a-bad: #FF6B70;     /* revoked  — 7.2:1 */

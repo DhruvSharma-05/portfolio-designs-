@@ -1,16 +1,20 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
 import {
   P, img, srcSet, collageSrc, projectCover, INTRO, TESTIMONIALS, TAGLINE, COLLAGE,
-  PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, ROLES,
+  PHOTO_PROJECTS, WEB_PROJECTS, HAS_REAL_WEB, hasPhoto, prefersReduced, heavyVisualsAllowed, ROLES,
   gridCols,
 } from "../data.js";
 import { Reveal, TLink, FigmaFrame, Typewriter, CenterHead, Timeline, Colophon } from "../ui.jsx";
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
+
+/* three.js is code-split and gated, same as About's globe — the hero's
+   copy is the content here, the tunnel is decoration. */
+const GalleryTunnel = lazy(() => import("../GalleryTunnel.jsx"));
 
 const page = {
   initial: { opacity: 0 },
@@ -45,7 +49,7 @@ const COLLAGE_WORD = "Photography";
    collections when there aren't. */
 const PHOTO_COPY = {
   title: "Every frame earns its place.",
-  sub: "Shot on available light, graded for consistency, delivered ready to print or post — nothing leaves the set that wouldn't make the final cut.",
+  sub: "Shot on available light, graded for consistency, and delivered ready to print or post. Nothing leaves the set that wouldn't make the final cut.",
 };
 
 /* ==================================================================
@@ -63,8 +67,8 @@ export default function Home() {
   useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus UI/UX and web design in Figma. Shot and designed by the same person.");
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
+  const [heavy] = useState(heavyVisualsAllowed);
   const root = useRef(null);
-  const stage = useRef(null);
   const lovSec = useRef(null);
   const lovStage = useRef(null);
 
@@ -84,112 +88,6 @@ export default function Home() {
     io.observe(el);
     return () => io.disconnect();
   }, [shown]);
-
-  /* The one pool of light that isn't on a timer: it follows the cursor,
-     trailing rather than sticking to it, so it reads as a lamp being
-     carried past the name rather than a dot glued to the pointer.
-
-     It also lights what it passes. The pool itself is deliberately almost
-     invisible; the thing a visitor actually notices is the ambient pool
-     it comes near brightening, which is the `--near` each drifter reads.
-     That means measuring the drifters, which is the one bit of this that
-     costs anything — see MEASURE_EVERY.
-
-     Written straight to the nodes' style out of a rAF — routing a
-     pointermove through React state would re-render the whole page on
-     every mouse pixel. */
-  useEffect(() => {
-    /* the listeners go on the stage, not the light — the light layer is
-       pointer-events:none and would never see a move */
-    const el = stage.current;
-    if (reduced || !el) return;
-    const layer = el.querySelector(".mast-light");
-    const spot = el.querySelector(".mast-spot");
-    const pools = [...layer.querySelectorAll("i")].map((n) => ({ n, cx: 0, cy: 0, near: 0 }));
-    let tx = 0, ty = 0, x = 0, y = 0, raf = 0, away = true, tick = 0, reach = 600, off = false;
-
-    /* The drifters are moved by a CSS animation, so their position is only
-       knowable by asking layout — and a getBoundingClientRect is a layout
-       flush. Four of them 60 times a second would be the most expensive
-       thing on the page, and pointless: these pools cross the screen over
-       20 seconds, so ten reads a second is already far finer than the
-       motion. Between reads the falloff is computed against the last
-       known centres, which is imperceptibly stale. */
-    const MEASURE_EVERY = 6;
-    const measure = () => {
-      const r = el.getBoundingClientRect();
-      /* scrolled past — the pointer can still be "inside" the hero as far
-         as boundary events go, and there is no sense lighting a frame
-         nobody is looking at */
-      off = r.bottom <= 0 || r.top >= window.innerHeight;
-      // how far the cursor's influence carries, in the frame's own terms
-      reach = Math.max(r.width, r.height) * 0.5;
-      pools.forEach((p) => {
-        const b = p.n.getBoundingClientRect();
-        p.cx = b.left + b.width / 2 - r.left;
-        p.cy = b.top + b.height / 2 - r.top;
-      });
-    };
-
-    const frame = () => {
-      x += (tx - x) * 0.06;
-      y += (ty - y) * 0.06;
-      spot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-
-      if (tick++ % MEASURE_EVERY === 0) measure();
-      /* Each drifter eases toward its own target brightness rather than
-         snapping to it, so a fast mouse leaves a swell behind it instead
-         of a flicker. `dark` is the resting state — pointer gone, or the
-         hero scrolled away — and the ease carries the pools back down to
-         it, which is why the loop keeps running for a moment after the
-         cursor leaves rather than cutting. */
-      const dark = away || off;
-      let easing = false;
-      pools.forEach((p) => {
-        const d = Math.hypot(x - p.cx, y - p.cy);
-        const want = dark ? 0 : Math.max(0, 1 - d / reach);
-        p.near += (want - p.near) * 0.07;
-        p.n.style.setProperty("--near", p.near.toFixed(3));
-        if (Math.abs(want - p.near) > 0.004) easing = true;
-      });
-
-      const settled = Math.abs(tx - x) < 0.4 && Math.abs(ty - y) < 0.4;
-      raf = (dark && settled && !easing) ? 0 : requestAnimationFrame(frame);
-    };
-    const move = (e) => {
-      /* Asked of the event, not of a media query: a touch-screen laptop
-         answers `pointer: coarse` to matchMedia even while a mouse is
-         driving it, which switched the spotlight off on exactly the
-         machines that have a cursor to follow. A finger still can't
-         drag the light around — it just isn't pointerType "mouse". */
-      if (e.pointerType && e.pointerType !== "mouse" && e.pointerType !== "pen") return;
-      const r = el.getBoundingClientRect();
-      tx = e.clientX - r.left;
-      ty = e.clientY - r.top;
-      /* Arriving — first load, or back from the tab next door. The light
-         is placed under the cursor before it is lit, so it fades up where
-         the pointer actually is instead of sweeping in from wherever it
-         was left. This has to run on every arrival, not just the first
-         one: gating it on a seen-once flag left the light dark for the
-         rest of the visit once the pointer had wandered off. */
-      if (away) {
-        away = false;
-        x = tx; y = ty;
-        spot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-        layer.dataset.spot = "on";
-      }
-      if (!raf) raf = requestAnimationFrame(frame);
-    };
-    const leave = () => { away = true; layer.dataset.spot = ""; };
-
-    el.addEventListener("pointermove", move);
-    el.addEventListener("pointerleave", leave);
-    return () => {
-      el.removeEventListener("pointermove", move);
-      el.removeEventListener("pointerleave", leave);
-      cancelAnimationFrame(raf);
-    };
-  }, [reduced]);
 
   /* image parallax + hover zoom, owned by GSAP and scoped to this page
      so the ScrollTriggers are torn down when we navigate away. */
@@ -349,13 +247,18 @@ export default function Home() {
           this is. Everything that used to crowd it in here now has its
           own room in .intro-sec below. */}
       <header className="mast" id="main">
-        <div className="mast-stage" ref={stage}>
-          {/* light behind the copy — three pools drifting on their own slow
-              cycles, and one that follows the cursor. See .mast-light. */}
-          <div className="mast-light" aria-hidden="true">
-            <i /><i /><i />
-            <span className="mast-spot" />
-          </div>
+        <div className="mast-stage">
+          {/* the tunnel behind the copy — an endless corridor of the
+              site's own tones and real synced photographs. See
+              GalleryTunnel.jsx and .mast-tunnel. Gated the same way as
+              About's globe: below 900px it doesn't mount at all. */}
+          {heavy && (
+            <div className="mast-tunnel" aria-hidden="true">
+              <Suspense fallback={null}>
+                <GalleryTunnel still={reduced} />
+              </Suspense>
+            </div>
+          )}
 
           <div className="wrap">
             <div className="mast-copy">
@@ -373,7 +276,7 @@ export default function Home() {
                 {/* the sentence carries its own quote marks — see
                     .mast-quote for why they can't sit on the paragraph */}
                 <span className="mast-quote">Simplicity is the ultimate sophistication.</span>
-                <span className="mast-sub-by mono">— Leonardo da Vinci</span>
+                <span className="mast-sub-by mono">Leonardo da Vinci</span>
               </p>
             </div>
           </div>
@@ -399,9 +302,6 @@ export default function Home() {
       <section className="intro-sec" id="intro" aria-label="Practices">
         <div className="wrap">
           <Reveal>
-            <p className="standfirst">
-              One pair of <span className="serif">hands</span>.
-            </p>
             <div className="drawline" />
           </Reveal>
 
@@ -419,10 +319,71 @@ export default function Home() {
       </section>
 
       {/* a room's width of quiet before the work starts */}
-      {/* design — one prototype at a time, the project names as the
-          switch. See DesignShowcase below for why it is not a grid. */}
+      {/* design — the centred header, then exactly three projects in
+          three equal columns. The rest live on /design, which the
+          header's own call to action opens. */}
       {HAS_REAL_WEB ? (
-        <DesignShowcase />
+        <section className="csec" id="design">
+          {/* the header keeps the reading measure; the work below it
+              gets the wide column — see .wrap-wide */}
+          <div className="wrap">
+            <CenterHead
+              kicker="Design"
+              title="Prototyped, not mocked up."
+              sub="Every screen is wired and made clickable in Figma before a line of code exists. It is tested against real flows, specced, and ready for a developer to pick up."
+              cta={
+                <TLink to="/design" className="extlink">
+                  All designs <span className="arrow">→</span>
+                </TLink>
+              }
+            />
+          </div>
+
+          <div className="wrap wrap-wide">
+            {/* Three, not WEB_PROJECTS.length: .cgrid-3 is three equal
+                columns, and a fourth card would open a second row with
+                one card in it. */}
+            <div className="cgrid cgrid-3">
+              {WEB_PROJECTS.slice(0, 3).map((w, i) => (
+                <Reveal key={w.slug} delay={i * 0.06}>
+                  <TLink to={`/design/${w.slug}`} className="wcard"
+                    aria-label={`Open ${w.t}`}>
+                    <div className="browser">
+                      <div className="browser-bar">
+                        <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
+                        <span className="browser-url mono">
+                          {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
+                        </span>
+                      </div>
+                      {hasPhoto(w.cover) ? (
+                        <div className="browser-view">
+                          {/* the widths .cgrid-3 actually resolves to: a
+                              third of the 1340px wide column above 900px,
+                              the full column below it */}
+                          <img src={img(w.cover, 1200)} srcSet={srcSet(w.cover)}
+                            sizes="(min-width: 900px) 410px, 92vw"
+                            alt={`${w.t} full page`} loading="lazy" />
+                        </div>
+                      ) : w.embed && w.href ? (
+                        <FigmaFrame w={w} />
+                      ) : (
+                        <div className="browser-ph">
+                          <span className="browser-ph-name">{w.t}</span>
+                          <span className="mono">{w.tag}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="wcard-cap">
+                      <h3>{w.t}</h3>
+                      <p>{w.intro}</p>
+                      <span className="tool-badge mono">{w.tool}</span>
+                    </div>
+                  </TLink>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
       ) : (
         <section className="csec" id="design">
           <div className="wrap">
@@ -453,7 +414,7 @@ export default function Home() {
         <section className="lov" ref={lovSec} aria-label="Frames">
           <div className="lov-stage" ref={lovStage}>
             <svg className="lov-svg" role="img" focusable="false"
-              aria-label={`${COLLAGE_WORD} — selected frames`}>
+              aria-label={`${COLLAGE_WORD}: selected frames`}>
               <defs>
                 {/* The opening is a wipe, not a fade. Fading the surround out
                     dims the whole picture uniformly on the way, and a
@@ -551,7 +512,7 @@ export default function Home() {
         <div className="wrap">
           <CenterHead
             title={<><span className="serif">Finished</span> work, handed over.</>}
-            sub="The same standard on both halves of the job — what leaves here is ready to use, in the sizes and the files you need."
+            sub="The same standard applies to both halves of the job. What leaves here is ready to use, in the sizes and files you need."
           />
           <Timeline items={INTRO.offer} />
         </div>
@@ -581,148 +542,6 @@ export default function Home() {
         </div>
       </section>
     </motion.div>
-  );
-}
-
-/* ==================================================================
-   DESIGN SHOWCASE — one prototype at a time, names as the switch.
-
-   This replaced a three-up grid of project cards, and the reason was
-   the copy rather than the layout. intro, tag, role and tool are the
-   same placeholder string on every entry in WEB_PROJECTS and year is
-   empty, so three cards side by side differed only in their title and
-   read as one card printed three times — with "Figma" appearing nine
-   times across the row, which the copy rule in CLAUDE.md forbids
-   outright. One project on screen fixes that without a word being
-   invented, because there is nothing left to repeat, and it hands the
-   whole column to a single prototype instead of splitting it in three.
-
-   ONLY THE PROJECTS THAT HAVE BEEN LOOKED AT ARE MOUNTED. A Figma
-   embed is an iframe loading a whole editor runtime; three of them on
-   the home page is three of those, and two would have been for
-   prototypes nobody had asked to see. `seen` grows as tabs are visited
-   and panels are never unmounted after that — so the first paint costs
-   one embed, and going back to a project already looked at is instant
-   rather than a reload.
-   ================================================================== */
-function DesignShowcase() {
-  const items = WEB_PROJECTS.slice(0, 3);
-  const [at, setAt] = useState(0);
-  // which panels exist in the DOM — the active one plus everything
-  // already visited. Never shrinks; see the note above.
-  const [seen, setSeen] = useState(() => new Set([0]));
-  const tabs = useRef(null);
-
-  const go = (n) => {
-    const i = (n + items.length) % items.length;
-    setAt(i);
-    setSeen((s) => (s.has(i) ? s : new Set(s).add(i)));
-  };
-
-  /* Roving arrow keys, the standard tablist behaviour. Without it the
-     row is a mouse-only control: Tab alone lands on each button but
-     never changes the panel, and the arrow keys — which is what anyone
-     using a keyboard reaches for on tabs — do nothing at all. */
-  const onKey = (e) => {
-    const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-    if (!d) return;
-    e.preventDefault();
-    const i = (at + d + items.length) % items.length;
-    go(i);
-    tabs.current?.children[i]?.focus();
-  };
-
-  if (!items.length) return null;
-  const shape = items[at]?.shape === "phone" ? "phone" : "wide";
-
-  return (
-    <section className="csec dshow" id="design" data-shape={shape}>
-      {/* the header keeps the reading measure; the work below it gets
-          the wide column — see .wrap-wide */}
-      <div className="wrap">
-        {/* same lockup as the photography one: the section's word in the
-            italic, the headline plain under it, the description in
-            Inter. The headline gives up its own italic word — the kicker
-            is the one italic in the header. No <Reveal> around it:
-            CenterHead reveals its own rungs in order. */}
-        <CenterHead
-          kicker="Design"
-          title="Prototyped, not mocked up."
-          sub="Every screen wired and made clickable in Figma before a line of code exists — tested against real flows, specced and ready for a developer to pick up."
-        />
-      </div>
-
-      <div className="wrap wrap-wide">
-        <Reveal>
-          <div className="dshow-tabs" role="tablist" aria-label="Design projects"
-            ref={tabs} onKeyDown={onKey}>
-            {items.map((w, i) => (
-              <button key={w.slug} type="button" role="tab" className="dshow-tab"
-                aria-selected={i === at} aria-controls={`dshow-${w.slug}`}
-                /* only the active tab is a tab stop — Tab moves past the
-                   row, the arrows move within it */
-                tabIndex={i === at ? 0 : -1}
-                onClick={() => go(i)}>
-                {w.t}
-              </button>
-            ))}
-          </div>
-
-          <div className="dshow-stage">
-            {items.map((w, i) => (!seen.has(i) ? null : (
-              <div className="dshow-panel" key={w.slug} id={`dshow-${w.slug}`}
-                role="tabpanel" data-on={i === at ? "1" : "0"}
-                aria-label={w.t}
-                /* the inactive panels are still painted (they are
-                   crossfaded, not swapped) so they have to be taken out
-                   of the accessibility tree by hand, and their link out
-                   of the tab order — see tabIndex on the TLink below */
-                aria-hidden={i === at ? undefined : "true"}>
-                <TLink to={`/design/${w.slug}`} className="wcard"
-                  aria-label={`Open ${w.t}`} tabIndex={i === at ? 0 : -1}>
-                  <div className="browser">
-                    <div className="browser-bar">
-                      <span className="browser-dots" aria-hidden="true"><i /><i /><i /></span>
-                      {/* the bar carries the name and nothing else. It used
-                          to end with {w.year || w.tool}, and with year empty
-                          on every project that was a second "Figma" a few
-                          centimetres from the first. */}
-                      <span className="browser-url mono">
-                        {w.embed ? `${w.t} · Figma prototype` : `${w.slug}.com`}
-                      </span>
-                    </div>
-                    {hasPhoto(w.cover) ? (
-                      <div className="browser-view">
-                        {/* the stage is either a 460px phone column or the
-                            full 1340px wide column — see .dshow[data-shape] */}
-                        <img src={img(w.cover, 1600)} srcSet={srcSet(w.cover)}
-                          sizes="(min-width: 900px) 1284px, 92vw"
-                          alt={`${w.t} full page`} loading="lazy" />
-                      </div>
-                    ) : w.embed && w.href ? (
-                      <FigmaFrame w={w} />
-                    ) : (
-                      <div className="browser-ph">
-                        <span className="browser-ph-name">{w.t}</span>
-                        <span className="mono">{w.tag}</span>
-                      </div>
-                    )}
-                  </div>
-                </TLink>
-              </div>
-            )))}
-          </div>
-
-          {/* the call to action moves below the work — after you have seen
-              something, rather than before */}
-          <div className="dshow-cta">
-            <TLink to="/design" className="extlink">
-              All designs <span className="arrow">→</span>
-            </TLink>
-          </div>
-        </Reveal>
-      </div>
-    </section>
   );
 }
 

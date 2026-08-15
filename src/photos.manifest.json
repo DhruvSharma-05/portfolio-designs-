@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-09T18:09:14.125Z",
+  "generatedAt": "2026-08-14T10:21:08.041Z",
   "work": [],
   "gallery": [],
   "portrait": {
@@ -11,70 +11,6 @@
     "h": 4032
   },
   "projectPhotos": [
-    {
-      "seed": "modern-venus",
-      "sm": "/photos/projects/modern/modern-venus-640.webp",
-      "lg": "/photos/projects/modern/modern-venus-2600.webp",
-      "srcset": "/photos/projects/modern/modern-venus-640.webp 640w, /photos/projects/modern/modern-venus-1600.webp 1600w, /photos/projects/modern/modern-venus-2600.webp 2434w",
-      "w": 2434,
-      "h": 3478
-    },
-    {
-      "seed": "modern-green-machine",
-      "sm": "/photos/projects/modern/modern-green-machine-640.webp",
-      "lg": "/photos/projects/modern/modern-green-machine-4200.webp",
-      "srcset": "/photos/projects/modern/modern-green-machine-640.webp 640w, /photos/projects/modern/modern-green-machine-1600.webp 1600w, /photos/projects/modern/modern-green-machine-2600.webp 2600w, /photos/projects/modern/modern-green-machine-4200.webp 3368w",
-      "w": 3368,
-      "h": 5189
-    },
-    {
-      "seed": "modern-after-hours",
-      "sm": "/photos/projects/modern/modern-after-hours-640.webp",
-      "lg": "/photos/projects/modern/modern-after-hours-4200.webp",
-      "srcset": "/photos/projects/modern/modern-after-hours-640.webp 640w, /photos/projects/modern/modern-after-hours-1600.webp 1600w, /photos/projects/modern/modern-after-hours-2600.webp 2600w, /photos/projects/modern/modern-after-hours-4200.webp 3376w",
-      "w": 3376,
-      "h": 6000
-    },
-    {
-      "seed": "modern-pink-field",
-      "sm": "/photos/projects/modern/modern-pink-field-640.webp",
-      "lg": "/photos/projects/modern/modern-pink-field-4200.webp",
-      "srcset": "/photos/projects/modern/modern-pink-field-640.webp 640w, /photos/projects/modern/modern-pink-field-1600.webp 1600w, /photos/projects/modern/modern-pink-field-2600.webp 2600w, /photos/projects/modern/modern-pink-field-4200.webp 3376w",
-      "w": 3376,
-      "h": 6000
-    },
-    {
-      "seed": "modern-motion",
-      "sm": "/photos/projects/modern/modern-motion-640.webp",
-      "lg": "/photos/projects/modern/modern-motion-4200.webp",
-      "srcset": "/photos/projects/modern/modern-motion-640.webp 640w, /photos/projects/modern/modern-motion-1600.webp 1600w, /photos/projects/modern/modern-motion-2600.webp 2600w, /photos/projects/modern/modern-motion-4200.webp 3368w",
-      "w": 3368,
-      "h": 6000
-    },
-    {
-      "seed": "modern-two-men-car",
-      "sm": "/photos/projects/modern/modern-two-men-car-640.webp",
-      "lg": "/photos/projects/modern/modern-two-men-car-4200.webp",
-      "srcset": "/photos/projects/modern/modern-two-men-car-640.webp 640w, /photos/projects/modern/modern-two-men-car-1600.webp 1600w, /photos/projects/modern/modern-two-men-car-2600.webp 2600w, /photos/projects/modern/modern-two-men-car-4200.webp 3368w",
-      "w": 3368,
-      "h": 6000
-    },
-    {
-      "seed": "modern-green-car",
-      "sm": "/photos/projects/modern/modern-green-car-640.webp",
-      "lg": "/photos/projects/modern/modern-green-car-4200.webp",
-      "srcset": "/photos/projects/modern/modern-green-car-640.webp 640w, /photos/projects/modern/modern-green-car-1600.webp 1600w, /photos/projects/modern/modern-green-car-2600.webp 2600w, /photos/projects/modern/modern-green-car-4200.webp 3368w",
-      "w": 3368,
-      "h": 5156
-    },
-    {
-      "seed": "modern-friends",
-      "sm": "/photos/projects/modern/modern-friends-640.webp",
-      "lg": "/photos/projects/modern/modern-friends-4200.webp",
-      "srcset": "/photos/projects/modern/modern-friends-640.webp 640w, /photos/projects/modern/modern-friends-1600.webp 1600w, /photos/projects/modern/modern-friends-2600.webp 2600w, /photos/projects/modern/modern-friends-4200.webp 4200w",
-      "w": 4200,
-      "h": 2358
-    },
     {
       "seed": "traditional-cream-gold",
       "sm": "/photos/projects/traditional/traditional-cream-gold-640.webp",
@@ -282,28 +218,73 @@
       "srcset": "/photos/projects/wildlife/wildlife-stags-640.webp 640w, /photos/projects/wildlife/wildlife-stags-1600.webp 1600w, /photos/projects/wildlife/wildlife-stags-2600.webp 2600w, /photos/projects/wildlife/wildlife-stags-4200.webp 4200w",
       "w": 4200,
       "h": 2364
+    },
+    {
+      "seed": "modern-venus",
+      "sm": "/photos/projects/modern/modern-venus-640.webp",
+      "lg": "/photos/projects/modern/modern-venus-2600.webp",
+      "srcset": "/photos/projects/modern/modern-venus-640.webp 640w, /photos/projects/modern/modern-venus-1600.webp 1600w, /photos/projects/modern/modern-venus-2600.webp 2434w",
+      "w": 2434,
+      "h": 3478
+    },
+    {
+      "seed": "modern-green-machine",
+      "sm": "/photos/projects/modern/modern-green-machine-640.webp",
+      "lg": "/photos/projects/modern/modern-green-machine-4200.webp",
+      "srcset": "/photos/projects/modern/modern-green-machine-640.webp 640w, /photos/projects/modern/modern-green-machine-1600.webp 1600w, /photos/projects/modern/modern-green-machine-2600.webp 2600w, /photos/projects/modern/modern-green-machine-4200.webp 3368w",
+      "w": 3368,
+      "h": 5189
+    },
+    {
+      "seed": "modern-after-hours",
+      "sm": "/photos/projects/modern/modern-after-hours-640.webp",
+      "lg": "/photos/projects/modern/modern-after-hours-4200.webp",
+      "srcset": "/photos/projects/modern/modern-after-hours-640.webp 640w, /photos/projects/modern/modern-after-hours-1600.webp 1600w, /photos/projects/modern/modern-after-hours-2600.webp 2600w, /photos/projects/modern/modern-after-hours-4200.webp 3376w",
+      "w": 3376,
+      "h": 6000
+    },
+    {
+      "seed": "modern-pink-field",
+      "sm": "/photos/projects/modern/modern-pink-field-640.webp",
+      "lg": "/photos/projects/modern/modern-pink-field-4200.webp",
+      "srcset": "/photos/projects/modern/modern-pink-field-640.webp 640w, /photos/projects/modern/modern-pink-field-1600.webp 1600w, /photos/projects/modern/modern-pink-field-2600.webp 2600w, /photos/projects/modern/modern-pink-field-4200.webp 3376w",
+      "w": 3376,
+      "h": 6000
+    },
+    {
+      "seed": "modern-motion",
+      "sm": "/photos/projects/modern/modern-motion-640.webp",
+      "lg": "/photos/projects/modern/modern-motion-4200.webp",
+      "srcset": "/photos/projects/modern/modern-motion-640.webp 640w, /photos/projects/modern/modern-motion-1600.webp 1600w, /photos/projects/modern/modern-motion-2600.webp 2600w, /photos/projects/modern/modern-motion-4200.webp 3368w",
+      "w": 3368,
+      "h": 6000
+    },
+    {
+      "seed": "modern-two-men-car",
+      "sm": "/photos/projects/modern/modern-two-men-car-640.webp",
+      "lg": "/photos/projects/modern/modern-two-men-car-4200.webp",
+      "srcset": "/photos/projects/modern/modern-two-men-car-640.webp 640w, /photos/projects/modern/modern-two-men-car-1600.webp 1600w, /photos/projects/modern/modern-two-men-car-2600.webp 2600w, /photos/projects/modern/modern-two-men-car-4200.webp 3368w",
+      "w": 3368,
+      "h": 6000
+    },
+    {
+      "seed": "modern-green-car",
+      "sm": "/photos/projects/modern/modern-green-car-640.webp",
+      "lg": "/photos/projects/modern/modern-green-car-4200.webp",
+      "srcset": "/photos/projects/modern/modern-green-car-640.webp 640w, /photos/projects/modern/modern-green-car-1600.webp 1600w, /photos/projects/modern/modern-green-car-2600.webp 2600w, /photos/projects/modern/modern-green-car-4200.webp 3368w",
+      "w": 3368,
+      "h": 5156
+    },
+    {
+      "seed": "modern-friends",
+      "sm": "/photos/projects/modern/modern-friends-640.webp",
+      "lg": "/photos/projects/modern/modern-friends-4200.webp",
+      "srcset": "/photos/projects/modern/modern-friends-640.webp 640w, /photos/projects/modern/modern-friends-1600.webp 1600w, /photos/projects/modern/modern-friends-2600.webp 2600w, /photos/projects/modern/modern-friends-4200.webp 4200w",
+      "w": 4200,
+      "h": 2358
     }
   ],
   "photoProjects": [
-    {
-      "slug": "modern",
-      "t": "Modern",
-      "loc": "",
-      "year": "",
-      "exif": "50mm · f/2 · 1/60 · ISO 1000",
-      "intro": "Selected modern photography. The full set, shot and graded as one.",
-      "note": "",
-      "photos": [
-        "modern-venus",
-        "modern-green-machine",
-        "modern-after-hours",
-        "modern-pink-field",
-        "modern-motion",
-        "modern-two-men-car",
-        "modern-green-car",
-        "modern-friends"
-      ]
-    },
     {
       "slug": "traditional",
       "t": "Traditional",
@@ -350,6 +331,25 @@
         "wildlife-deer-pair",
         "wildlife-buck",
         "wildlife-stags"
+      ]
+    },
+    {
+      "slug": "modern",
+      "t": "Modern",
+      "loc": "",
+      "year": "",
+      "exif": "50mm · f/2 · 1/60 · ISO 1000",
+      "intro": "Selected modern photography. The full set, shot and graded as one.",
+      "note": "",
+      "photos": [
+        "modern-venus",
+        "modern-green-machine",
+        "modern-after-hours",
+        "modern-pink-field",
+        "modern-motion",
+        "modern-two-men-car",
+        "modern-green-car",
+        "modern-friends"
       ]
     }
   ],

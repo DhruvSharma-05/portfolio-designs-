@@ -142,7 +142,7 @@ export default function Photography() {
             <div className="ticks" role="tablist" aria-label="Featured projects">
               {FEATURED.map((s, n) => (
                 <button key={s.seed} className="tick-btn" role="tab"
-                  aria-current={n === i} aria-label={`${s.t} — frame ${n + 1}`}
+                  aria-current={n === i} aria-label={`${s.t}: frame ${n + 1}`}
                   onClick={() => setI(n)}><i /></button>
               ))}
             </div>
@@ -163,9 +163,9 @@ export default function Photography() {
           item called Photography. The italic kicker replaces it. */}
       <section className="wrap band">
         <CenterHead
-          kicker={P.photoBrand}
+          kicker="lensofviraj"
           title="Every photograph begins long before I press the shutter."
-          sub={`Understanding people, light, and emotion is just as important as the camera itself — the photography half of ${P.name}.`}
+          sub={`Understanding people, light, and emotion is just as important as the camera itself. This is the photography half of ${P.name}.`}
         />
       </section>
 
