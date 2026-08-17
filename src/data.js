@@ -1290,6 +1290,9 @@ export const CSS = `
 .cgrid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 900px) { .cgrid-3 { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 680px) { .cgrid-2 { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 680px) {
+  .dshow-cta { display: flex; justify-content: center; text-align: center; }
+}
 
 /* --- section shell with sticky label --- */
 .sec { padding: 13vh 0; border-top: 1px solid var(--rule); }
