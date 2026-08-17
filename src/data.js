@@ -1320,7 +1320,7 @@ export const CSS = `
 /* the closing block's one line of copy is the same tier as .chead-sub —
    300 and dim — so the ladder under a headline reads the same here as
    it does in every section above it */
-.end .standfirst { margin-inline: auto; color: var(--dim);
+.end .standfirst { margin-inline: auto; color: var(--dim); text-align: justify;
   font-size: clamp(15px, 1.45vw, 17px); line-height: 1.68; max-width: 52ch; }
 /* .extlink is inline-flex, so text-align centres it; a <button> is not a
    text node to the parent's alignment in every engine, hence the flex */
@@ -1461,7 +1461,7 @@ export const CSS = `
 .cmodal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .cmodal-head h2 { font-weight: 300; letter-spacing: -0.008em; line-height: 1.18;
   font-size: clamp(24px, 3.4vw, 32px); text-wrap: balance; }
-.cmodal-sub { margin-top: 14px; color: var(--dim); font-size: 15px; line-height: 1.6; max-width: 48ch; }
+.cmodal-sub { margin-top: 14px; color: var(--dim); font-size: 15px; line-height: 1.6; max-width: 48ch; text-align: justify; }
 .cmodal-x { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center;
   border: 1px solid var(--rule); border-radius: 50%; color: var(--dim); font-size: 13px;
   transition: border-color .3s ease, color .3s ease; }
