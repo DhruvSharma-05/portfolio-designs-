@@ -839,6 +839,9 @@ export const CSS = `
 /* the bar wraps to two rows below 720px, so it eats more of the screen:
    44px CTA row + 10px row gap + 14px nav row + 24px padding + 1px rule */
 @media (max-width: 720px) { .pf { --bar-h: 93px; } }
+@media (max-width: 680px) {
+  .pf { --sec-y: clamp(58px, 10vh, 88px); }
+}
 
 /* standfirst / disciplines / role: fade+rise in after the headline
    resolves (--rd, set inline per element), so the primary hero text
@@ -1094,6 +1097,10 @@ export const CSS = `
    one moment on the page that is meant to open out. The section's own
    --sec-y of space is the separation here. */
 .gwork { padding: var(--sec-y) 0; }
+@media (max-width: 680px) {
+  .gwork { position: relative; z-index: 1; margin-top: clamp(-190px, -24svh, -120px);
+    padding-top: clamp(12px, 3vh, 24px); }
+}
 /* --- home: photography collection cards ---
    One framed cover per collection; opens the full gallery at
    /photography/:slug. Mirrors the site's card idiom (accent hover, the
@@ -1172,6 +1179,9 @@ export const CSS = `
    nothing. Set here rather than on each grid, so the header and what it
    heads can never drift apart from one section to the next. */
 .chead { max-width: 760px; margin: 0 auto clamp(52px, 7vw, 90px); text-align: center; }
+@media (max-width: 680px) {
+  .chead { margin-bottom: clamp(30px, 8vw, 44px); }
+}
 /* The section's own word, in the accent face's italic, above the
    headline. It reads as the first line of a display lockup rather than
    a label on top of one — which is why it is the same face as the
