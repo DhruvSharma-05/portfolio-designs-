@@ -873,7 +873,7 @@ function PhotoProjects() {
 
         {/* below the work, same as the design section's — the beat above
             is a statement and a call to action would have undercut it */}
-        <div className="dshow-cta">
+        <div className="dshow-cta collections-cta">
           <TLink to="/photography" className="extlink">
             All collections <span className="arrow">→</span>
           </TLink>

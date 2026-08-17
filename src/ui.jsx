@@ -388,7 +388,7 @@ export function ContactModal({ email, onClose, reduced }) {
             <h2 id="cmodal-title">Tell me about your vision</h2>
             <p className="cmodal-sub">
               Whether it's a photoshoot, a website, or a creative collaboration, I'd love to
-              hear your ideas. Fill out the form below and I'll get back to you within 24 to 48 hours.
+              hear your ideas. Fill out the form below.
             </p>
           </div>
           <button type="button" className="cmodal-x" onClick={onClose} aria-label="Close enquiry form">✕</button>

@@ -1302,6 +1302,7 @@ export const CSS = `
 @media (max-width: 680px) { .cgrid-2 { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 680px) {
   .dshow-cta { display: flex; justify-content: center; text-align: center; }
+  .collections-cta { margin-top: 28px; }
 }
 
 /* --- section shell with sticky label --- */
@@ -1449,6 +1450,11 @@ export const CSS = `
 .cf-after { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   flex-wrap: wrap; margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--rule); }
 .cf-reply { text-transform: none; letter-spacing: .04em; color: var(--dim); }
+@media (max-width: 620px) {
+  .cf-after { order: 1; margin-top: 0; }
+  .cf-foot { order: 2; align-items: stretch; flex-direction: column; }
+  .cf-foot .extlink { justify-content: center; width: 100%; }
+}
 .cf-social { display: flex; gap: 10px; }
 .pf .cf-social a { width: 36px; height: 36px; display: grid; place-items: center; color: var(--dim);
   border: 1px solid var(--rule); border-radius: 50%;
