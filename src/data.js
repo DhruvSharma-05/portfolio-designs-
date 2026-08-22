@@ -1300,10 +1300,14 @@ export const CSS = `
 .cgrid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 900px) { .cgrid-3 { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 680px) { .cgrid-2 { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 680px) {
-  .dshow-cta { display: flex; justify-content: center; text-align: center; }
-  .collections-cta { margin-top: 28px; }
-}
+/* The CTA under a card grid sits on the page's axis, at every width —
+   these two rules used to live inside a 680px media query, so on every
+   screen above a phone the link fell back to the flow's left edge and
+   sat hard under the first card's title. It also needs a section's worth
+   of air under the work: at the old 28px it read as a caption belonging
+   to the card above it rather than the whole grid's next step. */
+.dshow-cta { display: flex; justify-content: center; text-align: center; }
+.collections-cta { margin-top: clamp(38px, 5vw, 68px); }
 
 /* --- section shell with sticky label --- */
 .sec { padding: 13vh 0; border-top: 1px solid var(--rule); }
@@ -1431,7 +1435,11 @@ export const CSS = `
   width: 100%; transition: border-color .25s ease; }
 .cf-field input::placeholder, .cf-field textarea::placeholder { color: var(--dim); opacity: .45; }
 .cf-field input:focus, .cf-field textarea:focus, .cf-field select:focus { border-color: var(--accent); outline: none; }
-.cf-field textarea { resize: vertical; line-height: 1.6; }
+/* The box is a fixed four rows and scrolls once the message outgrows it.
+   The drag handle is gone on purpose: it let the panel be stretched past
+   the dialog's own height, and the modal is a scroll container, so a
+   dragged-out textarea pushed the send button out of view. */
+.cf-field textarea { resize: none; overflow-y: auto; line-height: 1.6; }
 /* select: strip the native chrome, draw our own chevron, and dim the label
    until a real option is chosen (empty value fails :invalid on a required select). */
 .cf-field select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 40px;
