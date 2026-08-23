@@ -378,7 +378,10 @@ export function ContactModal({ email, onClose, reduced }) {
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       transition={{ duration: reduced ? 0 : 0.25 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <motion.div className="cmodal-panel" ref={panelRef}
+      {/* data-lenis-prevent: the panel is the scroll container on a short
+          screen, and Lenis would otherwise take the wheel for the page
+          behind it — see the stop() in App.jsx */}
+      <motion.div className="cmodal-panel" ref={panelRef} data-lenis-prevent
         initial={{ opacity: 0, y: reduced ? 0 : 16, scale: reduced ? 1 : 0.985 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: reduced ? 0 : 10, scale: reduced ? 1 : 0.99 }}

@@ -170,6 +170,21 @@ export default function App() {
      it hanging over the new page */
   useEffect(() => { setContactOpen(false); }, [location.pathname]);
 
+  /* Park the smooth scroller while the modal is up. Lenis takes the
+     wheel event off the document and moves the page itself, so the
+     modal's own `overflow: hidden` on <html> never sees a scroll to
+     block — the page kept travelling behind the panel while the panel,
+     which is the thing actually overflowing, stayed put. Stopped, Lenis
+     swallows the wheel instead of acting on it, and the panel carries
+     `data-lenis-prevent` so its own scrolling still reaches the
+     browser. */
+  useEffect(() => {
+    const lenis = lenisRef.current;
+    if (!lenis || !contactOpen) return;
+    lenis.stop();
+    return () => lenis.start();
+  }, [contactOpen]);
+
   const vars = {
     "--bg": THEME.bg, "--panel": THEME.panel, "--ink": THEME.ink, "--dim": THEME.dim,
     "--rule": THEME.rule, "--accent": THEME.accent, "--filter": THEME.filter,

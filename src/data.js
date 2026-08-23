@@ -1481,9 +1481,25 @@ export const CSS = `
   padding: 24px; overflow-y: auto;
   background: color-mix(in srgb, var(--bg) 62%, transparent);
   backdrop-filter: blur(18px) saturate(.9); -webkit-backdrop-filter: blur(18px) saturate(.9); }
-.cmodal-panel { width: min(100%, 560px); max-height: calc(100vh - 48px); overflow-y: auto;
+.cmodal-panel { width: min(100%, 560px); max-height: calc(100dvh - 48px); overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
   padding: 30px 32px 32px; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+/* Both of the modal's scrollers show their bar at all times. macOS hides
+   an overlay scrollbar until something scrolls, so on a short screen the
+   panel gave no sign it had more form below the fold — and the visitor's
+   first instinct, the wheel, was going to the page behind it. Naming the
+   colour is what opts a scroller out of overlay behaviour; the -webkit-
+   block is the same bar for Safari, which reads neither property. */
+.cmodal-panel, .cf-field textarea { scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ink) 26%, transparent) transparent; }
+.cmodal-panel::-webkit-scrollbar, .cf-field textarea::-webkit-scrollbar { width: 10px; }
+.cmodal-panel::-webkit-scrollbar-track, .cf-field textarea::-webkit-scrollbar-track { background: transparent; }
+.cmodal-panel::-webkit-scrollbar-thumb, .cf-field textarea::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--ink) 26%, transparent); border-radius: 100px;
+  border: 3px solid transparent; background-clip: content-box; }
+.cmodal-panel::-webkit-scrollbar-thumb:hover, .cf-field textarea::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--ink) 42%, transparent); background-clip: content-box; }
 @media (max-width: 560px) { .cmodal { padding: 14px; } .cmodal-panel { padding: 24px 20px 26px; } }
 .cmodal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .cmodal-head h2 { font-weight: 300; letter-spacing: -0.008em; line-height: 1.18;
