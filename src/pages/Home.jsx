@@ -12,9 +12,11 @@ import { Reveal, TLink, FigmaFrame, Typewriter, CenterHead, Timeline, Colophon }
 import { useSeo } from "../seo.js";
 import { useApp } from "../context.js";
 
-/* three.js is code-split and gated, same as About's globe — the hero's
-   copy is the content here, the tunnel is decoration. */
-const GalleryTunnel = lazy(() => import("../GalleryTunnel.jsx"));
+/* The hero's background — a WebGL fluid the cursor stirs. Code-split
+   because it is ~15KB of shader source the other five routes never
+   touch, and because the gate below decides whether to fetch it at all:
+   the copy is the content here, the ink is decoration. */
+const InkField = lazy(() => import("../InkField.jsx"));
 
 const page = {
   initial: { opacity: 0 },
@@ -248,14 +250,15 @@ export default function Home() {
           own room in .intro-sec below. */}
       <header className="mast" id="main">
         <div className="mast-stage">
-          {/* the tunnel behind the copy — an endless corridor of the
-              site's own tones and real synced photographs. See
-              GalleryTunnel.jsx and .mast-tunnel. Gated the same way as
-              About's globe: below 900px it doesn't mount at all. */}
-          {heavy && (
-            <div className="mast-tunnel" aria-hidden="true">
+          {/* the ink behind the copy — see InkField.jsx and .mast-ink.
+              Gated at 900px like the other WebGL pieces, and dropped
+              entirely under reduced motion: the field drifts on its own
+              even when nobody touches it, so there is no still frame of
+              it worth showing. */}
+          {heavy && !reduced && (
+            <div className="mast-ink">
               <Suspense fallback={null}>
-                <GalleryTunnel still={reduced} />
+                <InkField />
               </Suspense>
             </div>
           )}

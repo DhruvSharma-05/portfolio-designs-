@@ -744,26 +744,93 @@ export const CSS = `
 .mast-stage { position: relative; flex: 1; min-width: 0;
   display: flex; align-items: center; }
 
-/* The gallery tunnel behind the name — GalleryTunnel.jsx, a three.js
-   corridor of the site's own tones plus real synced photographs,
-   drifting toward the camera forever. Replaces the old cursor-lit pools:
-   one ambient background system, not two competing for the same job.
-   Gated behind heavyVisualsAllowed() (Home.jsx) the same as About's
-   particle globe, so a phone never fetches the three.js chunk for an
-   effect it wouldn't render smoothly anyway. */
-.mast-tunnel { position: absolute; inset: 0; z-index: 0;
+/* The ink behind the name — InkField.jsx, a WebGL fluid the cursor
+   stirs, drifting on its own when nobody does. It replaced the gallery
+   tunnel, which replaced the cursor-lit pools: one ambient background
+   system here, never two competing for the same job. Gated behind
+   heavyVisualsAllowed() and prefersReduced() in Home.jsx.
+
+   pointer-events stay off: the layer covers the whole hero, and the
+   copy and the scroll cue on top of it have to remain clickable. The
+   sim reads the pointer off the window for exactly this reason. */
+.mast-ink { position: absolute; inset: 0; z-index: 0;
   overflow: hidden; pointer-events: none; }
-.mast-tunnel canvas { display: block; }
-/* the tunnel is brightest in the middle of the frame, where the copy is —
-   this settles the corners so the hero still ends in the page's black,
-   same fix the old light layer used */
-.mast-tunnel::after { content: ""; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 82% 72% at 50% 46%,
-    transparent 0%, color-mix(in srgb, var(--bg) 72%, transparent) 78%, var(--bg) 100%); }
+.inkfield, .inkfield canvas { position: absolute; inset: 0;
+  width: 100%; height: 100%; display: block; }
+/* Pools of page colour over the ink, and they do opposite jobs.
+
+   ::before quiets it **under the copy**, and it is shaped to the copy
+   rather than to the frame. That is the difference between ink you
+   can see and ink you can't: a single pool big enough to protect
+   everything covered most of the hero, so the whole middle of the
+   frame read as grey haze and the gain had to stay low on top of
+   that. Two bands sized to the actual boxes protect the same text and
+   leave the top third, the bottom third and both sides fully lit — at
+   a *higher* gain than the one big pool allowed.
+
+     the low band  the quote and the attribution, y 532-580. Small,
+                   and the strongest at 90%: --dim at 11px is the
+                   tightest tier on the page and it is what bounds
+                   the whole effect.
+     the wide one  the headline row, y 378-476, at only 48% — --ink
+                   needs 3:1, not 4.5, so this one is a nudge.
+
+   ⚠ **Each is a plateau, not a simple falloff.** As plain centre-out
+   gradients they have to be far stronger, because a line 483px wide
+   has its ends half way down the ramp catching ~40% of the pool — so
+   the centre goes flat while the ends stay lit. Held flat across the
+   box and faded only outside it, the same protection costs much less
+   light.
+
+   Measured with the cursor orbiting **on** each line in turn, 72
+   frames at 1440x900 — not sweeping past it, which is what a lazy
+   sample does and what hid an earlier failure. Worst pixel per tier:
+   roles 10.73:1, quote 6.13:1, attribution 4.99:1. Re-measure if the
+   palette, the gain, KNEE in InkField.jsx, the copy's colours **or
+   its layout** move — these bands are pinned to where the text
+   actually sits.
+
+   ⚠ **Two traps in measuring this, both of which produced confident
+   wrong answers.** (1) Screenshot only once the loader is out of the
+   DOM: its exit iris is a near-white circle over the whole screen and
+   a frame caught during it reads as a background of rgb(172,171,172).
+   (2) **Remove** .mast-copy rather than hiding it — a
+   visibility:hidden node still turns up in a screenshot captured
+   mid-paint, and its antialiased glyphs are neutral greys on the
+   #ECECEC→#161616 ramp that look exactly like a catastrophic
+   failure. Both artefacts are neutral; this palette never is, so an
+   exactly-neutral bright pixel inside a text box is a bad frame, not
+   a bad result. Worth asserting on.
+
+   ::after settles the **corners**, so the hero still ends in the
+   page's own black rather than in a rectangle of coloured smoke. Same
+   fix the gallery tunnel and the light layer before it both needed —
+   though it is gentler than either of theirs was (55% at 82% out),
+   since the ink is the thing on show and the corners are where it has
+   the most room to be seen.
+
+   Both need an explicit z-index: .inkfield is positioned, so without
+   one it paints over ::before (which precedes it in DOM order) and the
+   scrim does nothing at all. */
+.mast-ink::before { content: ""; position: absolute; inset: 0; z-index: 1;
+  background:
+    radial-gradient(ellipse 24% 8% at 50% 62%,
+      color-mix(in srgb, var(--bg) 90%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 90%, transparent) 70%, transparent 100%),
+    radial-gradient(ellipse 44% 17% at 50% 47%,
+      color-mix(in srgb, var(--bg) 48%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 48%, transparent) 52%, transparent 100%); }
+.mast-ink::after { content: ""; position: absolute; inset: 0; z-index: 2;
+  background: radial-gradient(ellipse 86% 78% at 50% 46%,
+    transparent 0%, color-mix(in srgb, var(--bg) 55%, transparent) 82%, var(--bg) 100%); }
 
 .display { font-weight: 300; letter-spacing: -0.012em; line-height: 1.0;
   font-size: clamp(44px, 10.5vw, 140px); text-wrap: balance;
   overflow-wrap: break-word; max-width: 100%; }
+/* The hero is the one lit thing on the site, so its headline is the one
+   headline sitting on something other than flat page colour. The shadow
+   is the page's own --bg, so it reads as the ink thinning out behind the
+   letters rather than as a glow around them. */
 .mast .display { text-shadow: 0 4px 44px color-mix(in srgb, var(--bg) 82%, transparent); }
 /* No ch-based cap here: ch resolves against this box's 16px font, not the
    140px headline inside it, so 22ch squeezed the h1 into ~180px — and
@@ -852,12 +919,11 @@ export const CSS = `
 
 /* --- the hero's foot dissolves into the page ---
    .mast clips its light at the section edge, and a clipped glow reads as
-   a seam: lit above the line, flat black below it. Two halves to the fix,
-   and both are needed — the hero's last stretch fades to the page colour,
-   and the section under it opens with the faintest continuation of the
-   same light, so the glow crosses the boundary instead of stopping at it.
-   Between .mast-tunnel (z 0) and .mast .wrap (z 3), so it dissolves the
-   light without touching the copy. */
+   a seam: lit above the line, flat black below it. The hero's last
+   stretch fades to the page colour, so the ink runs out before the
+   boundary instead of being cut off at it. Between .mast-ink (z 0) and
+   .mast .wrap (z 3), so it dissolves the light without touching the
+   copy. */
 .mast::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
   height: 26vh; z-index: 2; pointer-events: none;
   background: linear-gradient(to bottom, transparent, var(--bg) 92%); }
