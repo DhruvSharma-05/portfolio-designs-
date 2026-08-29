@@ -66,7 +66,7 @@ const PHOTO_COPY = {
    Everything about the person lives on /about.
    ================================================================== */
 export default function Home() {
-  useSeo("", "Photographer and web designer in Vancouver. Portraits, events and visual stories, plus UI/UX and web design in Figma. Shot and designed by the same person.");
+  useSeo("", "Photographer and web designer in the Lower Mainland, British Columbia. Portraits, events and visual stories, plus UI/UX and web design in Figma. Shot and designed by the same person.");
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const [heavy] = useState(heavyVisualsAllowed);
@@ -330,15 +330,15 @@ export default function Home() {
           {/* the header keeps the reading measure; the work below it
               gets the wide column — see .wrap-wide */}
           <div className="wrap">
+            {/* No cta here: it sits under the work, the same way the
+                photography section's does. A visitor who has not seen a
+                project yet has no reason to press "all designs" — the
+                link is the next step after the three cards, not a
+                shortcut past them. */}
             <CenterHead
               kicker="Design"
               title="Prototyped, not mocked up."
-              sub="Every screen is wired and made clickable in Figma before a line of code exists. It is tested against real flows, specced, and ready for a developer to pick up."
-              cta={
-                <TLink to="/design" className="extlink">
-                  All designs <span className="arrow">→</span>
-                </TLink>
-              }
+              sub="It's tested against real flows, fully documented with the details needed for development, and ready for a developer to build."
             />
           </div>
 
@@ -384,6 +384,12 @@ export default function Home() {
                   </TLink>
                 </Reveal>
               ))}
+            </div>
+
+            <div className="dshow-cta collections-cta">
+              <TLink to="/design" className="extlink extlink-lg">
+                All designs <span className="arrow">→</span>
+              </TLink>
             </div>
           </div>
         </section>
@@ -877,7 +883,7 @@ function PhotoProjects() {
         {/* below the work, same as the design section's — the beat above
             is a statement and a call to action would have undercut it */}
         <div className="dshow-cta collections-cta">
-          <TLink to="/photography" className="extlink">
+          <TLink to="/photography" className="extlink extlink-lg">
             All collections <span className="arrow">→</span>
           </TLink>
         </div>

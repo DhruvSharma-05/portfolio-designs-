@@ -39,8 +39,11 @@ export const P = {
   photoBrand: "Lensofviraj",    // the photography practice — /photography
   email: "craftedandcaptured@gmail.com",  // the only contact address — no personal ones
   phone: "+1 (672) 968-9680",
-  city: "Vancouver",
-  area: "Lower Mainland",       // the wider area he actually travels for
+  /* One place name, not two. It was city + area ("Vancouver · Lower
+     Mainland"), which names the same ground twice — Vancouver is IN the
+     Lower Mainland — and the copy rule says a fact gets stated once. The
+     wider area is also the true answer: it is what he travels for. */
+  area: "Lower Mainland",
   region: "British Columbia, Canada",
   socials: [
     { k: "Instagram", v: "@lensofviraj", href: "https://www.instagram.com/lensofviraj/" },
@@ -64,7 +67,7 @@ export const P = {
 export const INTRO = {
   lead: "Engineering taught him how things work. Design and photography taught him how they feel.",
   body: [
-    "Viraj Mehta is a designer and photographer based in Vancouver. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling, designing intuitive digital products and capturing moments through photography.",
+    "Viraj Mehta is a designer and photographer based in the Lower Mainland, British Columbia. With a background in Computer Engineering and Web & Mobile Application Design, he blends technology, creativity and storytelling, designing intuitive digital products and capturing moments through photography.",
     "Under Lensofviraj he shoots portraits, events and visual stories; as a designer he draws the apps and sites those pictures end up on. Every screen is prototyped in Figma and handed over ready to build, so nothing gets cropped, re-shot, or lost in a handover between two strangers.",
   ],
   /* the two doors — the practice cards under the home hero. The card
@@ -494,7 +497,7 @@ export const ABOUT = {
     { y: "2014", t: "First point-and-shoot camera. Curiosity becomes a habit." },
     { y: "2018", t: "First DSLR. Photography turns serious, and he starts teaching it." },
     { y: "2019", t: "Leads the college photography group: shoots, collabs, mentoring." },
-    { y: "Today", t: "Vancouver. Designing digital products, shooting as Lensofviraj." },
+    { y: "Today", t: "Lower Mainland. Designing digital products, shooting as Lensofviraj." },
   ],
   kit: [
     { k: "Camera", v: "Sony A7 IV, A7 V" },
@@ -768,12 +771,20 @@ export const CSS = `
    leave the top third, the bottom third and both sides fully lit — at
    a *higher* gain than the one big pool allowed.
 
-     the low band  the quote and the attribution, y 532-580. Small,
-                   and the strongest at 90%: --dim at 11px is the
-                   tightest tier on the page and it is what bounds
-                   the whole effect.
-     the wide one  the headline row, y 378-476, at only 48% — --ink
-                   needs 3:1, not 4.5, so this one is a nudge.
+     the low band  the quote and the attribution, y 532-580, at 44%.
+     the wide one  the headline row, y 378-476, at 48%.
+
+   ⚠ **Both are deliberately too weak to carry the copy on their own,
+   and must stay that way.** The low band was once 90% over a small
+   ellipse, which is what --dim at 10px needs from a pool alone — and
+   at that strength it stopped reading as falloff and became a black
+   slab parked in the middle of the hero, with the ink visibly not
+   flowing through it. The client saw it immediately. Most of that job
+   now belongs to the text-shadows on .mast-sub and .mast-sub-by,
+   which protect the same letters in the shape of the letters, so
+   there is no edge to notice. These bands only make up the last
+   fraction of a point the shadows can't reach — the gaps between
+   10px glyphs tracked at .14em.
 
    ⚠ **Each is a plateau, not a simple falloff.** As plain centre-out
    gradients they have to be far stronger, because a line 483px wide
@@ -782,13 +793,26 @@ export const CSS = `
    box and faded only outside it, the same protection costs much less
    light.
 
-   Measured with the cursor orbiting **on** each line in turn, 72
+   Measured with the cursor orbiting **on** each line in turn, 64
    frames at 1440x900 — not sweeping past it, which is what a lazy
-   sample does and what hid an earlier failure. Worst pixel per tier:
-   roles 10.73:1, quote 6.13:1, attribution 4.99:1. Re-measure if the
-   palette, the gain, KNEE in InkField.jsx, the copy's colours **or
-   its layout** move — these bands are pinned to where the text
-   actually sits.
+   sample does and what hid an earlier failure. Worst pixel per tier,
+   over two consecutive runs: roles 11.34:1, quote 5.94:1, attribution
+   4.59:1, scroll cue 14.46:1. Take two runs — the field is stochastic
+   and single runs of the attribution swing about +-0.1, which is the
+   difference between passing and failing at that tier.
+   Re-measure if the palette, the gain, KNEE in InkField.jsx,
+   the copy's colours **or its layout** move — these bands are pinned
+   to where the text actually sits.
+
+   Two things the harness has to get right, or it measures fiction.
+   Set the copy to color: transparent rather than hiding it: a
+   text-shadow still paints from a transparent glyph, so that capture
+   is the true background a letter sits on, shadow included — hide the
+   text and you throw away most of the protection and chase the
+   shortfall with a slab. And measure **Range rects, not element
+   boxes**: .mast-sub-by is a 483px block holding ~180px of centred
+   glyphs, and charging the ink for 300px of empty space no letter
+   occupies costs about 0.5:1 of headroom for nothing.
 
    ⚠ **Two traps in measuring this, both of which produced confident
    wrong answers.** (1) Screenshot only once the loader is out of the
@@ -814,9 +838,9 @@ export const CSS = `
    scrim does nothing at all. */
 .mast-ink::before { content: ""; position: absolute; inset: 0; z-index: 1;
   background:
-    radial-gradient(ellipse 24% 8% at 50% 62%,
-      color-mix(in srgb, var(--bg) 90%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 90%, transparent) 70%, transparent 100%),
+    radial-gradient(ellipse 46% 21% at 50% 61%,
+      color-mix(in srgb, var(--bg) 44%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 44%, transparent) 24%, transparent 100%),
     radial-gradient(ellipse 44% 17% at 50% 47%,
       color-mix(in srgb, var(--bg) 48%, transparent) 0%,
       color-mix(in srgb, var(--bg) 48%, transparent) 52%, transparent 100%); }
@@ -845,7 +869,22 @@ export const CSS = `
 .mast-sub { margin-top: clamp(28px, 6vh, 64px); margin-inline: auto;
   max-width: 46ch; font-weight: 300;
   letter-spacing: -0.015em; line-height: 1.5; font-size: clamp(14px, 1.45vw, 17px);
-  color: color-mix(in srgb, var(--ink) 62%, transparent); }
+  color: color-mix(in srgb, var(--ink) 62%, transparent);
+  /* The quote's own contrast, carried by the letterforms instead of by
+     a pool behind them. This pair replaced most of .mast-ink::before's
+     low band: at the strength that band needed (90% of --bg over a
+     346x72px ellipse) it stopped reading as falloff and started
+     reading as a black slab sitting in the middle of the ink — the ink
+     visibly did not flow through it. A shadow is the same protection
+     shaped like the text, so there is no edge to notice: it darkens
+     the pixels the glyphs actually sit on and nothing else.
+
+     Two stops, because one can't do both jobs: the tight one carries
+     the contrast right at the stroke, the wide one keeps the tight one
+     from reading as an outline. Both are the page's own --bg, so this
+     is the ink thinning out under the letters rather than a glow. */
+  text-shadow: 0 0 4px color-mix(in srgb, var(--bg) 88%, transparent),
+               0 1px 14px color-mix(in srgb, var(--bg) 78%, transparent); }
 /* The quote marks belong to the quotation, not to the paragraph that
    holds it. On .mast-sub the ::after came after ALL of its content —
    including the attribution, which is display: block — so the closing
@@ -853,8 +892,14 @@ export const CSS = `
    Wrapped round the sentence itself, it closes where the sentence does. */
 .mast-quote::before { content: "\\201C"; color: var(--accent); }
 .mast-quote::after { content: "\\201D"; color: var(--accent); }
+/* Its own, heavier than the one it inherits from .mast-sub: --dim at
+   10px is the tightest tier in the hero and the one that has always set
+   the ceiling on how bright the ink can go. */
 .mast-sub-by { display: block; margin-top: 10px; font-size: 10px;
-  letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+  letter-spacing: .14em; text-transform: uppercase; color: var(--dim);
+  text-shadow: 0 0 4px var(--bg),
+               0 0 10px var(--bg),
+               0 1px 18px color-mix(in srgb, var(--bg) 85%, transparent); }
 /* The first-scroll cue is deliberately part of the hero, not a fixed UI
    element: it disappears with the mast and never competes with the work
    below. The travelling dash is a lightweight CSS animation, with no
@@ -1584,8 +1629,14 @@ export const CSS = `
 .back { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 40px; }
 .back .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
 .back:hover .arrow { transform: translateX(-5px); }
-.detail-head { display: flex; justify-content: space-between; align-items: flex-end;
-  gap: 28px; flex-wrap: wrap; margin-bottom: 40px; }
+/* Centred, like every other heading on the site. It was a
+   space-between row — title hard left, role hard right — which is the
+   one header shape the site doesn't otherwise use, so a project page
+   announced itself differently from the section it was reached from.
+   Column, not row: the second item (the role, or the year) is a note
+   about the title and belongs under it, not opposite it. */
+.detail-head { display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 14px; margin-bottom: 40px; }
 .detail-head h1 { font-weight: 300; letter-spacing: -0.01em; line-height: 1.08;
   font-size: clamp(36px, 6.5vw, 84px); text-wrap: balance; }
 .detail-fig { position: relative; overflow: hidden; border-radius: 4px; border: 1px solid var(--rule);
@@ -2160,6 +2211,18 @@ export const CSS = `
   object-fit: contain; transform: none; transition: none; }
 .pj-intro { font-weight: 300; letter-spacing: -0.02em; font-size: clamp(20px, 2.8vw, 34px);
   line-height: 1.32; max-width: 26ch; }
+/* The copy under the frame, centred under the centred frame.
+   ⚠ Scoped to .detail-pj, and it has to stay scoped. .detail-grid is a
+   two-column layout everywhere else — /design/:slug puts the intro
+   beside a spec list, /work/:seed puts the note beside one — and this
+   is the only page that passes it a single child, which is why its
+   text was sitting in a half-width column hard against the left while
+   the picture above it was centred. Collapsing the grid site-wide
+   would centre a <dl> of key/value rows, which is not a heading and
+   does not want centring. */
+.detail-pj .detail-grid { grid-template-columns: minmax(0, 1fr); }
+.detail-pj .pj-intro,
+.detail-pj .detail-note { margin-inline: auto; text-align: center; }
 
 /* masonry-ish grid: CSS columns keep the frames' own aspect ratios */
 .pgrid { columns: 3; column-gap: 18px; margin-top: 18px; }
@@ -2378,6 +2441,13 @@ export const CSS = `
   pointer-events: none; }
 .extlink .arrow { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
 .extlink:hover .arrow { transform: translate(3px, -3px); }
+/* One step up, for the two home-page section CTAs that stand alone under
+   a grid of work. At the default 11px/14px a lone pill under three cards
+   reads as a footnote to the last card rather than as the section's next
+   step — it is the only thing on its line and has a whole row of the page
+   to itself. Everything else keeps the base size: this is a size for a
+   control with nothing beside it, not a new default. */
+.pf .extlink-lg { font-size: 12px; padding: 17px 34px; gap: 14px; }
 
 /* --- design detail screens --- */
 .screens { display: flex; flex-direction: column; gap: 24px; margin-top: 18px; }

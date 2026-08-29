@@ -35,7 +35,7 @@ export default function PhotoProject() {
 
   useSeo(
     p ? `${p.t} · Photography` : "Photography",
-    p ? (p.note || p.intro || `${p.t}, a photography set by Viraj Mehta, Vancouver.`) : "",
+    p ? (p.note || p.intro || `${p.t}, a photography set by Viraj Mehta in the Lower Mainland, British Columbia.`) : "",
   );
 
   /* No parallax on the hero: it worked by scaling the picture to 1.12 and
@@ -73,8 +73,10 @@ export default function PhotoProject() {
             style={{ aspectRatio: ratio(p.photos[0], 16, 9) }} />
         </figure>
 
-        {/* still .detail-grid with one child: the intro keeps its half-width
-            column and the 56px it sits below the hero */}
+        {/* .detail-grid with one child. It keeps the 56px it sits below
+            the hero; the single-column collapse and the centring are in
+            the .detail-pj rules in data.js, not here — the grid is still
+            two columns on the other detail pages. */}
         <div className="detail-grid">
           <Reveal>
             <p className="pj-intro">{p.intro}</p>

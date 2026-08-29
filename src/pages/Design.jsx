@@ -63,7 +63,7 @@ function Preview({ w, reduced, sizes, eager = false }) {
    sites or code. See the INTRO note in data.js.
    ================================================================== */
 export default function Design() {
-  useSeo("Design", "UI/UX and web design by Viraj Mehta, Vancouver: apps and sites designed screen by screen in Figma, handed over as interactive prototypes ready to build.");
+  useSeo("Design", "UI/UX and web design by Viraj Mehta in the Lower Mainland, British Columbia: apps and sites designed screen by screen in Figma, handed over as interactive prototypes ready to build.");
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const root = useRef(null);

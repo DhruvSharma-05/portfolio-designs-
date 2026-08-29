@@ -29,7 +29,7 @@ const page = {
    CTA and colophon as the rest of this site uses.
    ================================================================== */
 export default function About() {
-  useSeo("About Viraj Mehta", "Viraj Mehta is a designer and photographer in Vancouver, blending engineering, design and photography into digital products and visual stories.");
+  useSeo("About Viraj Mehta", "Viraj Mehta is a designer and photographer in the Lower Mainland, British Columbia, blending engineering, design and photography into digital products and visual stories.");
   const { openContact } = useApp();
   const [reduced] = useState(prefersReduced);
   const [heavy] = useState(heavyVisualsAllowed);

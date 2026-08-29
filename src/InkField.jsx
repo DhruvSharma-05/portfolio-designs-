@@ -334,7 +334,14 @@ void main() {
    the peak at 1/KNEE. The ink now goes deep violet where it is thick,
    not white, and the worst case is a number that can be reasoned
    about rather than whatever the sampler happened to catch. */
-const KNEE = 1.35;   // peak channel = 1/1.35 ≈ 0.74, so never white
+/* Bounds the peak at 1/KNEE, and it is the honest lever for the worst
+   case. Nudging the scrim instead chases noise: the worst pixel is
+   whatever the densest core happened to be that run, so 46% and 58%
+   bands measured the same within +-0.1. Raising KNEE pulls the bright
+   cores down and leaves the broad field alone (for small m the scale
+   is ~1), which is exactly the shape of the problem — the field was
+   never too bright on average, only at the cores. */
+const KNEE = 2.3;    // peak channel = 1/2.3 = 0.43, so a core never blows out
 const FRAG_DISPLAY = `
 precision highp float;
 uniform sampler2D uTex;

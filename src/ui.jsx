@@ -451,7 +451,7 @@ export function Colophon({ back = false }) {
         </div>
         <div>
           <dt className="mono">Based in</dt>
-          <dd>{P.city} · {P.area}<br />{P.region}</dd>
+          <dd>{P.area}<br />{P.region}</dd>
         </div>
         <div>
           <dt className="mono">Elsewhere</dt>
