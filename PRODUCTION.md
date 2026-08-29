@@ -76,21 +76,39 @@ Not done / narrower than it looks:
 ## Pre-launch gaps (content / SEO / ops)
 
 ### 🔴 Launch blockers
-- **Placeholder content** throughout `src/data.js`: `email: hello@yourstudio.com`,
-  `city: "Your City"`, placeholder `TESTIMONIALS`, lorem-ish notes/bios.
-  (`METRICS` — the invented "68 projects delivered" / "92% clients who
-  returned" figures — was deleted along with its unmounted `Metrics`
-  counter component rather than being given real numbers.)
-- **No real contact method** — everything is a `mailto:` link. Add a booking/
-  enquiry form (Formspree or a Vercel serverless endpoint).
-- **Social preview broken** — `public/og.svg` is SVG; social platforms need a
-  1200×630 **PNG/JPG**. OG/title tags still generic.
+
+- **`TESTIMONIALS` in `src/data.js` are invented.** Four quotes attributed
+  to "Portrait client", "Event client", "Wedding client" and "Brand
+  client" — none came from a real client. This is the one item on this
+  page that is not a matter of polish: publishing invented reviews as
+  genuine is deceptive advertising (Competition Act in BC; FTC
+  endorsement rules for US traffic). Replace with real words, or delete
+  the ones you have no source for — the rail handles any count, and two
+  real quotes beat four invented ones.
+- **The design briefs are still the prompt to write them.** Every entry
+  in `WEB_PROJECTS` has `note: "Add the real brief here: …"`, which is
+  rendered verbatim on `/design/:slug`; `intro` is the same sentence on
+  all three cards ("An interactive Figma prototype…"), and `year` is
+  empty on all of them.
+- **The hero quote is misattributed.** "Simplicity is the ultimate
+  sophistication" is not Leonardo da Vinci's — there is no such line in
+  his writings; it reached circulation via a 1977 Apple brochure. It is
+  published under his name in `.mast-sub`.
+- **`VITE_FORMSPREE_ID` is not set.** The contact form is built and
+  wired, but without that env var in Vercel it degrades silently to a
+  `mailto:` link — which is the fallback working as designed, and also
+  means nobody notices the form is not actually collecting anything.
+
+**Cleared since this list was written** (each verified against the code,
+not assumed): the placeholder email and city are gone (`P` now carries a
+real address and `area`/`region`); `public/og.png` exists as a 1200×630
+PNG; per-route `<title>`/description ship via `useSeo`, called by all six
+pages, alongside JSON-LD in `index.html`; `public/robots.txt` and
+`public/sitemap.xml` both exist, and the sitemap covers every public
+route while correctly omitting `/admin` and `/client`.
 
 ### 🟠 Important (discoverability + trust)
-- **Per-route SEO meta** — one static `<title>` in `index.html`; all routes share
-  it. Add dynamic `<title>`/description + canonical + JSON-LD (Photographer).
-- **`robots.txt` + `sitemap.xml`** — none in `public/`.
-- **Analytics** — none (Vercel Analytics or Plausible).
+- **Analytics** — still none (Vercel Analytics or Plausible).
 - **Auto-update** — a Contentful webhook → Vercel Deploy Hook makes publishing
   (new photos *and* new collections/projects) go live automatically, no manual
   rebuild. **Full setup steps below → "Auto-publishing".**

@@ -1,4 +1,4 @@
-import { useRef, useMemo, useState, Suspense, Component } from "react";
+import { useRef, useMemo, useState, useEffect, Suspense, Component } from "react";
 import { Canvas, useThree, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import gsap from "gsap";
@@ -120,10 +120,33 @@ export default function DistortImage({ src, srcSet, sizes, alt }) {
      heavyVisualsAllowed; it's tested here now so that gate can be purely
      about whether the chunk is worth loading */
   const [use3d] = useState(() => heavyVisualsAllowed() && !prefersReduced());
+
+  /* ⚠ The Canvas only mounts once the picture is known to load, and an
+     error boundary is NOT an alternative here. useLoader's failure is
+     thrown from three's own onerror callback — asynchronously, outside
+     React's render stack — so no boundary above or inside <Canvas>
+     sees it, and an unreachable frame becomes an uncaught "Could not
+     load …" on window.onerror. (Verified: a guard inside the Canvas
+     changes nothing.) Probing first means the loader is never handed a
+     URL that 404s. The plain <img> below renders throughout, so a
+     failed probe costs the effect and nothing else — which is the same
+     way every other section here degrades when a photo is missing. */
+  const [ok, setOk] = useState(false);
+  useEffect(() => {
+    if (!use3d || !src) return;
+    let live = true;
+    const probe = new Image();
+    probe.onload = () => { if (live) setOk(true); };
+    probe.onerror = () => { if (live) setOk(false); };
+    probe.src = src;
+    return () => { live = false; };
+  }, [use3d, src]);
+
   if (!use3d) return <img data-par src={src} srcSet={srcSet} sizes={sizes} alt={alt} />;
   return (
     <>
       <img className="distort-fallback" src={src} srcSet={srcSet} sizes={sizes} alt={alt} />
+      {ok && (
       <CanvasGuard>
         <Canvas
           className="distort-canvas"
@@ -138,6 +161,7 @@ export default function DistortImage({ src, srcSet, sizes, alt }) {
           </Suspense>
         </Canvas>
       </CanvasGuard>
+      )}
     </>
   );
 }

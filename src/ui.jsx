@@ -213,8 +213,12 @@ export function CenterHead({ kicker, title, lead, sub, cta, small, still, as: Ta
    service (Formspree) that emails Viraj — no server of our own. The
    endpoint id lives in VITE_FORMSPREE_ID; until that's set the form
    degrades to the plain mailto link, so nothing is ever broken. A
-   hidden `_gotcha` honeypot catches bots (Formspree drops it silently). */
-export function ContactForm({ email }) {
+   hidden `_gotcha` honeypot catches bots (Formspree drops it silently).
+
+   Not exported: ContactModal below is its only mount point, and both
+   live in this file. It was exported when the form had a page of its
+   own; nothing has imported it since that went. */
+function ContactForm({ email }) {
   const id = import.meta.env.VITE_FORMSPREE_ID;
   const [status, setStatus] = useState("idle"); // idle | sending | ok | error
 
